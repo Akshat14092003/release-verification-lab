@@ -125,8 +125,12 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   app.use((req, res, next) => next(new ShopError("Page not found.", 404)));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
-    const status = error instanceof ShopError ? error.status : error.status === 400 ? 400 : 500;
-    const message = error instanceof ShopError ? error.message : status === 400 ? "Invalid request body." : "Something went wrong. Please try again.";
+    const clientError = Number.isInteger(error.status) && error.status >= 400 && error.status < 500;
+    const status = error instanceof ShopError ? error.status : clientError ? error.status : 500;
+    const message = error instanceof ShopError ? error.message
+      : status === 413 ? "Request body is too large."
+      : clientError ? "Invalid request body."
+      : "Something went wrong. Please try again.";
     if (status === 500) console.error(error);
     if (isApi(req)) return res.status(status).json({ error: message });
     if (!req.user) return res.status(status).send(view.loginPage(message, "", bugs));

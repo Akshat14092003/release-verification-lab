@@ -20,7 +20,7 @@ Unexpected outcomes fail the job. No blanket continue-on-error is used.
 - HTML, JSON/JUnit, screenshots, traces, HTTP/SQL evidence, and disposable test databases are uploaded.
 - Artifacts green-evidence and red-evidence have 14-day retention and upload with always(), including when tests fail.
 - Job summaries include pass counts and detector-verification status.
-- Only contents: read is granted. Checkout credential persistence is disabled.
+- The workflow default is contents: read. The publish job alone adds pages: write and id-token: write. Checkout credential persistence is disabled.
 - Actions are pinned to commit SHAs resolved from the official v7 references.
 - No production service or account secret is required. All accounts/data are synthetic.
 

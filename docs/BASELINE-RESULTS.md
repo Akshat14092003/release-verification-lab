@@ -23,4 +23,4 @@ Subsequent security additions expanded the suite to 34 tests. No application beh
 
 Reports: playwright-report/index.html; test-results/results.json and junit.xml.
 Hosted CI execution is now verified separately in [HOSTED-CI-RESULTS.md](HOSTED-CI-RESULTS.md).
-Long-run flake rate, cross-browser coverage, and standalone report publication remain unmeasured/unverified.
+Cross-browser coverage and long-run flake rate remain unmeasured; a ten-run local sample is recorded in [repeatability](REPEATABILITY.md). Report publication is live at https://akshat14092003.github.io/release-verification-lab/.

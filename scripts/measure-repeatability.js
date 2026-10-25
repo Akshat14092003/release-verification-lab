@@ -7,12 +7,16 @@ import os from "node:os";
 
 const args = process.argv.slice(2);
 let runs = 10;
+let expectedChecks = 34;
 for (const arg of args) {
-  const match = /^--runs=(\d+)$/.exec(arg);
-  if (!match) throw new Error("Usage: node scripts/measure-repeatability.js [--runs=N]");
-  runs = Number(match[1]);
+  const runsArg = /^--runs=(\d+)$/.exec(arg);
+  const expectArg = /^--expect=(\d+)$/.exec(arg);
+  if (runsArg) runs = Number(runsArg[1]);
+  else if (expectArg) expectedChecks = Number(expectArg[1]);
+  else throw new Error("Usage: node scripts/measure-repeatability.js [--runs=N] [--expect=CHECKS]");
 }
 if (runs < 1 || runs > 50) throw new Error("--runs must be between 1 and 50.");
+if (expectedChecks < 1) throw new Error("--expect must be at least 1.");
 
 const root = process.cwd();
 const out = "test-results/repeatability.json";
@@ -35,12 +39,17 @@ function collect(suites, failures = []) {
 }
 
 function green(index) {
+  const startedAt = Date.now();
   const start = hrtime.bigint();
   const result = spawnSync(process.execPath, ["scripts/test.js"], { cwd: root, stdio: "inherit" });
   const wall = seconds(start);
   const report = JSON.parse(readFileSync("test-results/results.json", "utf8"));
   const stats = report.stats || {};
+  // A report left over from an earlier run must never be counted as this run's evidence.
+  const reportedAt = Date.parse(stats.startTime);
+  const fresh = Number.isFinite(reportedAt) && reportedAt >= startedAt - 2000;
   return {
+    fresh,
     run: index,
     exitCode: result.status,
     checks: (stats.expected || 0) + (stats.unexpected || 0) + (stats.flaky || 0),
@@ -55,15 +64,18 @@ function green(index) {
 }
 
 function red(index) {
+  const startedAt = Date.now();
   const start = hrtime.bigint();
   const result = spawnSync(process.execPath, ["scripts/verify-defects.js", "--red-only"], { cwd: root, stdio: "inherit" });
   const wall = seconds(start);
   const summary = JSON.parse(readFileSync("test-results/defects/red-summary.json", "utf8"));
   const scenario = (summary.scenarios || [])[0] || {};
+  const recordedAt = Date.parse(summary.recordedAt);
   return {
+    fresh: Number.isFinite(recordedAt) && recordedAt >= startedAt - 2000,
     run: index,
     exitCode: result.status,
-    verified: Boolean(summary.complete && scenario.verified),
+    verified: Boolean(summary.complete && scenario.verified && result.status === 0),
     passed: scenario.passed || 0,
     intendedFailures: (scenario.expectedFailures || []).length,
     failures: [...(scenario.expectedFailures || [])].sort(),
@@ -79,7 +91,9 @@ function spread(values) {
     min: sorted[0],
     max: sorted[sorted.length - 1],
     mean: Number((sum / sorted.length).toFixed(3)),
-    median: sorted[(sorted.length - 1) >> 1]
+    median: Number((sorted.length % 2
+      ? sorted[(sorted.length - 1) / 2]
+      : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2).toFixed(3))
   };
 }
 
@@ -107,9 +121,13 @@ const record = {
     ci: Boolean(process.env.CI),
     workers: process.env.CI ? 2 : 3
   },
+  expectedChecks,
   green: {
     runs: greenRuns,
-    cleanRuns: greenRuns.filter(run => run.exitCode === 0 && run.unexpected === 0 && run.flaky === 0).length,
+    // A clean run must have executed the whole suite: the right number of checks, all passing,
+    // nothing skipped or flaky, and a report written by this run rather than an earlier one.
+    cleanRuns: greenRuns.filter(run => run.exitCode === 0 && run.unexpected === 0 && run.flaky === 0
+      && run.skipped === 0 && run.checks === expectedChecks && run.passed === expectedChecks && run.fresh).length,
     checksStable: identical(greenRuns.map(run => run.checks)),
     distinctFailures: [...new Set(greenRuns.flatMap(run => run.failures))].sort(),
     suiteSeconds: spread(greenRuns.map(run => run.suiteSeconds)),
@@ -117,7 +135,8 @@ const record = {
   },
   red: {
     runs: redRuns,
-    verifiedRuns: redRuns.filter(run => run.exitCode === 0 && run.verified).length,
+    verifiedRuns: redRuns.filter(run => run.exitCode === 0 && run.verified && run.fresh
+      && run.intendedFailures > 0 && run.passed > 0).length,
     failureSetStable: identical(redRuns.map(run => run.failures)),
     passCountStable: identical(redRuns.map(run => run.passed)),
     suiteSeconds: spread(redRuns.map(run => run.suiteSeconds)),
@@ -133,5 +152,9 @@ console.log(`green: ${record.green.cleanRuns}/${runs} clean, suite ${record.gree
 console.log(`red:   ${record.red.verifiedRuns}/${runs} verified, suite ${record.red.suiteSeconds.min}-${record.red.suiteSeconds.max}s`);
 console.log(`written: ${out}`);
 
-const stable = record.green.cleanRuns === runs && record.red.verifiedRuns === runs;
-if (!stable) process.exitCode = 1;
+const stable = record.green.cleanRuns === runs && record.red.verifiedRuns === runs
+  && record.green.checksStable && record.red.failureSetStable && record.red.passCountStable;
+if (!stable) {
+  console.log("Not every run met the acceptance conditions. See " + out + " for the per-run records.");
+  process.exitCode = 1;
+}

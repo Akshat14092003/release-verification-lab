@@ -51,4 +51,4 @@ Each report carries a unique run token, preventing stale output from counting as
 
 Only synthetic records are used. The app binds to loopback by default.
 Security probes are implemented. The two SQL-like-login guards also fail under auth bypass; that is credential-bypass evidence, not a SQL-parser-injection finding.
-GitHub Actions is implemented and linted locally, with hosted execution pending. npm run test:red verifies the red job command in isolation.
+GitHub Actions is implemented, linted locally, and verified on hosted runners; see [hosted results](HOSTED-CI-RESULTS.md). npm run test:red verifies the red job command in isolation.

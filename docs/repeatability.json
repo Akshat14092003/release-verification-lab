@@ -138,13 +138,13 @@
       "min": 16.776,
       "max": 22.419,
       "mean": 18.487,
-      "median": 18.403
+      "median": 18.482
     },
     "wallSeconds": {
       "min": 18.019,
       "max": 23.969,
       "mean": 19.743,
-      "median": 19.76
+      "median": 19.776
     }
   },
   "red": {
@@ -387,13 +387,15 @@
       "min": 23.88,
       "max": 28.601,
       "mean": 26.268,
-      "median": 25.921
+      "median": 26.151
     },
     "wallSeconds": {
       "min": 25.125,
       "max": 29.932,
       "mean": 27.639,
-      "median": 27.241
+      "median": 27.567
     }
-  }
+  },
+  "expectedChecks": 34,
+  "medianNote": "Medians recomputed 2026-10-25 after fixing an even-sample median formula; the per-run observations are unchanged."
 }

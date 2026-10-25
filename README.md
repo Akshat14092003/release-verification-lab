@@ -179,7 +179,7 @@ Independent SQL and the rendered amount expose the mismatch; a single-item recei
 
 ## GitHub Actions
 
-The workflow has exactly two jobs: green verifies the correct build, then red verifies all four enabled defects.
+The workflow has three jobs: green verifies the correct build, red then verifies all four enabled defects, and publish deploys the evidence site from their artifacts.
 Both retain their reports and evidence artifacts even on test failure. Action references are commit-pinned.
 The red job succeeds only when the expected failing-test identities match; its underlying test report still contains real failures.
 
@@ -203,8 +203,8 @@ Runtime is the latest full baseline in the verified defect matrix.
 Hosted results: green 34/34 in 17.8s; red verified 12 intended failures in 27.1s.
 
 Repeated locally ten times each with `npm run test:repeat`: **10/10 green runs clean**
-(16.8-22.4s, median 18.4s) and **10/10 red runs verified** with an identical set of 12 intended
-failures and 22 passing controls every time (23.9-28.6s, median 25.9s).
+(16.8-22.4s, median 18.5s) and **10/10 red runs verified** with an identical set of 12 intended
+failures and 22 passing controls every time (23.9-28.6s, median 26.2s).
 That is a ten-run sample on one Windows machine, not a long-run flake rate.
 See [repeatability](docs/REPEATABILITY.md).
 

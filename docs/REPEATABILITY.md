@@ -21,7 +21,7 @@ correct-build suite and the defect demonstration ten times each and records what
 | Runs with no unexpected or flaky results | **10 of 10** |
 | Checks per run | 34 every run |
 | Distinct failing tests across all runs | none |
-| Suite duration | min 16.8s, median 18.4s, mean 18.5s, max 22.4s |
+| Suite duration | min 16.8s, median 18.5s, mean 18.5s, max 22.4s |
 | Wall-clock per run | min 18.0s, median 19.8s, mean 19.7s, max 24.0s |
 
 Per-run suite seconds: 18.7, 16.8, 18.6, 17.8, 22.4, 18.7, 18.4, 17.2, 17.2, 19.2.
@@ -36,10 +36,13 @@ Each run enables all four defect flags and requires the exact expected failing-t
 | Identical failing-test set every run | yes |
 | Passing controls | 22 every run |
 | Intended failures | 12 every run |
-| Suite duration | min 23.9s, median 25.9s, mean 26.3s, max 28.6s |
-| Wall-clock per run | min 25.1s, median 27.2s, mean 27.6s, max 29.9s |
+| Suite duration | min 23.9s, median 26.2s, mean 26.3s, max 28.6s |
+| Wall-clock per run | min 25.1s, median 27.6s, mean 27.6s, max 29.9s |
 
 Per-run suite seconds: 26.6, 28.6, 24.9, 26.4, 27.0, 28.0, 25.9, 25.8, 23.9, 25.6.
+
+Medians were recomputed on 2026-10-25 after an even-sample median formula was corrected; the recorded
+per-run observations are unchanged.
 
 ## What this does and does not show
 
@@ -60,6 +63,9 @@ npm run test:repeat          # 10 runs of each
 npm run test:repeat -- --runs=3
 ```
 
-The script writes `test-results/repeatability.json` with every per-run record, and exits non-zero if
-any green run was not clean or any red run failed verification. The record for this sample is committed
+The script writes `test-results/repeatability.json` with every per-run record. A green run counts as
+clean only if it exited 0, executed all 34 checks with 34 passes, recorded no skips, flakes or
+unexpected failures, and wrote a report during that run rather than leaving an earlier one in place.
+A red run counts only if the defect verifier itself exited 0 on a freshly written summary. The script
+exits non-zero if any run falls short or if the check count, failing set, or control count varied. The record for this sample is committed
 as [repeatability.json](repeatability.json) and is rendered on the published evidence site.
