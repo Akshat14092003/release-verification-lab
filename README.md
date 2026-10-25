@@ -9,7 +9,7 @@ The portfolio goal is reproducible evidence: introduce a realistic defect, catch
 **Published and verified on GitHub Actions.**
 The correct build passes all 34 checks, including 8 security probes. The red job verifies exactly 12 intended failures and 22 passing controls.
 [View the successful hosted run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/40180501884) and download its green-evidence/red-evidence artifacts.
-An evidence site is published from the same workflow run. The walkthrough is scripted but not yet recorded.
+[Browse the published evidence site](https://akshat14092003.github.io/release-verification-lab/): the landing page, the green report, and the red report from the latest verified run. The walkthrough is scripted but not yet recorded.
 
 ## Run the shop
 
@@ -192,8 +192,8 @@ Both evidence artifacts were downloaded and inspected. See [hosted results](docs
 
 A third job publishes an evidence site built from those artifacts with scripts/build-pages.js: a landing page
 with the measured numbers, the green report, and the red report. It runs only on pushes to main.
-Pages is served from GitHub Actions for this repository. The published URL is added here after the
-first successful deployment has been verified.
+Published at https://akshat14092003.github.io/release-verification-lab/ - landing page, green report,
+and red report, deployed from the artifacts of the same run that verified them.
 
 ## Measurements
 

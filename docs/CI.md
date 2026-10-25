@@ -55,14 +55,17 @@ npm run test:red
 node scripts/build-pages.js
 ~~~
 
-Status: validated locally with actionlint 1.7.12 (exit 0) and by building and rendering site/index.html,
-site/green/index.html, and site/red/index.html without page errors. The repository's Pages source is set
-to GitHub Actions; the published URL is recorded here once a deployment has run and been verified.
+Published at https://akshat14092003.github.io/release-verification-lab/.
+First deployment: run 40182692540, publish job 25s, all three jobs successful.
+Verified by request: landing page, /green/index.html, and /red/index.html all return 200, and the
+landing page shows that run's own figures (green 34/34 in 19.1s; red 22 controls and 12 intended
+failures in 20.4s).
 
 ## Repeatability
 
 Ten consecutive local green runs and ten red runs: 10/10 clean and 10/10 verified.
-See [repeatability](REPEATABILITY.md).
+See [repeatability](REPEATABILITY.md); the per-run record is committed as docs/repeatability.json and
+is rendered on the published site.
 
 ## Run locally
 

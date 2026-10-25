@@ -28,7 +28,7 @@ for (const report of [greenReport, redReport]) {
 const greenStats = readJson(pick(evidence + "/green/test-results/results.json", "test-results/results.json"))?.stats || null;
 const redSummary = readJson(pick(evidence + "/red/test-results/defects/red-summary.json", "test-results/defects/red-summary.json"));
 const redRun = redSummary?.scenarios?.find(scenario => scenario.name === "red") || null;
-const repeat = readJson(pick("test-results/repeatability.json", ".local/REPEATABILITY-10.json"));
+const repeat = readJson(pick("test-results/repeatability.json", "docs/repeatability.json"));
 
 const repo = "https://github.com/Akshat14092003/release-verification-lab";
 const run = repo + "/actions/runs/40180501884";

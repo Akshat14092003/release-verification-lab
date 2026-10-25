@@ -61,5 +61,5 @@ npm run test:repeat -- --runs=3
 ```
 
 The script writes `test-results/repeatability.json` with every per-run record, and exits non-zero if
-any green run was not clean or any red run failed verification. `test-results/` is Git-ignored, so the
-measured record for this sample is also kept outside the working report folder.
+any green run was not clean or any red run failed verification. The record for this sample is committed
+as [repeatability.json](repeatability.json) and is rendered on the published evidence site.
