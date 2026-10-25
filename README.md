@@ -156,7 +156,8 @@ when the intended failures match.
 
 Correct-build HTML remains in playwright-report/. Separate defect reports are in defect-reports/.
 JSON/JUnit and attachments are in test-results/defects/; summary.json records the matrix verdict.
-See [defect demonstrations](docs/DEFECT-DEMONSTRATIONS.md) for behaviour, evidence, and report commands.
+See [defect demonstrations](docs/DEFECT-DEMONSTRATIONS.md) for behaviour, evidence, and report commands,
+and [case studies](docs/CASE-STUDIES.md) for the three stories with screenshots of each defect.
 
 ## Case study 1: The offer that outlived the weekend
 
