@@ -1,12 +1,15 @@
 # Release Verification Lab
 
+[![Release verification](https://github.com/Akshat14092003/release-verification-lab/actions/workflows/release-verification.yml/badge.svg)](https://github.com/Akshat14092003/release-verification-lab/actions/workflows/release-verification.yml)
+
 A fictional shop where automated checks will demonstrate whether a release meets defined requirements.
 
 The portfolio goal is reproducible evidence: introduce a realistic defect, catch it at the right layer, inspect the evidence, and verify corrected behaviour.
 
-**Current stage: four test layers and the GitHub Actions workflow are implemented.**
-34 correct-build tests pass, including 8 original security probes. All intentional-defect scenarios are verified locally.
-The workflow passes actionlint; actual GitHub execution, report publication, and walkthrough are pending.
+**Published and verified on GitHub Actions.**
+The correct build passes all 34 checks, including 8 security probes. The red job verifies exactly 12 intended failures and 22 passing controls.
+[View the successful hosted run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/40180501884) and download its green-evidence/red-evidence artifacts.
+Standalone report publication and the walkthrough are next.
 
 ## Run the shop
 
@@ -182,18 +185,20 @@ npm run test:red
 ~~~
 
 This runs the red job's local verification command. Its reports are isolated under defect-reports/red/ and test-results/defects/red/.
-Workflow lint and CI-mode commands have been verified locally on Windows. Actual Ubuntu/GitHub execution is not yet verified.
-See [CI workflow notes](docs/CI.md). No repository push or report publication has occurred.
+The first hosted workflow passed on Ubuntu 24.04: green 34/34, red 22 passing controls plus 12 verified assertion failures.
+Both evidence artifacts were downloaded and inspected. See [hosted results](docs/HOSTED-CI-RESULTS.md) and [CI workflow notes](docs/CI.md).
+Standalone report publication is still pending.
 
 ## Measurements
 
 Latest local baseline (2026-10-25): **34/34 passed in 17.7 seconds**, with CI=true, 2 workers, and zero retries.
 Runtime is the latest full baseline in the verified defect matrix. Long-run flake rate has not been measured.
-No CI execution or public run link exists yet. See [baseline results](docs/BASELINE-RESULTS.md).
+Hosted results: green 34/34 in 17.8s; red verified 12 intended failures in 27.1s.
+[Real CI run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/40180501884) - [local baseline](docs/BASELINE-RESULTS.md) - [hosted evidence](docs/HOSTED-CI-RESULTS.md).
 
 <!-- MEASURED: 34 tests passed in 17.7 seconds; Node v22.17.1, Playwright 1.64.1, Windows CI-mode, 2 workers, zero retries. -->
 <!-- MEASURED: insert flake rate here -->
-<!-- MEASURED: insert CI run link here -->
+<!-- MEASURED: successful hosted run https://github.com/Akshat14092003/release-verification-lab/actions/runs/40180501884; green 34/34, red 12 intended failures with 22 passing controls. -->
 
 ## Implementation notes
 

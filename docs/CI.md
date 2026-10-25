@@ -1,7 +1,7 @@
 # GitHub Actions verification
 
 Workflow: .github/workflows/release-verification.yml.
-Status: implemented and actionlint-validated locally; no hosted run or public repository exists yet.
+Status: published and verified on GitHub Actions. [Successful run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/40180501884).
 
 ## Jobs
 
@@ -32,8 +32,9 @@ Unexpected outcomes fail the job. No blanket continue-on-error is used.
 - actionlint 1.7.12 passed; its official release archive was SHA256-checked.
 - Optional shellcheck/pyflakes integrations were disabled; workflow commands are direct npm/Node invocations.
 
-Local validation does not prove GitHub runner provisioning, Linux browser libraries, artifact upload, or hosted summaries.
-Those require the first authorized repository push/Actions run. Do not replace the CI-run-link placeholder until that run exists.
+The first hosted run completed both jobs successfully on Ubuntu 24.04. Browser dependency setup, tests, summaries, and artifact uploads succeeded.
+The downloaded green/red artifacts confirm 34 correct-build passes and exactly 12 intended red failures with 22 passing controls.
+See [hosted verification](HOSTED-CI-RESULTS.md).
 
 ## Run locally
 

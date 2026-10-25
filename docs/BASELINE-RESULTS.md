@@ -22,4 +22,5 @@ The initial Step 2 development run had three offer-navigation selector failures;
 Subsequent security additions expanded the suite to 34 tests. No application behaviour was changed for the security tests.
 
 Reports: playwright-report/index.html; test-results/results.json and junit.xml.
-Long-run flake rate, cross-browser coverage, hosted CI execution, and public report publication remain unmeasured/unverified.
+Hosted CI execution is now verified separately in [HOSTED-CI-RESULTS.md](HOSTED-CI-RESULTS.md).
+Long-run flake rate, cross-browser coverage, and standalone report publication remain unmeasured/unverified.

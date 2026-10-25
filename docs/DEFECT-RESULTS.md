@@ -24,4 +24,5 @@ Matrix: test-results/defects/summary.json. Red-only verdict: test-results/defect
 HTML: playwright-report/, defect-reports/{auth,weekend,limit,total,all,red}/.
 HTTP/SQL evidence, screenshots, traces, and disposable databases remain under test-results/.
 
-The GitHub workflow passes local actionlint validation. It has not run on GitHub or Ubuntu yet.
+The GitHub workflow also passed on Ubuntu. Downloaded evidence confirms green 34/34 and red 22 controls plus 12 intended failures.
+[Hosted run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/40180501884) - [hosted results](HOSTED-CI-RESULTS.md).

@@ -53,7 +53,7 @@ Reports:
 - Failed tests get a database evidence snapshot; checked API responses and SQL comparisons are attached.
 - Retries are disabled so the first failure stays visible.
 
-Reports are ignored by Git. The GitHub Actions workflow is written and linted; remote execution, Pages publication, and public run links are pending.
+Reports are ignored by Git. The hosted workflow passed and uploaded both evidence artifacts. Standalone Pages report publication is pending.
 
 ## Defect verification
 
@@ -75,4 +75,4 @@ These are focused regression probes, not a complete penetration test.
 
 npm run test:red runs only the combined defect scenario and preserves the full matrix reports separately.
 The workflow waits for the green job before red and uploads distinct green-evidence/red-evidence artifacts.
-Actual hosted execution has not occurred; see docs/CI.md.
+Hosted execution is verified; see docs/CI.md and docs/HOSTED-CI-RESULTS.md.
