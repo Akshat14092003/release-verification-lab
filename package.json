@@ -1,0 +1,30 @@
+{
+  "name": "release-verification-lab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A synthetic shop for demonstrating evidence-based release verification.",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node scripts/seed.js",
+    "check": "node scripts/check.js",
+    "test": "node scripts/test.js",
+    "test:api": "node scripts/test.js --project=api",
+    "test:e2e": "node scripts/test.js --project=e2e",
+    "test:db": "node scripts/test.js --project=db",
+    "report": "playwright show-report",
+    "test:bugs": "node scripts/verify-defects.js",
+    "test:security": "node scripts/test.js --project=security",
+    "test:red": "node scripts/verify-defects.js --red-only"
+  },
+  "dependencies": {
+    "express": "5.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}
