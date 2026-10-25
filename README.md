@@ -9,7 +9,7 @@ The portfolio goal is reproducible evidence: introduce a realistic defect, catch
 **Published and verified on GitHub Actions.**
 The correct build passes all 34 checks, including 8 security probes. The red job verifies exactly 12 intended failures and 22 passing controls.
 [View the successful hosted run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/40180501884) and download its green-evidence/red-evidence artifacts.
-[Browse the published evidence site](https://akshat14092003.github.io/release-verification-lab/): the landing page, the green report, and the red report from the latest verified run. The walkthrough is scripted but not yet recorded.
+[Browse the published evidence site](https://akshat14092003.github.io/release-verification-lab/): the landing page, the green report, and the red report from the latest verified run.
 
 ## Run the shop
 
