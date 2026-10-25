@@ -9,7 +9,7 @@ The portfolio goal is reproducible evidence: introduce a realistic defect, catch
 **Published and verified on GitHub Actions.**
 The correct build passes all 34 checks, including 8 security probes. The red job verifies exactly 12 intended failures and 22 passing controls.
 [View the successful hosted run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/40180501884) and download its green-evidence/red-evidence artifacts.
-Standalone report publication and the walkthrough are next.
+An evidence site is published from the same workflow run. The walkthrough is scripted but not yet recorded.
 
 ## Run the shop
 
@@ -126,6 +126,8 @@ The HTML report is generated at playwright-report/index.html; open it with npm r
 JSON and JUnit results are in test-results/. Reports are local and Git-ignored.
 
 npm run check checks JavaScript syntax separately from npm test.
+npm run test:repeat repeats the correct build and the defect demonstration ten times each and records
+the measured results; see [repeatability](docs/REPEATABILITY.md).
 
 ## Intentional defect demonstrations
 
@@ -187,17 +189,28 @@ npm run test:red
 This runs the red job's local verification command. Its reports are isolated under defect-reports/red/ and test-results/defects/red/.
 The first hosted workflow passed on Ubuntu 24.04: green 34/34, red 22 passing controls plus 12 verified assertion failures.
 Both evidence artifacts were downloaded and inspected. See [hosted results](docs/HOSTED-CI-RESULTS.md) and [CI workflow notes](docs/CI.md).
-Standalone report publication is still pending.
+
+A third job publishes an evidence site built from those artifacts with scripts/build-pages.js: a landing page
+with the measured numbers, the green report, and the red report. It runs only on pushes to main.
+Pages is served from GitHub Actions for this repository. The published URL is added here after the
+first successful deployment has been verified.
 
 ## Measurements
 
 Latest local baseline (2026-10-25): **34/34 passed in 17.7 seconds**, with CI=true, 2 workers, and zero retries.
-Runtime is the latest full baseline in the verified defect matrix. Long-run flake rate has not been measured.
+Runtime is the latest full baseline in the verified defect matrix.
 Hosted results: green 34/34 in 17.8s; red verified 12 intended failures in 27.1s.
+
+Repeated locally ten times each with `npm run test:repeat`: **10/10 green runs clean**
+(16.8-22.4s, median 18.4s) and **10/10 red runs verified** with an identical set of 12 intended
+failures and 22 passing controls every time (23.9-28.6s, median 25.9s).
+That is a ten-run sample on one Windows machine, not a long-run flake rate.
+See [repeatability](docs/REPEATABILITY.md).
+
 [Real CI run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/40180501884) - [local baseline](docs/BASELINE-RESULTS.md) - [hosted evidence](docs/HOSTED-CI-RESULTS.md).
 
 <!-- MEASURED: 34 tests passed in 17.7 seconds; Node v22.17.1, Playwright 1.64.1, Windows CI-mode, 2 workers, zero retries. -->
-<!-- MEASURED: insert flake rate here -->
+<!-- MEASURED: 10 green runs 10/10 clean, 10 red runs 10/10 verified, 2026-10-25, Node v22.17.1, Windows, 3 workers, zero retries. Long-run flake rate still unmeasured. -->
 <!-- MEASURED: successful hosted run https://github.com/Akshat14092003/release-verification-lab/actions/runs/40180501884; green 34/34, red 12 intended failures with 22 passing controls. -->
 
 ## Implementation notes

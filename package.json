@@ -19,7 +19,8 @@
     "report": "playwright show-report",
     "test:bugs": "node scripts/verify-defects.js",
     "test:security": "node scripts/test.js --project=security",
-    "test:red": "node scripts/verify-defects.js --red-only"
+    "test:red": "node scripts/verify-defects.js --red-only",
+    "test:repeat": "node scripts/measure-repeatability.js"
   },
   "dependencies": {
     "express": "5.1.0"

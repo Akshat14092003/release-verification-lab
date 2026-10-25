@@ -22,3 +22,7 @@ defect-reports/
 /HANDOFF.md
 /CODEX-PROMPT.md
 /RELEASE-VERIFICATION-LAB.md
+
+# Generated evidence site
+site/
+ci-evidence/
