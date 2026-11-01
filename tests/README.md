@@ -50,7 +50,10 @@ Reports:
 - test-results/results.json: machine-readable results and measured duration.
 - test-results/junit.xml: JUnit report.
 - test-results/artifacts/: per-test SQLite files, screenshots, traces, and attachments.
+- Browser failure screenshots and explicit receipt captures include the full page, so offer actions,
+  the UTC demo date, and receipt/ledger totals remain visible below the initial viewport.
 - Failed tests get a database evidence snapshot; checked API responses and SQL comparisons are attached.
+  API-only tests use these structured attachments; they do not create browser screenshots.
 - Retries are disabled so the first failure stays visible.
 
 Reports are ignored by Git. The hosted workflow passed and uploaded both evidence artifacts. Standalone Pages report publication is pending.

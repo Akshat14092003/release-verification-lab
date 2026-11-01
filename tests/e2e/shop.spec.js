@@ -31,7 +31,7 @@ test("a product purchase produces a receipt and order history", async ({ page },
   const receipt = new ReceiptPage(page);
   await expect(receipt.total).toHaveText("$45.00");
   await expect(receipt.recordedTotal).toHaveText("$45.00");
-  await testInfo.attach("completed-order", { body: await page.screenshot(), contentType: "image/png" });
+  await testInfo.attach("completed-order", { body: await page.screenshot({ fullPage: true }), contentType: "image/png" });
   await products.navigate("Orders");
   await expect(page.getByRole("row").filter({ hasText: "$45.00" })).toHaveCount(1);
 });

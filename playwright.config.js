@@ -30,7 +30,7 @@ export default defineConfig({
     timezoneId: "UTC",
     actionTimeout: 8_000,
     navigationTimeout: 15_000,
-    screenshot: "only-on-failure",
+    screenshot: { mode: "only-on-failure", fullPage: true },
     trace: "retain-on-failure"
   },
   projects: [

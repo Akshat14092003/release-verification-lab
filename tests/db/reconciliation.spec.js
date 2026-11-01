@@ -25,7 +25,7 @@ async function compareReceipt(page, lab, orderId, expectedCents, testInfo) {
     contentType: "application/json",
     body: Buffer.from(JSON.stringify({ query, parameters: [orderId], row, displayed }, null, 2))
   });
-  await testInfo.attach("receipt-evidence", { body: await page.screenshot(), contentType: "image/png" });
+  await testInfo.attach("receipt-evidence", { body: await page.screenshot({ fullPage: true }), contentType: "image/png" });
   expect(row.total_cents).toBe(expectedCents);
   expect(row.ledger_cents).toBe(row.total_cents);
   expect(row.item_cents).toBe(row.total_cents);
