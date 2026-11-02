@@ -95,6 +95,16 @@ test("light and dark mode persist across the lab and shop", async ({ page }) => 
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await expect(page.locator('.login-card')).toBeVisible();
   expect(await page.locator('.login-card').evaluate(element => getComputedStyle(element).backdropFilter)).toContain('blur');
+  await expect(page.locator("#lab-settings")).toBeHidden();
+  const loginFit = await page.locator(".login-card").evaluate(card => {
+    const bounds = card.getBoundingClientRect();
+    const layout = document.querySelector(".login-layout").getBoundingClientRect();
+    return { top: bounds.top, bottom: bounds.bottom, layoutTop: layout.top, layoutBottom: layout.bottom,
+      pageHeight: document.documentElement.scrollHeight, viewport: innerHeight };
+  });
+  expect(loginFit.top).toBeGreaterThanOrEqual(loginFit.layoutTop);
+  expect(loginFit.bottom).toBeLessThanOrEqual(loginFit.layoutBottom + 1);
+  expect(loginFit.pageHeight).toBeLessThanOrEqual(loginFit.viewport + 1);
   await page.getByRole("button", { name: "Customer", exact: true }).click();
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/products$/);
