@@ -41,11 +41,15 @@ export class ProductsPage {
   }
 
   async navigate(name) {
+    const menu = this.page.getByRole("button", { name: "Open menu", exact: true });
+    if (await menu.isVisible()) await menu.click();
     await this.page.getByRole("navigation", { name: "Main navigation" })
       .getByRole("link", { name: new RegExp("^" + name + "(?:\\s*\\d+)?$") }).click();
   }
 
   async signOut() {
+    const menu = this.page.getByRole("button", { name: "Open menu", exact: true });
+    if (await menu.isVisible()) await menu.click();
     await this.page.getByRole("button", { name: "Sign out", exact: true }).click();
   }
 }

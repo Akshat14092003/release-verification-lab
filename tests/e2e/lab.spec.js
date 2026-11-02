@@ -126,6 +126,7 @@ test("mobile visitor guide and run errors remain usable", async ({ page }) => {
   const width = await page.evaluate(() => ({ content: document.documentElement.scrollWidth, viewport: window.innerWidth }));
   expect(width.content).toBeLessThanOrEqual(width.viewport);
   await expect(page.locator("#clock-value")).toContainText("2026-10-24");
+  await page.getByRole("button", { name: "Open menu", exact: true }).click();
   await page.getByRole("button", { name: "Run checks", exact: true }).click();
   await page.getByRole("button", { name: "Run tests", exact: true }).click();
   await expect(page.locator("#lab-message")).toContainText("disabled in this test instance");
@@ -163,6 +164,7 @@ test("mobile visitor guide and run errors remain usable", async ({ page }) => {
   await page.getByRole("button", { name: "Read report", exact: true }).click();
   await expect(page.locator("#report-frame")).toBeVisible();
   await page.getByRole("button", { name: "Close test panel" }).click();
+  await page.getByRole("button", { name: "Open menu", exact: true }).click();
   await page.getByRole("button", { name: "Switch to dark mode" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.locator("#open-tests").click();
@@ -170,6 +172,7 @@ test("mobile visitor guide and run errors remain usable", async ({ page }) => {
   await expect(page.frameLocator("#report-frame").locator("body")).toHaveCSS("background-color", "rgb(13, 17, 23)");
   await expect(page.locator("#report-frame")).toHaveCSS("background-color", "rgb(13, 17, 23)");
   await page.getByRole("button", { name: "Close test panel" }).click();
+  await page.getByRole("button", { name: "Open menu", exact: true }).click();
   await page.getByRole("button", { name: "Switch to light mode" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await page.locator("#open-tests").click();

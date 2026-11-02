@@ -37,6 +37,7 @@ html[data-theme="dark"] .empty-state,html[data-theme="dark"] .stat-card {
 .profile-menu>summary::-webkit-details-marker { display:none; }
 .profile-menu[open]>summary { outline:2px solid var(--green);outline-offset:3px; }
 .profile-panel {
+  background:var(--glass-solid);
   position:absolute;right:0;top:calc(100% + 14px);width:235px;padding:16px;border:1px solid var(--glass-line);
   border-radius:14px;box-shadow:0 18px 45px #0002;animation:glass-in .2s both;
 }
