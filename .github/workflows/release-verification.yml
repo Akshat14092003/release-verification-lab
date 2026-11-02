@@ -119,15 +119,15 @@ jobs:
         run: docker build -t release-verification-lab .
       - name: Check the hosted entry point
         run: |
-          docker run -d --name lab-host --memory=512m --memory-swap=512m --cpus=1 -p 127.0.0.1:3000:3000 release-verification-lab
+          docker run -d --name lab-host --memory=1g --memory-swap=1g --cpus=1 -p 127.0.0.1:3000:3000 release-verification-lab
           for attempt in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:3000/health; then break; fi
             sleep 1
           done
           curl --fail http://127.0.0.1:3000/health
           docker stop lab-host
-      - name: Exercise real subprocesses within the free-host memory budget
-        run: docker run --name runner-smoke --memory=512m --memory-swap=512m --cpus=1 -e CI=true release-verification-lab node scripts/verify-live-runner.js
+      - name: Exercise real subprocesses in the deployment image
+        run: docker run --name runner-smoke --memory=1g --memory-swap=1g --cpus=1 -e CI=true release-verification-lab node scripts/verify-live-runner.js
       - name: Collect runner evidence
         if: ${{ always() }}
         run: |

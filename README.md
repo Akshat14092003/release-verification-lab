@@ -10,7 +10,7 @@ The portfolio goal is reproducible evidence: introduce a realistic defect, catch
 The published reports have 47 checks. The current local storefront has 47 checks, including 8 security probes;
 its red verifier expects 12 intended failures and 35 passing controls. Visitors can toggle bugs, run the real tests,
 watch progress, and inspect their report from the website. See [the interactive demo](docs/INTERACTIVE-DEMO.md).
-Historical measurements below are labeled by version. The interactive Node app is not publicly deployed yet; [free hosting preparation](docs/HOSTING.md) is ready for account setup and deployment validation.
+Historical measurements below are labeled by version. The interactive Node app is not publicly deployed yet; [free hosting findings](docs/HOSTING.md) explain the confirmed memory limit and remaining account/compute requirement.
 [View the successful hosted run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/41453518469) and download its green-evidence/red-evidence artifacts.
 [Browse the published evidence site](https://akshat14092003.github.io/release-verification-lab/): the landing page, the green report, and the red report from the latest verified run.
 
@@ -237,7 +237,7 @@ rendered amount against independent SQL. A one-line receipt remains a passing co
 
 ## GitHub Actions
 
-The workflow has four jobs: green verifies the correct build and seven Node unit guards; red verifies all four enabled defects; Live runner integration builds the deployment image and exercises its real subprocess, report ownership, progress, cart preservation, and cancellation under a 512 MB memory limit. Publish deploys the evidence site only after all three checks pass.
+The workflow has four jobs: green verifies the correct build and seven Node unit guards; red verifies all four enabled defects; Live runner integration builds the deployment image and exercises its real subprocess, report ownership, progress, cart preservation, and cancellation under a 1 GB memory limit. Publish deploys the evidence site only after all three checks pass.
 Both retain their reports and evidence artifacts even on test failure. Action references are commit-pinned.
 The red job succeeds only when the expected failing-test identities match; its underlying test report still contains real failures.
 
@@ -249,7 +249,7 @@ This runs the red job's local verification command. Its reports are isolated und
 The first hosted workflow passed on Ubuntu 24.04: green 34/34, red 22 passing controls plus 12 verified assertion failures.
 Both evidence artifacts were downloaded and inspected. See [hosted results](docs/HOSTED-CI-RESULTS.md) and [CI workflow notes](docs/CI.md).
 
-A third job publishes an evidence site built from those artifacts with scripts/build-pages.js: a landing page
+A final job publishes an evidence site built from those artifacts with scripts/build-pages.js: a landing page
 with the measured numbers, the green report, and the red report. It runs only on pushes to main.
 Published at https://akshat14092003.github.io/release-verification-lab/ - landing page, green report,
 and red report, deployed from the artifacts of the same run that verified them.
@@ -258,7 +258,7 @@ and red report, deployed from the artifacts of the same run that verified them.
 
 Historical local baseline (2026-10-25): **34/34 passed in 17.7 seconds**, with CI=true, 2 workers, and zero retries.
 Runtime is the latest full baseline in the verified defect matrix.
-Hosted results: green 34/34 in 17.8s; red verified 12 intended failures in 27.1s.
+Current published results: green 47/47 in 49.3s; red 35 controls and 12 intended failures in 58.2s.
 
 The earlier 34-test version was repeated locally ten times each with `npm run test:repeat`: **10/10 green runs clean**
 (16.8-22.4s, median 18.5s) and **10/10 red runs verified** with an identical set of 12 intended
@@ -274,7 +274,7 @@ See [repeatability](docs/REPEATABILITY.md).
 
 ## Implementation notes
 
-Express serves HTML directly; public assets include a local CSS fallback and original SVG product artwork.
+Express serves HTML directly; public assets include local CSS, original interface icons, and supplied product photographs with responsive WebP variants.
 Styles are local CSS, with optional Google Fonts.
 External CDN/font availability must not be mistaken for backend readiness or future test success.
 All important layout styles are local so the demo remains usable without those services.

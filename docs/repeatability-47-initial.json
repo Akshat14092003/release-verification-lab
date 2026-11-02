@@ -1,0 +1,241 @@
+{
+  "recordedAt": "2026-11-02T18:22:32.480Z",
+  "runs": 5,
+  "environment": {
+    "node": "v22.17.1",
+    "platform": "win32 10.0.26300",
+    "cpus": 12,
+    "ci": true,
+    "workers": 2
+  },
+  "expectedChecks": 47,
+  "green": {
+    "runs": [
+      {
+        "fresh": true,
+        "run": 1,
+        "exitCode": 1,
+        "checks": 47,
+        "passed": 45,
+        "unexpected": 2,
+        "flaky": 0,
+        "skipped": 0,
+        "failures": [
+          "e2e::visitor switches, purchases and reset are isolated",
+          "e2e::website switches and demo day change a new visitor's actual shop"
+        ],
+        "suiteSeconds": 121.384,
+        "wallSeconds": 126.348
+      },
+      {
+        "fresh": true,
+        "run": 2,
+        "exitCode": 0,
+        "checks": 47,
+        "passed": 47,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 0,
+        "failures": [],
+        "suiteSeconds": 85.3,
+        "wallSeconds": 86.908
+      },
+      {
+        "fresh": true,
+        "run": 3,
+        "exitCode": 0,
+        "checks": 47,
+        "passed": 47,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 0,
+        "failures": [],
+        "suiteSeconds": 79.925,
+        "wallSeconds": 81.467
+      },
+      {
+        "fresh": true,
+        "run": 4,
+        "exitCode": 0,
+        "checks": 47,
+        "passed": 47,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 0,
+        "failures": [],
+        "suiteSeconds": 71.958,
+        "wallSeconds": 73.359
+      },
+      {
+        "fresh": true,
+        "run": 5,
+        "exitCode": 0,
+        "checks": 47,
+        "passed": 47,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 0,
+        "failures": [],
+        "suiteSeconds": 69.326,
+        "wallSeconds": 70.772
+      }
+    ],
+    "cleanRuns": 4,
+    "checksStable": true,
+    "distinctFailures": [
+      "e2e::visitor switches, purchases and reset are isolated",
+      "e2e::website switches and demo day change a new visitor's actual shop"
+    ],
+    "suiteSeconds": {
+      "min": 69.326,
+      "max": 121.384,
+      "mean": 85.579,
+      "median": 79.925
+    },
+    "wallSeconds": {
+      "min": 70.772,
+      "max": 126.348,
+      "mean": 87.771,
+      "median": 81.467
+    }
+  },
+  "red": {
+    "runs": [
+      {
+        "fresh": true,
+        "run": 1,
+        "exitCode": 0,
+        "verified": true,
+        "passed": 35,
+        "intendedFailures": 12,
+        "failures": [
+          "api::UTC offer window: Friday before opening @weekend",
+          "api::UTC offer window: Monday at closing @weekend",
+          "api::a direct second purchase of the same offer is refused @limit",
+          "api::invalid credentials are rejected: unknown account @auth",
+          "api::invalid credentials are rejected: wrong password @auth",
+          "db::a manually built multi-item receipt matches independent ledger and item sums @total",
+          "db::a rejected weekday purchase leaves orders, items, and ledger unchanged @weekend",
+          "e2e::a checkout opened on Sunday is refused after Monday begins @weekend",
+          "e2e::invalid credentials show an error without logging in @auth",
+          "e2e::the Monday offer is unavailable in the UI @weekend",
+          "security::SQL-like email cannot authenticate @auth",
+          "security::SQL-like password cannot authenticate @auth"
+        ],
+        "suiteSeconds": 93.021,
+        "wallSeconds": 94.727
+      },
+      {
+        "fresh": true,
+        "run": 2,
+        "exitCode": 0,
+        "verified": true,
+        "passed": 35,
+        "intendedFailures": 12,
+        "failures": [
+          "api::UTC offer window: Friday before opening @weekend",
+          "api::UTC offer window: Monday at closing @weekend",
+          "api::a direct second purchase of the same offer is refused @limit",
+          "api::invalid credentials are rejected: unknown account @auth",
+          "api::invalid credentials are rejected: wrong password @auth",
+          "db::a manually built multi-item receipt matches independent ledger and item sums @total",
+          "db::a rejected weekday purchase leaves orders, items, and ledger unchanged @weekend",
+          "e2e::a checkout opened on Sunday is refused after Monday begins @weekend",
+          "e2e::invalid credentials show an error without logging in @auth",
+          "e2e::the Monday offer is unavailable in the UI @weekend",
+          "security::SQL-like email cannot authenticate @auth",
+          "security::SQL-like password cannot authenticate @auth"
+        ],
+        "suiteSeconds": 104.861,
+        "wallSeconds": 106.705
+      },
+      {
+        "fresh": true,
+        "run": 3,
+        "exitCode": 0,
+        "verified": true,
+        "passed": 35,
+        "intendedFailures": 12,
+        "failures": [
+          "api::UTC offer window: Friday before opening @weekend",
+          "api::UTC offer window: Monday at closing @weekend",
+          "api::a direct second purchase of the same offer is refused @limit",
+          "api::invalid credentials are rejected: unknown account @auth",
+          "api::invalid credentials are rejected: wrong password @auth",
+          "db::a manually built multi-item receipt matches independent ledger and item sums @total",
+          "db::a rejected weekday purchase leaves orders, items, and ledger unchanged @weekend",
+          "e2e::a checkout opened on Sunday is refused after Monday begins @weekend",
+          "e2e::invalid credentials show an error without logging in @auth",
+          "e2e::the Monday offer is unavailable in the UI @weekend",
+          "security::SQL-like email cannot authenticate @auth",
+          "security::SQL-like password cannot authenticate @auth"
+        ],
+        "suiteSeconds": 89.926,
+        "wallSeconds": 91.681
+      },
+      {
+        "fresh": true,
+        "run": 4,
+        "exitCode": 0,
+        "verified": true,
+        "passed": 35,
+        "intendedFailures": 12,
+        "failures": [
+          "api::UTC offer window: Friday before opening @weekend",
+          "api::UTC offer window: Monday at closing @weekend",
+          "api::a direct second purchase of the same offer is refused @limit",
+          "api::invalid credentials are rejected: unknown account @auth",
+          "api::invalid credentials are rejected: wrong password @auth",
+          "db::a manually built multi-item receipt matches independent ledger and item sums @total",
+          "db::a rejected weekday purchase leaves orders, items, and ledger unchanged @weekend",
+          "e2e::a checkout opened on Sunday is refused after Monday begins @weekend",
+          "e2e::invalid credentials show an error without logging in @auth",
+          "e2e::the Monday offer is unavailable in the UI @weekend",
+          "security::SQL-like email cannot authenticate @auth",
+          "security::SQL-like password cannot authenticate @auth"
+        ],
+        "suiteSeconds": 95.201,
+        "wallSeconds": 96.965
+      },
+      {
+        "fresh": true,
+        "run": 5,
+        "exitCode": 0,
+        "verified": true,
+        "passed": 35,
+        "intendedFailures": 12,
+        "failures": [
+          "api::UTC offer window: Friday before opening @weekend",
+          "api::UTC offer window: Monday at closing @weekend",
+          "api::a direct second purchase of the same offer is refused @limit",
+          "api::invalid credentials are rejected: unknown account @auth",
+          "api::invalid credentials are rejected: wrong password @auth",
+          "db::a manually built multi-item receipt matches independent ledger and item sums @total",
+          "db::a rejected weekday purchase leaves orders, items, and ledger unchanged @weekend",
+          "e2e::a checkout opened on Sunday is refused after Monday begins @weekend",
+          "e2e::invalid credentials show an error without logging in @auth",
+          "e2e::the Monday offer is unavailable in the UI @weekend",
+          "security::SQL-like email cannot authenticate @auth",
+          "security::SQL-like password cannot authenticate @auth"
+        ],
+        "suiteSeconds": 93.39,
+        "wallSeconds": 95.142
+      }
+    ],
+    "verifiedRuns": 5,
+    "failureSetStable": true,
+    "passCountStable": true,
+    "suiteSeconds": {
+      "min": 89.926,
+      "max": 104.861,
+      "mean": 95.28,
+      "median": 93.39
+    },
+    "wallSeconds": {
+      "min": 91.681,
+      "max": 106.705,
+      "mean": 97.044,
+      "median": 95.142
+    }
+  }
+}

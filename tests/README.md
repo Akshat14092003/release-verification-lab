@@ -7,7 +7,7 @@ exact detector identities, enabled flags, assertion-only failures, provisional c
 verification. Run `node --test tests/unit/defect-detection.test.js` from the project root. These
 are separate from the 47 Playwright release checks and do not change the expected red counts.
 
-Three additional runner lifecycle guards cover cancellation, startup errors, timeout, ownership, and the active-process lock. `npm run test:unit` runs all seven. `npm run test:runner` exercises the actual Playwright subprocess separately from the 47 release checks, preventing recursive test launches. CI runs that integration in the deployment container under a 512 MB memory limit.
+Three additional runner lifecycle guards cover cancellation, startup errors, timeout, ownership, and the active-process lock. `npm run test:unit` runs all seven. `npm run test:runner` exercises the actual Playwright subprocess separately from the 47 release checks, preventing recursive test launches. CI runs that integration in the deployment container under a 1 GB memory limit.
 
 ## Run
 

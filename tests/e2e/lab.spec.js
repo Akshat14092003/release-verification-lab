@@ -34,8 +34,23 @@ test("website switches and demo day change a new visitor's actual shop", async (
   await expect(page.locator("#bug-expectation")).toContainText("1 failed check and 46 passing checks");
   await page.locator(".lab-day summary").click();
   await page.getByLabel("Demo day (UTC)").selectOption("monday");
+  let releaseRefresh;
+  const refreshGate = new Promise(resolve => { releaseRefresh = resolve; });
+  let refreshStarted;
+  const refreshPending = new Promise(resolve => { refreshStarted = resolve; });
+  await page.route("**/products", async route => {
+    if (route.request().resourceType() === "fetch") {
+      refreshStarted();
+      await refreshGate;
+    }
+    await route.continue();
+  });
   await page.getByRole("button", { name: "Apply day", exact: true }).click();
+  await refreshPending;
+  await expect(page.locator("#clock-label")).toHaveText("Saturday");
+  releaseRefresh();
   await expect(page.locator("#clock-label")).toHaveText("Monday");
+  await page.unroute("**/products");
   await page.getByRole("link", { name: "Sign in", exact: true }).click();
   await page.getByRole("button", { name: "Customer", exact: true }).click();
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -93,6 +108,7 @@ test("visitor switches, purchases and reset are isolated", async ({ page, demo }
     await page.getByRole("button", { name: "Reset my purchases" }).click();
     await page.getByRole("button", { name: "Reset purchases", exact: true }).click();
     await expect(page).toHaveURL(/\/products$/);
+    await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
     expect((await page.request.get("/api/auth/me")).status()).toBe(401);
     await page.request.post("/api/auth/login", { data: credentials });
     expect((await (await page.request.get("/api/orders")).json()).orders).toEqual([]);

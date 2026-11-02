@@ -259,8 +259,8 @@
     saving = api("/api/lab/settings", {
       bugs: Object.fromEntries(switches.map(input => [input.name, input.checked])), clock: $("demo-clock").value
     }).then(async state => {
-      updateSettings(state);
       await window.Fieldwork.refresh();
+      updateSettings(state);
       message("Settings applied. Try the behaviour right here.");
       return state;
     }).finally(() => {

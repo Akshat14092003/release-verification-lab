@@ -22,6 +22,10 @@ failing identities cannot count as verified detection.
   both themes at all three widths.
 - Reset confirmation: cancellation preserves orders; confirmation clears only
   that visitor's cart/orders/session and restores credit.
+- Settings now publish their applied state after refreshed content arrives.
+  The browser regression delays that response deliberately and checks that the
+  displayed clock does not announce the new day prematurely. Reset checks wait
+  for the signed-out page, rather than an unchanged URL, before reading state.
 - Real local runner integration: 47 passes, live progress, owner-only report,
   preserved visitor cart/credit, cancellation response. Docker integration is a
   separate required CI job; local Docker is unavailable on the author's machine.
@@ -32,10 +36,9 @@ failing identities cannot count as verified detection.
 
 ## Limits
 
-The interactive app is not publicly hosted. The free-only deployment candidate
-and account/setup steps are in [HOSTING.md](HOSTING.md). Actual free-host CPU
-performance remains unverified; the container CI check constrains RAM, not the
-candidate's much smaller CPU allocation.
+The interactive app is not publicly hosted. The free-only requirement and hosting findings are in [HOSTING.md](HOSTING.md).
+Render Free was rejected after a 512 MB container ran out of memory. The 1 GB
+reference container does not establish suitability for an available free host.
 
 The browser suite uses Chromium, not Safari/Firefox or real phones. Viewport,
 keyboard, and contrast checks do not establish universal accessibility. The
