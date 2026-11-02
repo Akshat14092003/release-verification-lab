@@ -50,7 +50,7 @@ html[data-theme="dark"] .empty-state,html[data-theme="dark"] .stat-card {
 .order-summary dt,th,td { color:var(--muted); }
 .table-scroll { position:relative; }
 .hero-actions { flex-wrap:wrap; }
-.hero-lab-link { font:inherit;font-size:12px;border:0;padding:0;background:transparent;cursor:pointer; }
+.hero-lab-link { min-height:40px;font:inherit;font-size:12px;border:0;padding:0;background:transparent;cursor:pointer; }
 .reset-dialog { width:min(440px,calc(100% - 32px));max-height:90dvh;overflow:auto;overscroll-behavior:contain;padding:24px;border:1px solid var(--line);border-radius:18px;background:var(--glass-solid);color:var(--ink); }
 .reset-dialog::backdrop { background:#07132799;backdrop-filter:blur(4px); }
 .reset-dialog h2 { font-size:23px; }.reset-dialog p { margin-top:14px;font-size:14px;line-height:1.6; }

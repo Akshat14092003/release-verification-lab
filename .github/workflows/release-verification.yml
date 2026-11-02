@@ -127,7 +127,7 @@ jobs:
           curl --fail http://127.0.0.1:3000/health
           docker stop lab-host
       - name: Exercise real subprocesses in the deployment image
-        run: docker run --name runner-smoke --memory=1g --memory-swap=1g --cpus=1 -e CI=true release-verification-lab node scripts/verify-live-runner.js
+        run: docker run --name runner-smoke --no-healthcheck --memory=1g --memory-swap=1g --cpus=1 -e CI=true release-verification-lab node scripts/verify-live-runner.js
       - name: Collect runner evidence
         if: ${{ always() }}
         run: |

@@ -78,9 +78,9 @@ failures in 20.4s).
 
 ## Repeatability
 
-Historical 34-check sample: ten consecutive local green runs and ten red runs, 10/10 clean and 10/10 verified.
-See [repeatability](REPEATABILITY.md); the per-run record is committed as docs/repeatability.json and
-is rendered on the published site.
+Current 47-check sample: three green runs clean and three red runs verified, with zero retries.
+See [repeatability](REPEATABILITY.md); docs/repeatability.json is rendered on the published site.
+The initial repair sample's failures and the earlier 34-check, ten-pair sample are retained separately.
 
 ## Run locally
 

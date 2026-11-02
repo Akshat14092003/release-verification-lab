@@ -26,6 +26,13 @@ failing identities cannot count as verified detection.
   The browser regression delays that response deliberately and checks that the
   displayed clock does not announce the new day prematurely. Reset checks wait
   for the signed-out page, rather than an unchanged URL, before reading state.
+- Current repeatability: three green runs at 47/47 and three red runs at 35/12,
+  all accepted with zero retries. The initial five-pair study had two unexpected
+  UI failures in its first green run and remains published separately.
+- [Container CI 41500794090](https://github.com/Akshat14092003/release-verification-lab/actions/runs/41500794090)
+  passed the live integration at one worker, one CPU, 1 GB RAM: 47 passes,
+  verified report/progress/ownership, preserved cart/credit, cancellation, and
+  container exit 0 without OOM. The standard server entry point was checked too.
 - Real local runner integration: 47 passes, live progress, owner-only report,
   preserved visitor cart/credit, cancellation response. Docker integration is a
   separate required CI job; local Docker is unavailable on the author's machine.

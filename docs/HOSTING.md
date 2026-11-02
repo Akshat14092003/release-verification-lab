@@ -60,7 +60,7 @@ Sources: [Render free services](https://render.com/docs/free),
 ```sh
 docker build -t release-verification-lab .
 docker run --rm -p 3000:3000 release-verification-lab
-docker run --rm --memory=1g --memory-swap=1g --cpus=1 -e CI=true release-verification-lab npm run test:runner
+docker run --rm --no-healthcheck --memory=1g --memory-swap=1g --cpus=1 -e CI=true release-verification-lab npm run test:runner
 ```
 
 Do not mount private folders or pass real credentials. Public demo accounts are

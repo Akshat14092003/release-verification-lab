@@ -7,7 +7,7 @@ A fictional shop where automated checks will demonstrate whether a release meets
 The portfolio goal is reproducible evidence: introduce a realistic defect, catch it at the right layer, inspect the evidence, and verify corrected behaviour.
 
 **Published and verified on GitHub Actions.**
-The published reports have 47 checks. The current local storefront has 47 checks, including 8 security probes;
+The published reports and storefront suite have 47 checks, including 8 security probes;
 its red verifier expects 12 intended failures and 35 passing controls. Visitors can toggle bugs, run the real tests,
 watch progress, and inspect their report from the website. See [the interactive demo](docs/INTERACTIVE-DEMO.md).
 Historical measurements below are labeled by version. The interactive Node app is not publicly deployed yet; [free hosting findings](docs/HOSTING.md) explain the confirmed memory limit and remaining account/compute requirement.
@@ -255,6 +255,10 @@ Published at https://akshat14092003.github.io/release-verification-lab/ - landin
 and red report, deployed from the artifacts of the same run that verified them.
 
 ## Measurements
+
+Current 47-check repeatability sample: **3/3 green runs clean** and **3/3 red runs verified**,
+with zero retries. The initial repair sample's failures and the older 34-check observations
+are retained separately. See [the complete repeatability record](docs/REPEATABILITY.md).
 
 Historical local baseline (2026-10-25): **34/34 passed in 17.7 seconds**, with CI=true, 2 workers, and zero retries.
 Runtime is the latest full baseline in the verified defect matrix.
