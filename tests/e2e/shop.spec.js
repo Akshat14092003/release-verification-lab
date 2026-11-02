@@ -116,6 +116,9 @@ test("an administrator can inspect the store overview", async ({ page }) => {
   await new ProductsPage(page).navigate("Admin");
   await expect(page.getByRole("heading", { name: "All orders", exact: true })).toBeVisible();
   await expect(page.getByRole("row").filter({ hasText: "#FW-1001" })).toContainText("Alex Morgan");
+  await page.setViewportSize({ width: 320, height: 568 });
+  const reflow = await page.evaluate(() => ({ page: document.documentElement.scrollWidth, viewport: innerWidth }));
+  expect(reflow.page).toBeLessThanOrEqual(reflow.viewport);
 });
 
 test("checkout supports quantities on a mobile screen", async ({ page }) => {

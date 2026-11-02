@@ -105,9 +105,48 @@ jobs:
             test-results/defects/red/
             test-results/defects/red-summary.json
 
+  live-runner:
+    name: Live runner integration
+    needs: green
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Build the deployment image
+        run: docker build -t release-verification-lab .
+      - name: Check the hosted entry point
+        run: |
+          docker run -d --name lab-host --memory=512m --memory-swap=512m --cpus=1 -p 127.0.0.1:3000:3000 release-verification-lab
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3000/health; then break; fi
+            sleep 1
+          done
+          curl --fail http://127.0.0.1:3000/health
+          docker stop lab-host
+      - name: Exercise real subprocesses within the free-host memory budget
+        run: docker run --name runner-smoke --memory=512m --memory-swap=512m --cpus=1 -e CI=true release-verification-lab node scripts/verify-live-runner.js
+      - name: Collect runner evidence
+        if: ${{ always() }}
+        run: |
+          mkdir -p test-results/live-smoke
+          docker cp runner-smoke:/app/test-results/live-smoke/. test-results/live-smoke/ || true
+          docker inspect runner-smoke --format '{{json .State}}' > test-results/live-smoke/container-state.json || true
+          docker logs runner-smoke > test-results/live-smoke/container.log 2>&1 || true
+          docker rm -f lab-host runner-smoke || true
+      - name: Upload runner evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: live-runner-evidence
+          path: test-results/live-smoke/
+          retention-days: 14
+
   publish:
     name: Publish the evidence site
-    needs: [green, red]
+    needs: [green, red, live-runner]
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10

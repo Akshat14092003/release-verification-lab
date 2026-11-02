@@ -25,11 +25,14 @@ export function loadConfig(env = process.env) {
     throw new Error("LAB_NOW must be a valid ISO date.");
   }
   const fixedNow = env.LAB_NOW ? new Date(env.LAB_NOW) : null;
+  const testWorkers = Number(env.LAB_TEST_WORKERS || 2);
+  if (![1, 2].includes(testWorkers)) throw new Error("LAB_TEST_WORKERS must be 1 or 2.");
   return {
     host: env.HOST || "127.0.0.1",
     bugs: readBugFlags(env),
     port,
     trustProxy: env.TRUST_PROXY === "1",
+    testWorkers,
     databasePath: resolve(projectRoot, env.DATABASE_PATH || ".data/lab.sqlite"),
     now: () => fixedNow ? new Date(fixedNow) : new Date()
   };

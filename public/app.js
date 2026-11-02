@@ -77,6 +77,13 @@
     });
   });
   document.addEventListener("click", event => {
+    if (event.target.closest("[data-open-playground]")) {
+      if (mobileViewport.matches) mobileToggle?.click();
+      const playground = document.getElementById("toggle-playground");
+      if (playground?.getAttribute("aria-expanded") === "false") playground.click();
+      playground?.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      playground?.focus({ preventScroll: true });
+    }
     if (event.target.closest("[data-mobile-menu]")) {
       mobileMenu.showModal();
       mobileToggle.setAttribute("aria-expanded", "true");

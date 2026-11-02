@@ -158,12 +158,12 @@ function productCards(products) {
     '" aria-label="View ' + e(product.name) + '">' + icon("arrow") + '</a></div>' + addToCartForm(product, { quick: true }) + '</div></article>').join("") + '</div>';
 }
 
-export function productsPage(products, query = "", category = "") {
+export function productsPage(products, query = "", category = "", labControls = false) {
   const categories = ["Stationery", "Audio", "Home", "Lighting"];
-  return '<section class="store-hero"><div class="hero-copy"><span class="eyebrow"><i class="live-spark"></i> A LITTLE EVERYDAY GOOD</span>' +
-    '<h1>Small finds.<br/><em>Good everyday.</em></h1><p>Useful things. Thoughtful details. Pick your favourites and make a little room for something good.</p>' +
+  return '<section class="store-hero"><div class="hero-copy"><span class="eyebrow"><i class="live-spark"></i> INTERACTIVE RELEASE VERIFICATION LAB</span>' +
+    '<h1>Small finds.<br/><em>Good everyday.</em></h1><p>Shop with demo credit. Enable a bug, run real automated checks, and inspect the evidence.</p>' +
     '<div class="hero-actions"><a class="button primary" href="#collection">Explore the collection ' + icon("arrow") +
-    '</a><a class="text-link" href="/offers">The weekend edit</a></div><span class="hero-note">A working shop inside the Release Verification Lab</span></div>' +
+    '</a><a class="text-link" href="/offers">The weekend edit</a>' + (labControls ? '<button type="button" class="text-link hero-lab-link" data-open-playground>Try the QA lab ' + icon("arrow") + '</button>' : '') + '</div><span class="hero-note">Fictional credit. Real tests. Your own isolated shop.</span></div>' +
     '<div class="hero-scene hero-photo-scene"><div class="hero-photo">' + collectionPhoto("(max-width: 560px) 90vw, 45vw") +
     '<span class="floating-label label-demo"><span class="status-dot"></span> Real shopping. Demo credit.</span></div>' +
     '<span class="orbit-dot dot-one"></span><span class="orbit-dot dot-two"></span></div></section>' +

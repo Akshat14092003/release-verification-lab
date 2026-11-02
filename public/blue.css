@@ -46,6 +46,18 @@ html[data-theme="dark"] .empty-state,html[data-theme="dark"] .stat-card {
 .page-footer,.credit span,.summary-note,.hero-note,.demo-accounts>.login-disclaimer,.lab-footnote,
 .bento-foot,.detail-price-note,.story-footer,.collection-footnote { color:var(--faint); }
 
+/* Reading text uses shared roles instead of the old pale green palette. */
+.order-summary dt,th,td { color:var(--muted); }
+.table-scroll { position:relative; }
+.hero-actions { flex-wrap:wrap; }
+.hero-lab-link { font:inherit;font-size:12px;border:0;padding:0;background:transparent;cursor:pointer; }
+.reset-dialog { width:min(440px,calc(100% - 32px));max-height:90dvh;overflow:auto;overscroll-behavior:contain;padding:24px;border:1px solid var(--line);border-radius:18px;background:var(--glass-solid);color:var(--ink); }
+.reset-dialog::backdrop { background:#07132799;backdrop-filter:blur(4px); }
+.reset-dialog h2 { font-size:23px; }.reset-dialog p { margin-top:14px;font-size:14px;line-height:1.6; }
+.reset-dialog .reset-actions { display:flex;justify-content:flex-end;flex-wrap:wrap;gap:12px;margin-top:22px; }
+.reset-dialog [role="alert"] { color:var(--danger-ink); }
+.button.danger { background:var(--danger-ink);color:var(--danger-soft);border-color:var(--danger-ink); }
+
 /* A single mobile menu replaces the stacked navigation/account/QA bars. */
 .mobile-brand,.mobile-menu-toggle,.menu-control-label,.menu-section-label { display:none; }
 .topbar>.header-sign-in { display:inline-flex;min-height:40px;margin-inline-start:auto;padding:8px 12px;border:1px solid var(--accent);border-radius:9px;background:var(--accent);color:var(--accent-ink);font-size:11px;white-space:nowrap; }

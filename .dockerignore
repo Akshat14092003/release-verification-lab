@@ -1,0 +1,14 @@
+# Allow only source, locked dependencies and the real release suite into the image.
+**
+!Dockerfile
+!package.json
+!package-lock.json
+!playwright.config.js
+!src/
+!src/**
+!public/
+!public/**
+!scripts/
+!scripts/**
+!tests/
+!tests/**

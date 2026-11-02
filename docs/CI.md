@@ -9,7 +9,8 @@ Status: published and verified on GitHub Actions. [Successful run](https://githu
 | --- | --- | --- |
 | green | All flags 0, Node 22.17.1, Ubuntu 24.04 | All 47 tests pass |
 | red | Depends on green; all flags 1 | Exactly 12 known failures, 35 passing controls |
-| publish | Depends on both; push to main only | Deploys the evidence site to GitHub Pages |
+| live-runner | Docker, 512 MB RAM, 1 worker | Real 47-pass run, streamed progress, owner-only report, preserved cart/credit, cancellation |
+| publish | Depends on green, red, and live-runner; push to main only | Deploys the evidence site to GitHub Pages |
 
 The underlying red Playwright run exits 1 and contains real red assertions.
 The validation wrapper exits 0 only after checking exact failing identities, fresh report identity, test count, and absence of skips/setup failures.
@@ -31,6 +32,8 @@ disappear at the first streamed result or any terminal run state; reduced motion
 - The workflow default is contents: read. The publish job alone adds pages: write and id-token: write. Checkout credential persistence is disabled.
 - Actions are pinned to commit SHAs resolved from the official v7 references.
 - No production service or account secret is required. All accounts/data are synthetic.
+
+The live-runner artifact includes summary, container state, and logs. Its one-CPU limit is not a benchmark of Render Free's 0.1 CPU. Deployment remains unverified until a real free-host run completes.
 
 ## Local verification performed
 

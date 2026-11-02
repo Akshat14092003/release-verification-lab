@@ -2,10 +2,12 @@
 
 The baseline checks correct behaviour across API, browser, database, and security layers. Intentional defects are verified separately.
 
-The four Node unit checks in `unit/defect-detection.test.js` guard the visitor's bug-caught feedback:
+The four defect-detection Node unit checks in `unit/defect-detection.test.js` guard the visitor's bug-caught feedback:
 exact detector identities, enabled flags, assertion-only failures, provisional counts, and final
 verification. Run `node --test tests/unit/defect-detection.test.js` from the project root. These
 are separate from the 47 Playwright release checks and do not change the expected red counts.
+
+Three additional runner lifecycle guards cover cancellation, startup errors, timeout, ownership, and the active-process lock. `npm run test:unit` runs all seven. `npm run test:runner` exercises the actual Playwright subprocess separately from the 47 release checks, preventing recursive test launches. CI runs that integration in the deployment container under a 512 MB memory limit.
 
 ## Run
 

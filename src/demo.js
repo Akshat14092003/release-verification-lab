@@ -14,10 +14,10 @@ const CLOCKS = {
 };
 const COOKIE = "lab_visitor";
 
-export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), allowRuns = true, maxVisitors = 50, sessionMs = 2 * 60 * 60 * 1000, trustProxy = false } = {}) {
+export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), allowRuns = true, maxVisitors = 50, sessionMs = 2 * 60 * 60 * 1000, trustProxy = false, testWorkers = 2 } = {}) {
   const app = express();
   const visitors = new Map();
-  const runner = allowRuns ? createTestRunner({ directory: join(directory, "runs") }) : null;
+  const runner = allowRuns ? createTestRunner({ directory: join(directory, "runs"), workers: testWorkers }) : null;
   app.disable("x-powered-by");
   app.set("trust proxy", trustProxy ? 1 : false);
   app.use(express.static(join(projectRoot, "public"), { index: false }));

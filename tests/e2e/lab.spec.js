@@ -80,6 +80,23 @@ test("visitor switches, purchases and reset are isolated", async ({ page, demo }
     expect(invalid.status()).toBe(400);
     const crossOrigin = await page.request.post("/api/lab/reset", { data: {}, headers: { Origin: "https://example.test" } });
     expect(crossOrigin.status()).toBe(403);
+    const ordersBefore = (await (await page.request.get("/api/orders")).json()).orders;
+    await page.goto("/products");
+    if (await page.locator("#lab-settings").isHidden()) await page.getByRole("button", { name: "QA playground" }).click();
+    await page.locator(".lab-day summary").click();
+    await page.getByRole("button", { name: "Reset my purchases" }).click();
+    const confirmation = page.getByRole("dialog", { name: "Reset your demo shop?" });
+    await expect(confirmation).toBeVisible();
+    await expect(confirmation).toContainText("This cannot be undone");
+    await page.getByRole("button", { name: "Keep shopping" }).click();
+    expect((await (await page.request.get("/api/orders")).json()).orders).toEqual(ordersBefore);
+    await page.getByRole("button", { name: "Reset my purchases" }).click();
+    await page.getByRole("button", { name: "Reset purchases", exact: true }).click();
+    await expect(page).toHaveURL(/\/products$/);
+    expect((await page.request.get("/api/auth/me")).status()).toBe(401);
+    await page.request.post("/api/auth/login", { data: credentials });
+    expect((await (await page.request.get("/api/orders")).json()).orders).toEqual([]);
+    expect((await (await other.get("/api/auth/me")).json()).balance_cents).toBe(95500);
   } finally { await other.dispose(); }
 });
 
@@ -126,7 +143,9 @@ test("mobile visitor guide and run errors remain usable", async ({ page }) => {
   const width = await page.evaluate(() => ({ content: document.documentElement.scrollWidth, viewport: window.innerWidth }));
   expect(width.content).toBeLessThanOrEqual(width.viewport);
   await expect(page.locator("#clock-value")).toContainText("2026-10-24");
-  await page.getByRole("button", { name: "Open menu", exact: true }).click();
+  await page.getByRole("button", { name: "Try the QA lab" }).click();
+  await expect(page.getByRole("dialog", { name: "Navigation and account" })).toBeVisible();
+  await expect(page.locator("#lab-settings")).toBeVisible();
   await page.getByRole("button", { name: "Run checks", exact: true }).click();
   await page.getByRole("button", { name: "Run tests", exact: true }).click();
   await expect(page.locator("#lab-message")).toContainText("disabled in this test instance");
