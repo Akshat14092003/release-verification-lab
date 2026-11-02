@@ -15,6 +15,12 @@ The underlying red Playwright run exits 1 and contains real red assertions.
 The validation wrapper exits 0 only after checking exact failing identities, fresh report identity, test count, and absence of skips/setup failures.
 Unexpected outcomes fail the job. No blanket continue-on-error is used.
 
+Retries remain disabled. Visitor-interface regressions cover two asynchronous UI races:
+completed runs must not start another progress poll, and theme choices must be saved before
+a deferred View Transition callback can be cancelled by navigation. Progress responses from
+an older run cannot overwrite the active run. These fixes preserve the exact 12-assertion
+defect pattern; navigation errors and timeouts still invalidate red verification.
+
 ## Evidence and permissions
 
 - HTML, JSON/JUnit, screenshots, traces, HTTP/SQL evidence, and disposable test databases are uploaded.
@@ -26,8 +32,9 @@ Unexpected outcomes fail the job. No blanket continue-on-error is used.
 
 ## Local verification performed
 
-The original hosted measurements below use 34 tests. The local interactive revision has 47 tests;
-see [interactive verification](INTERACTIVE-DEMO.md). No hosted run is claimed for this revision yet.
+The original hosted measurements below use 34 tests. The interactive revision has 47 tests;
+see [interactive verification](INTERACTIVE-DEMO.md) and the current
+[pull request checks](https://github.com/Akshat14092003/release-verification-lab/pull/1/checks).
 
 - Clean npm ci completed; 72 packages audited, 0 vulnerabilities reported at that time.
 - All 34 correct-build tests passed with CI=true and 2 workers.

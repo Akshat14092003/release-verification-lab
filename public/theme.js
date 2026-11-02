@@ -19,9 +19,10 @@
       const rect = button.getBoundingClientRect();
       document.documentElement.style.setProperty("--theme-x", rect.left + rect.width / 2 + "px");
       document.documentElement.style.setProperty("--theme-y", rect.top + rect.height / 2 + "px");
+      // Navigation can cancel the deferred View Transition callback. Save the choice first.
+      try { localStorage.setItem("lab-theme", next); } catch { /* Keep the session preference. */ }
       const apply = () => {
         document.documentElement.dataset.theme = next;
-        try { localStorage.setItem("lab-theme", next); } catch { /* Keep the session preference. */ }
         updateButtons();
         document.dispatchEvent(new CustomEvent("fieldwork:theme", { detail: { theme: next } }));
       };

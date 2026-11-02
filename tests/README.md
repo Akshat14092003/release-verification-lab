@@ -71,6 +71,11 @@ checks cover quantity merging, validation, rollback, guest sign-in continuity, a
 Nested launches are disabled in these fixtures; the real same-page run-to-report flow is verified
 separately with the actual runner.
 
+The theme check holds the animation callback pending while navigating, proving the preference
+is saved synchronously. The mobile report fixture maps GET responses by run ID and advances the
+browser clock across the former 500ms polling race: a completed run stays finished, with no
+extra poll and its evidence action still visible. Retries and detector expectations are unchanged.
+
 ## Defect verification
 
 npm run test:bugs first forces all flags off for the full baseline, then checks each flag and all four together.

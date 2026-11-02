@@ -98,7 +98,12 @@ test("light and dark mode persist across the lab and shop", async ({ page }) => 
   await page.getByRole("button", { name: "Customer", exact: true }).click();
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/products$/);
+  // Hold the transition update to reproduce navigation before its callback runs.
+  await page.evaluate(() => {
+    document.startViewTransition = () => ({ finished: new Promise(() => {}) });
+  });
   await page.getByRole("button", { name: "Switch to light mode" }).click();
+  expect(await page.evaluate(() => localStorage.getItem("lab-theme"))).toBe("light");
   await page.goto("/lab");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 });
@@ -127,7 +132,14 @@ test("mobile visitor guide and run errors remain usable", async ({ page }) => {
     expectedFailures: 0, matched: true, reportUrl: "/lab-reports/layout/index.html"
   };
   await page.route("**/api/lab/runs", route => route.fulfill({ json: fixtureRun }));
-  await page.route("**/api/lab/runs/caught-layout", route => route.fulfill({ json: fixtureRun }));
+  const fixtureRuns = new Map([[fixtureRun.id, fixtureRun]]);
+  const fixturePolls = [];
+  await page.route("**/api/lab/runs/*", route => {
+    const id = new URL(route.request().url()).pathname.split("/").at(-1);
+    fixturePolls.push(id);
+    const run = fixtureRuns.get(id);
+    return run ? route.fulfill({ json: run }) : route.continue();
+  });
   await page.route("**/lab-reports/layout/index.html", route => route.fulfill({ contentType: "text/html", body: "<!doctype html><html><head><style>:root{--color-canvas-default:#fff}.dark-mode{--color-canvas-default:#0d1117;color:#c9d1d9}</style><script>document.documentElement.className=localStorage.getItem('theme')||'light-mode'</script></head><body><h1>Report layout fixture</h1><div style='height:2000px'></div></body></html>" }));
   await page.getByRole("button", { name: "Run tests", exact: true }).click();
   await expect(page.locator("#test-drawer")).toHaveClass(/is-report-view/);
@@ -161,6 +173,7 @@ test("mobile visitor guide and run errors remain usable", async ({ page }) => {
       { id: "unexpected", project: "api", title: "An unrelated failure", status: "failed", detectedBug: null }
     ], detections: [{ id: "auth", label: DEFECTS[0].label, expected: 5, observed: 1, state: "observed" }]
   };
+  fixtureRuns.set(fixtureRun.id, fixtureRun);
   await page.getByRole("button", { name: "Run tests", exact: true }).click();
   await expect(page.locator("#bug-caught-title")).toHaveText("We spotted a bug you enabled");
   await expect(page.locator("#bug-caught-copy")).toContainText("verification is still running");
@@ -183,18 +196,26 @@ test("mobile visitor guide and run errors remain usable", async ({ page }) => {
   await expect(page.locator("#catch-popup")).toBeHidden();
   fixtureRun = { ...fixtureRun, status: "completed", matched: false, reportUrl: "/lab-reports/layout/index.html",
     detections: [{ ...fixtureRun.detections[0], state: "review" }] };
+  fixtureRuns.set(fixtureRun.id, fixtureRun);
   await expect(page.locator("#bug-caught-title")).toContainText("this run needs review");
   await expect(page.locator("#bug-caught-copy")).toContainText("not a verified result");
   await expect(page.locator("#catch-popup")).toBeHidden();
   await page.getByRole("button", { name: "Run details", exact: true }).click();
   fixtureRun = { ...fixtureRun, id: "verified-layout", completed: 47, passed: 42, failed: 5, matched: true,
     detections: [{ ...fixtureRun.detections[0], observed: 5, state: "verified" }] };
+  fixtureRuns.set(fixtureRun.id, fixtureRun);
+  await page.clock.install();
   await page.getByRole("button", { name: "Run tests", exact: true }).click();
   await expect(page.locator("#bug-caught-title")).toHaveText("You enabled it. We caught it.");
   await expect(page.locator("#bug-caught-copy")).toContainText("Accept invalid logins");
   await expect(page.locator("#run-detections")).toContainText("Caught and verified");
   await expect(page.locator("#catch-popup-title")).toHaveText("BUG CAUGHT!");
   await expect(page.locator("#catch-popup-score")).toHaveText("1 / 1 enabled bugs verified");
+  // Cross the old 500ms polling boundary while keeping the popup timer deterministic.
+  await page.clock.runFor(600);
+  expect(fixturePolls).not.toContain("verified-layout");
+  await expect(page.locator("#catch-popup")).toBeVisible();
+  await expect(page.locator("#run-badge")).toHaveText("Finished");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.locator(".catch-popup-card")).toHaveCSS("animation-name", "none");
   await page.getByRole("button", { name: "See the evidence" }).click();

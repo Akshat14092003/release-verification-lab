@@ -290,19 +290,8 @@
     const end = currentRun.finishedAt ? Date.parse(currentRun.finishedAt) : Date.now();
     $("run-elapsed").textContent = Math.max(0, Math.round((end - Date.parse(currentRun.startedAt)) / 1000)) + "s";
   }
-  function showCheckSkeletons() {
-    const list = $("run-checks");
-    for (let i = 0; i < 5; i++) {
-      const row = document.createElement("li");
-      row.className = "check-skeleton";
-      row.setAttribute("aria-hidden", "true");
-      row.innerHTML = '<span class="sk-mark"></span><div class="sk-copy"><span class="sk-line"></span><span class="sk-line sk-line-sm"></span></div>';
-      list.append(row);
-    }
-  }
   function renderChecks(run) {
     const list = $("run-checks");
-    if ((run.checks || []).length) list.querySelectorAll(".check-skeleton").forEach(row => row.remove());
     const labels = { passed: "Passed", failed: "Failed", timedOut: "Timed out", skipped: "Skipped", interrupted: "Stopped", running: "Running" };
     for (const check of run.checks || []) {
       let row = checkRows.get(check.id);
@@ -437,12 +426,15 @@
     }
   }
   async function poll() {
-    if (!currentRun) return;
+    if (currentRun?.status !== "running") return;
+    const requestedRun = currentRun;
     try {
-      const run = await api("/api/lab/runs/" + currentRun.id);
+      const run = await api("/api/lab/runs/" + requestedRun.id);
+      if (currentRun !== requestedRun) return;
       renderRun(run);
       if (run.status === "running") timer = setTimeout(poll, 800);
     } catch (error) {
+      if (currentRun !== requestedRun) return;
       if (error.status === 404) {
         renderRun({ ...currentRun, status: "error", finishedAt: new Date().toISOString(), activeTests: [],
           error: "This run expired or the server restarted. Start a new verification.", reportUrl: null });
@@ -468,15 +460,16 @@
       $("toggle-report-view").hidden = true;
       checkRows.clear();
       $("run-checks").replaceChildren();
-      showCheckSkeletons();
       detectionRows.clear();
       $("run-detections").replaceChildren();
       $("bug-caught-alert").hidden = true;
       $("report-frame").removeAttribute("src");
       renderRun(run);
-      elapsedTimer = setInterval(elapsed, 1000);
-      timer = setTimeout(poll, 500);
-      message("Tests are running. The progress below comes from actual Playwright test events.");
+      if (run.status === "running") {
+        elapsedTimer = setInterval(elapsed, 1000);
+        timer = setTimeout(poll, 500);
+        message("Tests are running. The progress below comes from actual Playwright test events.");
+      }
     } catch (error) {
       $("run-tests").disabled = false;
       message(error.message, true);
