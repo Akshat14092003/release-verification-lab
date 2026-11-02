@@ -20,6 +20,8 @@ completed runs must not start another progress poll, and theme choices must be s
 a deferred View Transition callback can be cancelled by navigation. Progress responses from
 an older run cannot overwrite the active run. These fixes preserve the exact 12-assertion
 defect pattern; navigation errors and timeouts still invalidate red verification.
+The restored loading skeletons are decorative and stay outside the real result list. They
+disappear at the first streamed result or any terminal run state; reduced motion disables their sheen.
 
 ## Evidence and permissions
 

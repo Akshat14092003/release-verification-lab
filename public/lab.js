@@ -35,6 +35,18 @@
   const detectionRows = new Map();
   const drawer = $("test-drawer");
   const reportFrame = $("report-frame");
+  const checkLoading = document.createElement("div");
+  checkLoading.id = "check-loading";
+  checkLoading.className = "check-loading";
+  checkLoading.hidden = true;
+  checkLoading.setAttribute("aria-hidden", "true");
+  for (let i = 0; i < 3; i++) {
+    const row = document.createElement("div");
+    row.className = "check-skeleton";
+    row.innerHTML = '<span class="sk-mark"></span><span class="sk-copy"><span class="sk-line"></span><span class="sk-line sk-line-sm"></span></span>';
+    checkLoading.append(row);
+  }
+  $("run-checks").before(checkLoading);
   const catchSummary = document.createElement("strong");
   catchSummary.id = "catch-summary";
   $("bug-caught-alert").append(catchSummary);
@@ -292,6 +304,7 @@
   }
   function renderChecks(run) {
     const list = $("run-checks");
+    checkLoading.hidden = run.status !== "running" || run.phase === "reporting" || (run.checks || []).length > 0;
     const labels = { passed: "Passed", failed: "Failed", timedOut: "Timed out", skipped: "Skipped", interrupted: "Stopped", running: "Running" };
     for (const check of run.checks || []) {
       let row = checkRows.get(check.id);

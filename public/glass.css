@@ -79,6 +79,15 @@ html[data-theme="dark"] .empty-state,html[data-theme="dark"] .stat-card {
 [data-status="running"] .check-mark:after { content:"";width:13px;height:13px;border:2px solid var(--line);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite; }
 html[data-theme="dark"] [data-status="passed"] .check-mark { color:#a9e7bf;background:#214632; }
 html[data-theme="dark"] [data-status="failed"] .check-mark,html[data-theme="dark"] [data-status="timedOut"] .check-mark { color:#ffb9be;background:#512c34; }
+/* One moving highlight for the group; placeholders never enter the real result list. */
+.check-loading { position:relative;overflow:hidden;display:grid;gap:8px;margin-top:12px;border-radius:11px; }
+.check-loading:after { content:"";position:absolute;inset:0 auto 0 -60%;width:60%;pointer-events:none;background:linear-gradient(90deg,transparent,#83b0ff18,transparent);animation:check-sheen 1.8s ease-in-out infinite; }
+.check-skeleton { display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:11px;background:var(--surface); }
+.sk-mark { width:28px;height:28px;border-radius:50%;flex-shrink:0;background:var(--soft); }
+.sk-copy { display:flex;flex:1;flex-direction:column;gap:8px; }
+.sk-line { display:block;height:9px;width:68%;border-radius:5px;background:var(--soft); }
+.sk-line-sm { width:40%;height:8px; }
+@keyframes check-sheen { from{transform:translateX(0)}to{transform:translateX(275%)} }
 .lab-report { scroll-margin-top:12px; }
 .lab-report iframe { height:62dvh; }
 /* Slow light passing behind real frosted cards, independent of theme selection. */
@@ -121,6 +130,6 @@ html[data-theme="dark"] [data-status="failed"] .check-mark,html[data-theme="dark
 }
 @media(prefers-reduced-motion:reduce) {
   .login-layout:before,.login-layout:after,.story-art,.login-card,.profile-panel,.run-checks>li,.check-mark,
-  .test-progress.is-running>span:after,[data-status="running"] .check-mark:after { animation:none!important; }
+  .test-progress.is-running>span:after,[data-status="running"] .check-mark:after,.check-loading:after { animation:none!important; }
   .test-progress>span,.sidebar-toggle svg { transition:none; }
 }

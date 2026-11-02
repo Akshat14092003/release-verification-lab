@@ -75,6 +75,8 @@ The theme check holds the animation callback pending while navigating, proving t
 is saved synchronously. The mobile report fixture maps GET responses by run ID and advances the
 browser clock across the former 500ms polling race: a completed run stays finished, with no
 extra poll and its evidence action still visible. Retries and detector expectations are unchanged.
+It also checks the loading skeletons before results arrive, their removal when results stream in,
+and their static appearance with reduced motion. Placeholders never count as test results.
 
 ## Defect verification
 

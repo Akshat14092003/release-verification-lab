@@ -143,6 +143,7 @@ test("mobile visitor guide and run errors remain usable", async ({ page }) => {
   await page.route("**/lab-reports/layout/index.html", route => route.fulfill({ contentType: "text/html", body: "<!doctype html><html><head><style>:root{--color-canvas-default:#fff}.dark-mode{--color-canvas-default:#0d1117;color:#c9d1d9}</style><script>document.documentElement.className=localStorage.getItem('theme')||'light-mode'</script></head><body><h1>Report layout fixture</h1><div style='height:2000px'></div></body></html>" }));
   await page.getByRole("button", { name: "Run tests", exact: true }).click();
   await expect(page.locator("#test-drawer")).toHaveClass(/is-report-view/);
+  await expect(page.locator("#check-loading")).toBeHidden();
   await expect(page.frameLocator("#report-frame").getByRole("heading", { name: "Report layout fixture" })).toBeVisible();
   const layout = await page.locator(".drawer-body").evaluate(body => ({ scroll: body.scrollHeight, height: body.clientHeight }));
   expect(layout.scroll).toBeLessThanOrEqual(layout.height + 1);
@@ -166,16 +167,27 @@ test("mobile visitor guide and run errors remain usable", async ({ page }) => {
   await expect(page.locator("#bug-caught-alert")).toBeHidden();
   await expect(page.locator("#catch-popup")).toBeHidden();
   await page.getByRole("button", { name: "Run details", exact: true }).click();
+  const detectorChecks = [
+    { id: "signal", project: "api", title: DEFECTS[0].failures[0].split("::")[1], status: "failed", detectedBug: { id: "auth", label: DEFECTS[0].label } },
+    { id: "unexpected", project: "api", title: "An unrelated failure", status: "failed", detectedBug: null }
+  ];
   fixtureRun = { ...fixtureRun, id: "caught-layout", status: "running", reportUrl: null, matched: null,
-    bugs: { ...readBugFlags({}), BUG_AUTH_BYPASS: true }, expectedFailures: 5, completed: 2, passed: 0, failed: 2,
-    checks: [
-      { id: "signal", project: "api", title: DEFECTS[0].failures[0].split("::")[1], status: "failed", detectedBug: { id: "auth", label: DEFECTS[0].label } },
-      { id: "unexpected", project: "api", title: "An unrelated failure", status: "failed", detectedBug: null }
-    ], detections: [{ id: "auth", label: DEFECTS[0].label, expected: 5, observed: 1, state: "observed" }]
+    bugs: { ...readBugFlags({}), BUG_AUTH_BYPASS: true }, expectedFailures: 5, completed: 0, passed: 0, failed: 0,
+    checks: [], detections: [{ id: "auth", label: DEFECTS[0].label, expected: 5, observed: 0, state: "pending" }]
   };
   fixtureRuns.set(fixtureRun.id, fixtureRun);
   await page.getByRole("button", { name: "Run tests", exact: true }).click();
+  await expect(page.locator("#check-loading")).toBeVisible();
+  await expect(page.locator("#check-loading .check-skeleton")).toHaveCount(3);
+  await expect(page.locator("#run-checks>li")).toHaveCount(0);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  expect(await page.locator("#check-loading").evaluate(element => getComputedStyle(element, "::after").animationName)).toBe("none");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  fixtureRun = { ...fixtureRun, completed: 2, failed: 2, checks: detectorChecks,
+    detections: [{ ...fixtureRun.detections[0], observed: 1, state: "observed" }] };
+  fixtureRuns.set(fixtureRun.id, fixtureRun);
   await expect(page.locator("#bug-caught-title")).toHaveText("We spotted a bug you enabled");
+  await expect(page.locator("#check-loading")).toBeHidden();
   await expect(page.locator("#bug-caught-copy")).toContainText("verification is still running");
   await expect(page.locator(".run-checks .is-expected-failure")).toHaveCount(1);
   await expect(page.locator("#catch-popup")).toBeVisible();
