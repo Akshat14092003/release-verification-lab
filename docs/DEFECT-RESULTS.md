@@ -1,5 +1,10 @@
 # Measured defect-detection results
 
+The current local revision has 47 green checks and 35 red controls with 12 intended failures.
+See [interactive verification](INTERACTIVE-DEMO.md) for current results and
+[the earlier checkout audit](MANUAL-DEMO-AUDIT.md) for its 38-test matrix.
+The measurements below describe the earlier 34-test version.
+
 Recorded: 2026-10-25. Local Windows, Node v22.17.1, CI=true, 2 workers, no retries.
 Command: npm run test:bugs.
 

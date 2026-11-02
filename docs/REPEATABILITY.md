@@ -4,6 +4,9 @@ Measured 2026-10-25. Every number here comes from one scripted run of
 `npm run test:repeat` (`scripts/measure-repeatability.js --runs=10`), which repeats the
 correct-build suite and the defect demonstration ten times each and records what happened.
 
+This record describes the earlier **34-test version**. The current storefront suite has 47 tests.
+Its twenty-run measurement has not been repeated; the committed raw observations remain unchanged.
+
 ## Environment
 
 | Item | Value |
@@ -64,7 +67,7 @@ npm run test:repeat -- --runs=3
 ```
 
 The script writes `test-results/repeatability.json` with every per-run record. A green run counts as
-clean only if it exited 0, executed all 34 checks with 34 passes, recorded no skips, flakes or
+clean only if it exited 0, executed all expected checks (currently 47) with every check passing, recorded no skips, flakes or
 unexpected failures, and wrote a report during that run rather than leaving an earlier one in place.
 A red run counts only if the defect verifier itself exited 0 on a freshly written summary. The script
 exits non-zero if any run falls short or if the check count, failing set, or control count varied. The record for this sample is committed

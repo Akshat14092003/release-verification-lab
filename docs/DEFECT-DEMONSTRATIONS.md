@@ -9,10 +9,12 @@ These switches alter real application code paths; tests keep their normal assert
 | BUG_AUTH_BYPASS | Credential verification is skipped; an unknown email becomes a zero-credit guest | Invalid logins return 200 or enter the shop |
 | BUG_WEEKEND_OFFER | The UTC weekday restriction is omitted | Friday/Monday availability and checkout checks fail |
 | BUG_NO_LIMIT | Purchase-time cap is omitted while listing/quote still enforce it | A second direct API purchase succeeds although UI access stays blocked |
-| BUG_TOTAL_MISMATCH | Receipt summary uses only the first order line | A two-line $73 receipt displays $28 while SQL and ledger still show $73 |
+| BUG_TOTAL_MISMATCH | Receipt summary uses only the first order line | A newly created $101 order displays $56 while SQL and ledger still show $101 |
 
 Single-item receipts remain correct under the total defect, and the normal UI cap remains correct under the direct-request defect.
 Those passing controls make each demonstration more specific.
+Create every scenario manually from an empty purchase history using [COMMANDS.md](../COMMANDS.md).
+The total check selects products and quantities through checkout; it does not require a preloaded receipt.
 
 ## Run the verification matrix
 
@@ -31,14 +33,14 @@ Expected checks:
 
 | Scenario | Executed | Passed | Intended failures |
 | --- | --- | --- | --- |
-| Baseline | 34 | 34 | 0 |
+| Baseline | 47 | 47 | 0 |
 | Auth | 5 | 0 | 5 |
 | Weekend | 7 | 2 | 5 |
 | Limit | 2 | 1 | 1 |
 | Total | 2 | 1 | 1 |
-| All four | 34 | 22 | 12 |
+| All four | 47 | 35 | 12 |
 
-Measured on 2026-10-25: all six scenarios matched these counts. The completed summary is test-results/defects/summary.json.
+Verified locally on 2026-11-01: all six scenarios matched these counts. The completed summary is test-results/defects/summary.json.
 Each report carries a unique run token, preventing stale output from counting as verification.
 
 ## Reports

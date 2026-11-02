@@ -57,6 +57,14 @@ CREATE TABLE IF NOT EXISTS sessions (
   expires_at INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS cart_items (
+  cart_key TEXT NOT NULL,
+  product_id INTEGER NOT NULL REFERENCES products(id),
+  offer_id INTEGER REFERENCES offers(id),
+  quantity INTEGER NOT NULL CHECK (quantity BETWEEN 1 AND 99),
+  PRIMARY KEY (cart_key, product_id)
+);
+
 CREATE INDEX IF NOT EXISTS orders_user_offer ON orders(user_id, offer_id);
 CREATE INDEX IF NOT EXISTS ledger_user ON ledger(user_id);
 CREATE INDEX IF NOT EXISTS ledger_order ON ledger(order_id);

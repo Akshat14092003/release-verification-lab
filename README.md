@@ -7,22 +7,35 @@ A fictional shop where automated checks will demonstrate whether a release meets
 The portfolio goal is reproducible evidence: introduce a realistic defect, catch it at the right layer, inspect the evidence, and verify corrected behaviour.
 
 **Published and verified on GitHub Actions.**
-The correct build passes all 34 checks, including 8 security probes. The red job verifies exactly 12 intended failures and 22 passing controls.
+The published reports have 34 checks. The current local storefront has 47 checks, including 8 security probes;
+its red verifier expects 12 intended failures and 35 passing controls. Visitors can toggle bugs, run the real tests,
+watch progress, and inspect their report from the website. See [the interactive demo](docs/INTERACTIVE-DEMO.md).
+Hosted results below describe the previously published version; the interactive Node app is not publicly deployed yet.
 [View the successful hosted run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/40180501884) and download its green-evidence/red-evidence artifacts.
 [Browse the published evidence site](https://akshat14092003.github.io/release-verification-lab/): the landing page, the green report, and the red report from the latest verified run.
 
-## Run the shop
+## Run the interactive lab
 
 Requires Node.js 22.13 or newer. This project uses Node's built-in SQLite module.
 Node 22.17 displays an experimental SQLite warning; no native database package or external database server is required.
 
 ~~~sh
 npm ci
-npm run seed
+npx playwright install chromium --no-shell
 npm start
 ~~~
 
 Open http://127.0.0.1:3000.
+
+The home page is the storefront. Product arrows open distinct detail pages; Add to cart builds a real
+basket with quantities and removal. Guests can browse and keep their cart through sign-in, then checkout.
+Four compact switches stay in the shop toolbar. Contextual hints follow the visitor through products,
+cart, checkout, and receipts. **Run checks** opens live progress and reports over the same page.
+The sidebar collapses, the sun/moon theme control animates, and the storefront has gentle motion with
+reduced-motion support. Each visitor gets an isolated SQLite sandbox. No separate guide page is needed.
+
+All PowerShell commands, account details, reset options, and step-by-step manual reproductions:
+[COMMANDS.md](COMMANDS.md).
 
 On Windows PowerShell, use npm.cmd if execution policy blocks npm.ps1.
 Use npm run dev for automatic server restarts.
@@ -40,6 +53,13 @@ The app simulates purchases using demo credit; there is no payment gateway.
 
 ### Repeatable data
 
+In the browser lab, use **Reset my purchases**. This clears only your isolated shop and gives each
+demo account $1,000. Visitor shops expire after two hours of inactivity or a server restart.
+Test runs have separate disposable data and do not modify your purchases.
+
+The following terminal commands apply to the original persistent shop, started with `npm run start:shop`.
+That mode keeps `.data/lab.sqlite`; it is separate from the browser lab's in-memory visitor shops.
+
 Startup initializes an empty database automatically. The seed command preserves existing orders by default.
 
 ~~~sh
@@ -49,10 +69,29 @@ npm run seed -- --reset
 Stop the app before resetting. This clears and recreates this demo database's records, including sessions.
 It does not touch external databases. The default file is .data/lab.sqlite, which is ignored by Git.
 
-Initial data: 3 users, 4 products, 1 weekend offer, 1 customer order, 2 order lines, and 2 matching ledger entries.
-Alex's opening credit is $1,000; the seeded $73 order leaves $927.
+Normal startup and `npm run seed` initialize 3 users, 4 products, and 1 weekend offer, with
+$1,000 per user and no purchases. `--reset` explicitly restores the older $73 sample order instead,
+leaving the customer $927. Existing data is preserved unless a reset option is supplied.
+
+For manual testing with **$1,000 available credit and zero purchases**, stop the app and run:
+
+~~~sh
+npm run seed -- --fresh
+npm run start:shop
+~~~
+
+This resets the demo accounts, removes all purchases (including the sample), clears offer claims
+and sessions, and retains the products/offer. Log in again after restarting.
+Run it again whenever you want to repeat a purchase scenario from scratch.
+Normal startup preserves this fresh state. Automated tests continue to use their isolated sample data.
+To reproduce the total mismatch, add two different products to your cart, review it, and complete
+checkout. On the receipt, use the **Receipt total** switch to compare the faulty and correct displays. With `BUG_TOTAL_MISMATCH=1`, the receipt
+shows only the first line's amount while Transactions records the full purchase. No sample order is required.
 
 ### Clock and configuration
+
+For the browser lab, choose the demo day in the website controls and apply it. The clock/flag
+environment variables below are supported by the advanced `start:shop` mode.
 
 The normal app uses the current server clock. Offer availability is Saturday/Sunday in UTC, with one purchase per user for this offer.
 
@@ -62,7 +101,7 @@ For Monday, set it to 2026-10-26T12:00:00.000Z.
 Copy .env.example to .env and start with:
 
 ~~~sh
-node --env-file=.env src/server.js
+node --env-file=.env src/server.js --shop
 ~~~
 
 The normal npm start command uses existing process environment variables; it does not load .env automatically.
@@ -74,12 +113,16 @@ A server-side clock can also be injected into createApp for the later isolated t
 - /login: role shortcuts, sign-in, and a visible error state.
 - /products: searchable product cards with original SVG illustrations.
 - /offers: the weekend offer and its actual availability.
-- /checkout?product=1: server-priced order summary; offer purchases also pass offer=1.
+- /products/:id: individual product details, quantity selector, and Add to cart.
+- /cart: review, update quantities, remove items, and proceed to checkout.
+- /checkout: final server-priced review of the current cart before purchase.
 - /orders and /orders/:id: personal orders, receipt, and transaction records.
 - /admin: administrator-only, read-only store overview.
 
 Store Owner is a separate seeded role; additional owner-management workflows are outside this scaffold.
-The demo uses one item per new order and quantity 1. The seeded sample order contains two items to make reconciliation meaningful.
+Checkout supports multiple products and quantities 1-99. An order can use one promotion, with
+quantity 1 for that offer item. Products, prices, eligibility, available credit, and all totals
+are resolved by the server. Order lines and ledger entries commit in one transaction.
 
 ### API surface
 
@@ -92,13 +135,20 @@ The demo uses one item per new order and quantity 1. The seeded sample order con
 | GET | /api/products?q= | Search products |
 | GET | /api/offers | Offer availability and UTC clock |
 | GET | /api/checkout?product_id=1 | Quote a purchase; optional offer_id |
-| POST | /api/orders | Purchase product_id; optional offer_id |
+| POST | /api/checkout | Quote a basket of items with product_id, quantity, optional offer_id |
+| POST | /api/orders | Purchase a basket or the original single-product request |
+| GET / POST | /api/cart, /api/cart/items | Read cart or add a product |
+| POST / DELETE | /api/cart/items/:id | Update quantity or remove a line |
+| POST | /api/cart/checkout | Purchase the server-side cart and clear it atomically |
 | GET | /api/orders | Own orders |
 | GET | /api/orders/:id | Own receipt, items, and ledger; admins can inspect any order |
 
 API authentication uses the same HTTP-only session cookie as the browser.
 Prices, customer identity, and totals come from server data, not client-supplied amounts.
 All stored amounts use integer cents. Checkout and ledger insertion commit together.
+The purchase endpoint accepts either the original single-product body or
+`{ "items": [{ "product_id": 1, "quantity": 2 }, { "product_id": 2, "quantity": 1 }] }`.
+Client-supplied prices, totals, and user IDs cannot override the server's values.
 
 ## Baseline verification
 
@@ -145,6 +195,8 @@ skips, retries, timeouts, and setup errors cannot count as successful defect det
 The underlying defective test runs still fail normally. Only the outer verification harness succeeds
 when the intended failures match.
 
+Historical matrix (2026-10-25, before multi-item checkout); current measurements are in the audit.
+
 | Scenario | Checks | Passes | Intended failures | Duration |
 | --- | --- | --- | --- | --- |
 | baseline | 34 | 34 | 0 | 17.7s |
@@ -174,8 +226,10 @@ The API guard fails with the successful repeat response attached; the UI control
 ## Case study 3: The displayed total that disagreed with the ledger
 
 **Implemented synthetic reconstruction.** BUG_TOTAL_MISMATCH reuses the first order line as the receipt total.
-The two-item seed receipt displays $28 while the order, line-item sum, and ledger remain $73.
-Independent SQL and the rendered amount expose the mismatch; a single-item receipt remains correct.
+Create a new order with two journals and one pair of headphones: $56 + $45 = $101.
+With the flag enabled, the receipt displays $56 while the order, line-item sum, and ledger remain $101.
+The current detector builds that order through the browser from an empty database, then compares the
+rendered amount against independent SQL. A one-line receipt remains a passing control.
 
 ## GitHub Actions
 
@@ -198,11 +252,11 @@ and red report, deployed from the artifacts of the same run that verified them.
 
 ## Measurements
 
-Latest local baseline (2026-10-25): **34/34 passed in 17.7 seconds**, with CI=true, 2 workers, and zero retries.
+Historical local baseline (2026-10-25): **34/34 passed in 17.7 seconds**, with CI=true, 2 workers, and zero retries.
 Runtime is the latest full baseline in the verified defect matrix.
 Hosted results: green 34/34 in 17.8s; red verified 12 intended failures in 27.1s.
 
-Repeated locally ten times each with `npm run test:repeat`: **10/10 green runs clean**
+The earlier 34-test version was repeated locally ten times each with `npm run test:repeat`: **10/10 green runs clean**
 (16.8-22.4s, median 18.5s) and **10/10 red runs verified** with an identical set of 12 intended
 failures and 22 passing controls every time (23.9-28.6s, median 26.2s).
 That is a ten-run sample on one Windows machine, not a long-run flake rate.

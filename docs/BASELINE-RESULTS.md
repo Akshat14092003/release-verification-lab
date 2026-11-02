@@ -1,5 +1,10 @@
 # Correct-build baseline results
 
+Current local interactive revision: 47 tests (21 API, 15 browser, 3 database, 8 security).
+See [interactive verification](INTERACTIVE-DEMO.md) for its results and
+[the earlier checkout audit](MANUAL-DEMO-AUDIT.md) for the 38-test revision.
+The table below retains the earlier 34-test measurement.
+
 Recorded: 2026-10-25. Command: npm run test:bugs, baseline phase, with CI=true.
 
 | Check | Result |

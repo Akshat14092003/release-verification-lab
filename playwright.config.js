@@ -1,11 +1,13 @@
 import { defineConfig, devices } from "@playwright/test";
+import { join } from "node:path";
 
 const scenario = process.env.LAB_SCENARIO || "baseline";
-if (!["baseline", "auth", "weekend", "limit", "total", "all", "red"].includes(scenario)) {
+if (!["baseline", "auth", "weekend", "limit", "total", "all", "red", "demo"].includes(scenario)) {
   throw new Error("Unknown LAB_SCENARIO.");
 }
-const output = scenario === "baseline" ? "test-results" : "test-results/defects/" + scenario;
-const html = scenario === "baseline" ? "playwright-report" : "defect-reports/" + scenario;
+const live = scenario === "demo" && process.env.LAB_RUN_DIRECTORY;
+const output = live || (scenario === "baseline" ? "test-results" : "test-results/defects/" + scenario);
+const html = live ? join(live, "html") : scenario === "baseline" ? "playwright-report" : "defect-reports/" + scenario;
 
 export default defineConfig({
   testDir: "./tests",
@@ -18,7 +20,7 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 5_000 },
   reporter: [
-    ["list"],
+    ...(live ? [["./scripts/live-reporter.js"]] : [["list"]]),
     ["html", { outputFolder: html, open: "never" }],
     ["json", { outputFile: output + "/results.json" }],
     ["junit", { outputFile: output + "/junit.xml" }]

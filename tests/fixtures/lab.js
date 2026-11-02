@@ -8,6 +8,7 @@ import { readBugFlags } from "../../src/config.js";
 
 export const test = base.extend({
   labTime: ["2026-10-24T12:00:00.000Z", { option: true }],
+  sampleOrder: [true, { option: true }],
 
   clock: async ({ labTime }, use) => {
     let instant = new Date(labTime);
@@ -22,12 +23,12 @@ export const test = base.extend({
     });
   },
 
-  lab: async ({ clock }, use, testInfo) => {
+  lab: async ({ clock, sampleOrder }, use, testInfo) => {
     // Each test gets its own real SQLite file and loopback server, even in parallel.
     // Never connect to the interactive demo database or reset a shared instance.
     const databasePath = testInfo.outputPath("lab.sqlite");
     mkdirSync(dirname(databasePath), { recursive: true });
-    const runtime = createApp({ databasePath, now: clock.now, bugs: readBugFlags(process.env) });
+    const runtime = createApp({ databasePath, now: clock.now, bugs: readBugFlags(process.env), includeSampleOrder: sampleOrder });
     const server = runtime.app.listen(0, "127.0.0.1");
     let sql;
     try {

@@ -43,7 +43,7 @@ const verified = Boolean(redSummary?.complete && redRun?.verified);
 
 const repeatBlock = repeat
   ? `<section>
-      <h2>Repeatability</h2>
+      <h2>Repeatability (${repeat.expectedChecks}-check suite)</h2>
       <p>${repeat.runs} local green runs and ${repeat.runs} local red runs on ${escape(repeat.environment.platform)},
       Node ${escape(repeat.environment.node)}, ${repeat.environment.workers} workers.</p>
       <ul>

@@ -7,8 +7,8 @@ Status: published and verified on GitHub Actions. [Successful run](https://githu
 
 | Job | Configuration | Required outcome |
 | --- | --- | --- |
-| green | All flags 0, Node 22.17.1, Ubuntu 24.04 | All 34 tests pass |
-| red | Depends on green; all flags 1 | Exactly 12 known failures, 22 passing controls |
+| green | All flags 0, Node 22.17.1, Ubuntu 24.04 | All 47 tests pass |
+| red | Depends on green; all flags 1 | Exactly 12 known failures, 35 passing controls |
 | publish | Depends on both; push to main only | Deploys the evidence site to GitHub Pages |
 
 The underlying red Playwright run exits 1 and contains real red assertions.
@@ -25,6 +25,9 @@ Unexpected outcomes fail the job. No blanket continue-on-error is used.
 - No production service or account secret is required. All accounts/data are synthetic.
 
 ## Local verification performed
+
+The original hosted measurements below use 34 tests. The local interactive revision has 47 tests;
+see [interactive verification](INTERACTIVE-DEMO.md). No hosted run is claimed for this revision yet.
 
 - Clean npm ci completed; 72 packages audited, 0 vulnerabilities reported at that time.
 - All 34 correct-build tests passed with CI=true and 2 workers.
