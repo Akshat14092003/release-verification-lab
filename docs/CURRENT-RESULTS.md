@@ -33,6 +33,10 @@ failing identities cannot count as verified detection.
   passed the live integration at one worker, one CPU, 1 GB RAM: 47 passes,
   verified report/progress/ownership, preserved cart/credit, cancellation, and
   container exit 0 without OOM. The standard server entry point was checked too.
+- Main run 41503705053 rejected the immediate post-resize admin measurement
+  (359px before the navigation resize listener finished). The regression now
+  waits for the actual responsive reflow before requiring zero document overflow;
+  its width limit and the suite's zero-retry policy are unchanged.
 - Real local runner integration: 47 passes, live progress, owner-only report,
   preserved visitor cart/credit, cancellation response. Docker integration is a
   separate required CI job; local Docker is unavailable on the author's machine.
