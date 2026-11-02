@@ -1,5 +1,8 @@
 # Correct-build baseline results
 
+**Current release evidence:** 47 checks (21 API, 15 browser, 3 database, 8 security); green 47/47, red 35 passing controls and exactly 12 intended failures. See [current results](CURRENT-RESULTS.md). Older measurements below are historical.
+
+
 Current local interactive revision: 47 tests (21 API, 15 browser, 3 database, 8 security).
 See [interactive verification](INTERACTIVE-DEMO.md) for its results and
 [the earlier checkout audit](MANUAL-DEMO-AUDIT.md) for the 38-test revision.

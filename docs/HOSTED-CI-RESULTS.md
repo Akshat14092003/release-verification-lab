@@ -1,5 +1,8 @@
 # Hosted GitHub Actions verification
 
+**Current release evidence:** 47 checks (21 API, 15 browser, 3 database, 8 security); green 47/47, red 35 passing controls and exactly 12 intended failures. See [current results](CURRENT-RESULTS.md). Older measurements below are historical.
+
+
 Verified: 2026-10-25.
 
 - Repository: [Akshat14092003/release-verification-lab](https://github.com/Akshat14092003/release-verification-lab).

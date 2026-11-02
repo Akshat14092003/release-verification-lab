@@ -21,7 +21,9 @@ function results(suites) {
   ]);
 }
 
-export function createTestRunner({ directory, timeoutMs = 300_000, reportTimeoutMs = 120_000, cooldownMs = 15_000, maxRuns = 8 } = {}) {
+export function createTestRunner({ directory, timeoutMs = 300_000, reportTimeoutMs = 120_000, cooldownMs = 15_000, maxRuns = 8,
+  workers = 2, spawnProcess = spawn, browserAvailable = () => existsSync(chromium.executablePath()) } = {}) {
+  if (![1, 2].includes(workers)) throw new Error("Test workers must be 1 or 2.");
   const root = resolve(directory);
   mkdirSync(root, { recursive: true });
   const runs = new Map();
@@ -114,7 +116,7 @@ export function createTestRunner({ directory, timeoutMs = 300_000, reportTimeout
     if (Date.now() - (lastStarted.get(owner) || 0) < cooldownMs) {
       throw new ShopError("Please wait a few seconds before starting another run.", 429);
     }
-    if (!existsSync(chromium.executablePath())) {
+    if (!browserAvailable()) {
       throw new ShopError("Chromium is not installed on this host. Install the project's Playwright browser before running tests.", 503);
     }
     for (const [visitor, started] of lastStarted) {
@@ -147,7 +149,7 @@ export function createTestRunner({ directory, timeoutMs = 300_000, reportTimeout
       LAB_SCENARIO: "demo", LAB_RUN_ID: id, LAB_RUN_DIRECTORY: run.directory,
       ...Object.fromEntries(BUG_FLAGS.map(flag => [flag, bugs[flag] ? "1" : "0"]))
     };
-    const child = spawn(process.execPath, [cli, "test"], {
+    const child = spawnProcess(process.execPath, [cli, "test", "--workers=" + workers], {
       cwd: projectRoot, env, windowsHide: true, detached: process.platform !== "win32", stdio: ["ignore", "pipe", "pipe"]
     });
     run.child = child;

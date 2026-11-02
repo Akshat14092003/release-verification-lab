@@ -34,8 +34,23 @@ test("website switches and demo day change a new visitor's actual shop", async (
   await expect(page.locator("#bug-expectation")).toContainText("1 failed check and 46 passing checks");
   await page.locator(".lab-day summary").click();
   await page.getByLabel("Demo day (UTC)").selectOption("monday");
+  let releaseRefresh;
+  const refreshGate = new Promise(resolve => { releaseRefresh = resolve; });
+  let refreshStarted;
+  const refreshPending = new Promise(resolve => { refreshStarted = resolve; });
+  await page.route("**/products", async route => {
+    if (route.request().resourceType() === "fetch") {
+      refreshStarted();
+      await refreshGate;
+    }
+    await route.continue();
+  });
   await page.getByRole("button", { name: "Apply day", exact: true }).click();
+  await refreshPending;
+  await expect(page.locator("#clock-label")).toHaveText("Saturday");
+  releaseRefresh();
   await expect(page.locator("#clock-label")).toHaveText("Monday");
+  await page.unroute("**/products");
   await page.getByRole("link", { name: "Sign in", exact: true }).click();
   await page.getByRole("button", { name: "Customer", exact: true }).click();
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -80,6 +95,24 @@ test("visitor switches, purchases and reset are isolated", async ({ page, demo }
     expect(invalid.status()).toBe(400);
     const crossOrigin = await page.request.post("/api/lab/reset", { data: {}, headers: { Origin: "https://example.test" } });
     expect(crossOrigin.status()).toBe(403);
+    const ordersBefore = (await (await page.request.get("/api/orders")).json()).orders;
+    await page.goto("/products");
+    if (await page.locator("#lab-settings").isHidden()) await page.getByRole("button", { name: "QA playground" }).click();
+    await page.locator(".lab-day summary").click();
+    await page.getByRole("button", { name: "Reset my purchases" }).click();
+    const confirmation = page.getByRole("dialog", { name: "Reset your demo shop?" });
+    await expect(confirmation).toBeVisible();
+    await expect(confirmation).toContainText("This cannot be undone");
+    await page.getByRole("button", { name: "Keep shopping" }).click();
+    expect((await (await page.request.get("/api/orders")).json()).orders).toEqual(ordersBefore);
+    await page.getByRole("button", { name: "Reset my purchases" }).click();
+    await page.getByRole("button", { name: "Reset purchases", exact: true }).click();
+    await expect(page).toHaveURL(/\/products$/);
+    await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
+    expect((await page.request.get("/api/auth/me")).status()).toBe(401);
+    await page.request.post("/api/auth/login", { data: credentials });
+    expect((await (await page.request.get("/api/orders")).json()).orders).toEqual([]);
+    expect((await (await other.get("/api/auth/me")).json()).balance_cents).toBe(95500);
   } finally { await other.dispose(); }
 });
 
@@ -126,7 +159,9 @@ test("mobile visitor guide and run errors remain usable", async ({ page }) => {
   const width = await page.evaluate(() => ({ content: document.documentElement.scrollWidth, viewport: window.innerWidth }));
   expect(width.content).toBeLessThanOrEqual(width.viewport);
   await expect(page.locator("#clock-value")).toContainText("2026-10-24");
-  await page.getByRole("button", { name: "Open menu", exact: true }).click();
+  await page.getByRole("button", { name: "Try the QA lab" }).click();
+  await expect(page.getByRole("dialog", { name: "Navigation and account" })).toBeVisible();
+  await expect(page.locator("#lab-settings")).toBeVisible();
   await page.getByRole("button", { name: "Run checks", exact: true }).click();
   await page.getByRole("button", { name: "Run tests", exact: true }).click();
   await expect(page.locator("#lab-message")).toContainText("disabled in this test instance");

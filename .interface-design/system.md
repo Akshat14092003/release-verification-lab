@@ -20,7 +20,7 @@ Other stylesheets consume tokens and must not redeclare them.
 One accent (blue). Pass/fail keep their own semantic colours — never recolour them to the accent.
 ```
 --ink      #172d49 / dark #e4edfc   primary text
---muted    #61758d / dark #a3b5cf   supporting text, descriptions
+--muted    #465b76 / dark #a3b5cf   supporting text, descriptions
 --faint    #52617a / dark #9eafc9   small captions, footnotes, meta (contrast-safe)
 --line     #dce5f2 / dark #2c405d   hairline borders
 --surface  #ffffff / dark #142239   solid reading surfaces
@@ -110,3 +110,7 @@ Every animation has a `prefers-reduced-motion: reduce` off-switch.
 | Lab band is bold and sticky; shop stays calm | The playground is the headline feature and must catch the eye; the shop must stay trustworthy. | 2026-11-02 |
 | Finite invitation animations in the lab | Keep attention cues brief. Loading and celebration effects remain; no causal claim about test flakes. | 2026-11-02 |
 | `tabular-nums` on all figures; `--faint` caption tier | It's a ledger/reconciliation app — aligned numbers and a real 3-step text ramp read as precise. | 2026-11-02 |
+
+## Readiness corrections
+
+Use the supporting-text token for table cells/headers and subtotal labels. Table scroll wrappers establish a positioning context so visually hidden headings cannot expand mobile pages. The home page names the lab and offers Try the QA lab. Destructive reset uses a consequence dialog with Keep shopping as its initial focus. The decorative ribbon completes once in four seconds; reduced motion disables it.

@@ -1,7 +1,7 @@
 # GitHub Actions verification
 
 Workflow: .github/workflows/release-verification.yml.
-Status: published and verified on GitHub Actions. [Successful run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/40180501884).
+Published release: [47-check successful run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/41453518469). The added container integration must pass on the readiness PR before merging; see [current results](CURRENT-RESULTS.md).
 
 ## Jobs
 
@@ -9,7 +9,8 @@ Status: published and verified on GitHub Actions. [Successful run](https://githu
 | --- | --- | --- |
 | green | All flags 0, Node 22.17.1, Ubuntu 24.04 | All 47 tests pass |
 | red | Depends on green; all flags 1 | Exactly 12 known failures, 35 passing controls |
-| publish | Depends on both; push to main only | Deploys the evidence site to GitHub Pages |
+| live-runner | Docker, 1 GB RAM, 1 worker | Real 47-pass run, streamed progress, owner-only report, preserved cart/credit, cancellation |
+| publish | Depends on green, red, and live-runner; push to main only | Deploys the evidence site to GitHub Pages |
 
 The underlying red Playwright run exits 1 and contains real red assertions.
 The validation wrapper exits 0 only after checking exact failing identities, fresh report identity, test count, and absence of skips/setup failures.
@@ -31,6 +32,8 @@ disappear at the first streamed result or any terminal run state; reduced motion
 - The workflow default is contents: read. The publish job alone adds pages: write and id-token: write. Checkout credential persistence is disabled.
 - Actions are pinned to commit SHAs resolved from the official v7 references.
 - No production service or account secret is required. All accounts/data are synthetic.
+
+The live-runner artifact includes summary, container state, and logs. A prior 512 MB container was rejected after Chromium crashed and container state confirmed OOM. The 1 GB reference container is not proof of free-host suitability. Deployment remains blocked until a suitable free compute account is available.
 
 ## Local verification performed
 
@@ -75,9 +78,9 @@ failures in 20.4s).
 
 ## Repeatability
 
-Ten consecutive local green runs and ten red runs: 10/10 clean and 10/10 verified.
-See [repeatability](REPEATABILITY.md); the per-run record is committed as docs/repeatability.json and
-is rendered on the published site.
+Current 47-check sample: three green runs clean and three red runs verified, with zero retries.
+See [repeatability](REPEATABILITY.md); docs/repeatability.json is rendered on the published site.
+The initial repair sample's failures and the earlier 34-check, ten-pair sample are retained separately.
 
 ## Run locally
 

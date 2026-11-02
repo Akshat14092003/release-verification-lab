@@ -259,8 +259,8 @@
     saving = api("/api/lab/settings", {
       bugs: Object.fromEntries(switches.map(input => [input.name, input.checked])), clock: $("demo-clock").value
     }).then(async state => {
-      updateSettings(state);
       await window.Fieldwork.refresh();
+      updateSettings(state);
       message("Settings applied. Try the behaviour right here.");
       return state;
     }).finally(() => {
@@ -280,11 +280,15 @@
     switches.forEach(input => { input.checked = false; });
     save().catch(error => message(error.message, true));
   });
-  $("reset-shop").addEventListener("click", async () => {
-    const button = $("reset-shop");
+  $("reset-shop").addEventListener("click", () => {
+    $("reset-error").textContent = "";
+    $("reset-dialog").showModal();
+  });
+  $("confirm-reset").addEventListener("click", async () => {
+    const button = $("confirm-reset");
     button.disabled = true;
     try { await api("/api/lab/reset", {}); location.assign("/products"); }
-    catch (error) { message(error.message, true); }
+    catch (error) { $("reset-error").textContent = error.message + " Try resetting again."; }
     finally { button.disabled = false; }
   });
   $("repeat-offer").addEventListener("click", async () => {

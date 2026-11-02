@@ -52,7 +52,7 @@ html.theme-changing::view-transition-new(root) { animation:theme-reveal .5s ease
 .dot-one { top:19%;left:9%;animation:label-float 5s ease-in-out infinite; }
 .dot-two { bottom:24%;right:4%;height:5px;width:5px;background:var(--accent); }
 .store-ribbon { overflow:hidden;border-block:1px solid var(--line);padding:11px 0;mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent); }
-.store-ribbon>div { display:flex;width:max-content;align-items:center;gap:42px;animation:ribbon-scroll 35s linear infinite; }
+.store-ribbon>div { display:flex;width:max-content;align-items:center;gap:42px;animation:ribbon-scroll 4s ease-out 1 both; }
 .store-ribbon span { font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);white-space:nowrap; }
 .store-ribbon i { color:var(--accent);font-style:normal; }
 #collection { scroll-margin-top:85px; }
@@ -130,7 +130,7 @@ html[data-theme="dark"] .filter-chip.selected { background:var(--accent);color:v
 @keyframes lamp-float { 0%,100%{transform:translateY(0) rotate(12deg)}50%{transform:translateY(10px) rotate(7deg)} }
 @keyframes label-float { 0%,100%{translate:0 0}50%{translate:0 -7px} }
 @keyframes spark-pulse { 50%{box-shadow:0 0 0 8px #2864dc10} }
-@keyframes ribbon-scroll { to{transform:translateX(-50%)} }
+@keyframes ribbon-scroll { to{transform:translateX(-24px)} }
 @keyframes spin { to{transform:rotate(360deg)} }
 @keyframes toast-in { from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)} }
 @keyframes guide-pulse { 50%{box-shadow:0 0 0 8px #84aff420} }

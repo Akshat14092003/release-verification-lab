@@ -7,7 +7,7 @@
   --accent:#2864dc;--accent-hover:#1e50b7;--accent-ink:#fff;--accent-wash:#dce9ff;
   --focus:#91b9ff;--green:var(--accent);
   /* Neutrals */
-  --ink:#172d49;--muted:#61758d;--faint:#52617a;--line:#dce5f2;--surface:#fff;--background:#f3f7fd;--soft:#e8effb;--sidebar:#f4f8ff;
+  --ink:#172d49;--muted:#465b76;--faint:#52617a;--line:#dce5f2;--surface:#fff;--background:#f3f7fd;--soft:#e8effb;--sidebar:#f4f8ff;
   /* Glass + ambient glow */
   --glass:rgba(249,252,255,.82);--glass-solid:#f5f8ff;--glass-line:rgba(125,154,199,.23);
   --glass-shadow:0 16px 48px #183e790c;--glow-green:#d7e7ff;--glow-gold:#e9e4fb;
