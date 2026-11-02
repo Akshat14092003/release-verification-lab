@@ -8,7 +8,9 @@ export class ShopError extends Error {
 }
 
 export function positiveId(value, label = "Product") {
-  if (!/^[1-9]\d*$/.test(String(value))) throw new ShopError(label + " is invalid.");
+  if (!["number", "string"].includes(typeof value) || !/^[1-9]\d*$/.test(String(value))) {
+    throw new ShopError(label + " is invalid.");
+  }
   const id = Number(value);
   if (!Number.isSafeInteger(id)) throw new ShopError(label + " is invalid.");
   return id;
@@ -34,6 +36,12 @@ export function listProducts(db, search = "") {
   ).all(search);
 }
 
+export function getProduct(db, value) {
+  const product = db.prepare("SELECT * FROM products WHERE id=?").get(positiveId(value));
+  if (!product) throw new ShopError("Product not found.", 404);
+  return product;
+}
+
 export function listOffers(db, userId, now, { bugs = {} } = {}) {
   return db.prepare(
     "SELECT o.*, p.name AS product_name, p.description, p.artwork, p.price_cents AS regular_price_cents " +
@@ -41,32 +49,56 @@ export function listOffers(db, userId, now, { bugs = {} } = {}) {
   ).all().map(offer => ({ ...offer, ...offerAvailability(db, offer, userId, now, { bugs }) }));
 }
 
-export function quoteOrder(db, userId, productValue, offerValue, now, options = {}) {
+function quoteItem(db, userId, item, now, options) {
+  if (!item || typeof item !== "object" || Array.isArray(item)) throw new ShopError("Order item is invalid.");
+  const { product_id: productValue, offer_id: offerValue } = item;
   const productId = positiveId(productValue);
+  const quantity = positiveId(item.quantity ?? 1, "Quantity");
+  if (quantity > 99) throw new ShopError("Quantity must be between 1 and 99.");
   const product = db.prepare("SELECT * FROM products WHERE id = ?").get(productId);
   if (!product) throw new ShopError("Product not found.", 404);
   let offer = null;
   if (offerValue !== undefined && offerValue !== null && offerValue !== "") {
     offer = db.prepare("SELECT * FROM offers WHERE id = ?").get(positiveId(offerValue, "Offer"));
     if (!offer || offer.product_id !== productId) throw new ShopError("Offer not found.", 404);
+    if (quantity !== 1) throw new ShopError("Offer purchases must have quantity 1.");
     const availability = offerAvailability(db, offer, userId, now, options);
     if (!availability.available) throw new ShopError(availability.reason, 409);
   }
+  const unitPrice = offer ? offer.price_cents : product.price_cents;
+  const total = unitPrice * quantity;
+  if (!Number.isSafeInteger(total)) throw new ShopError("Order amount is too large.");
+  return { product, offer, quantity, unit_price_cents: unitPrice, total_cents: total };
+}
+
+export function quoteOrder(db, userId, items, now, options = {}) {
+  if (!Array.isArray(items) || items.length < 1 || items.length > 20) {
+    throw new ShopError("Select between 1 and 20 products.");
+  }
+  const lines = items.map(item => quoteItem(db, userId, item, now, options));
+  if (new Set(lines.map(line => line.product.id)).size !== lines.length) {
+    throw new ShopError("Select each product once and use its quantity field.");
+  }
+  const offers = lines.filter(line => line.offer);
+  if (offers.length > 1) throw new ShopError("Use at most one offer per order.");
+  const total = lines.reduce((sum, line) => sum + line.total_cents, 0);
+  if (!Number.isSafeInteger(total)) throw new ShopError("Order amount is too large.");
   return {
-    product,
-    offer,
-    total_cents: offer ? offer.price_cents : product.price_cents,
+    items: lines,
+    product: lines[0].product,
+    offer: offers[0]?.offer ?? null,
+    total_cents: total,
     balance_cents: balanceCents(db, userId)
   };
 }
 
-export function placeOrder(db, userId, productId, offerId, now, bugs = {}) {
+export function placeOrder(db, userId, items, now, bugs = {}, cartKey = null) {
   db.exec("BEGIN IMMEDIATE");
   try {
     // Resolve amounts and eligibility again inside the write transaction.
     // Seeded limit defect only omits the purchase-time cap. The UI listing
     // and quote still hide a spent offer, demonstrating a direct-request bypass.
-    const quote = quoteOrder(db, userId, productId, offerId, now, {
+    const quote = quoteOrder(db, userId, items, now, {
       bugs, enforcePurchaseCap: !bugs.BUG_NO_LIMIT
     });
     if (quote.balance_cents < quote.total_cents) throw new ShopError("Not enough demo credit.", 409);
@@ -75,12 +107,17 @@ export function placeOrder(db, userId, productId, offerId, now, bugs = {}) {
       "INSERT INTO orders (user_id, offer_id, total_cents, created_at) VALUES (?, ?, ?, ?)"
     ).run(userId, quote.offer?.id ?? null, quote.total_cents, createdAt);
     const orderId = Number(result.lastInsertRowid);
-    db.prepare(
-      "INSERT INTO order_items (order_id, product_id, product_name, unit_price_cents, quantity) VALUES (?, ?, ?, ?, 1)"
-    ).run(orderId, quote.product.id, quote.product.name, quote.total_cents);
-    db.prepare(
+    const addItem = db.prepare(
+      "INSERT INTO order_items (order_id, product_id, product_name, unit_price_cents, quantity) VALUES (?, ?, ?, ?, ?)"
+    );
+    const addEntry = db.prepare(
       "INSERT INTO ledger (order_id, user_id, amount_cents, description, created_at) VALUES (?, ?, ?, ?, ?)"
-    ).run(orderId, userId, -quote.total_cents, quote.product.name, createdAt);
+    );
+    for (const line of quote.items) {
+      addItem.run(orderId, line.product.id, line.product.name, line.unit_price_cents, line.quantity);
+      addEntry.run(orderId, userId, -line.total_cents, line.product.name, createdAt);
+    }
+    if (cartKey) db.prepare("DELETE FROM cart_items WHERE cart_key=?").run(cartKey);
     db.exec("COMMIT");
     return { id: orderId, total_cents: quote.total_cents, created_at: createdAt };
   } catch (error) {

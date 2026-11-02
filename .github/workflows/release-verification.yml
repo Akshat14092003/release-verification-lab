@@ -42,6 +42,8 @@ jobs:
         run: npx playwright install --with-deps chromium --no-shell
       - name: Check syntax
         run: npm run check
+      - name: Run unit guards
+        run: npm run test:unit
       - name: Verify the correct build
         run: npm test
       - name: Summarize results

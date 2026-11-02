@@ -1,12 +1,19 @@
 import { createApp } from "./app.js";
 import { loadConfig } from "./config.js";
+import { createDemoApp } from "./demo.js";
+import { dirname, join } from "node:path";
 
 const config = loadConfig();
-const runtime = createApp(config);
+const legacyShop = process.argv.includes("--shop");
+const runtime = legacyShop ? createApp(config) : createDemoApp({ directory: join(dirname(config.databasePath), "demo"), trustProxy: config.trustProxy });
 const server = runtime.app.listen(config.port, config.host, () => {
-  console.log("Fieldwork shop: http://" + config.host + ":" + config.port);
-  console.log("Database: " + config.databasePath);
-  if (process.env.LAB_NOW) console.log("Demo clock: " + config.now().toISOString() + " (UTC)");
+  console.log((legacyShop ? "Fieldwork shop: " : "Release Verification Lab: ") + "http://" + config.host + ":" + config.port);
+  if (legacyShop) {
+    console.log("Database: " + config.databasePath);
+    if (process.env.LAB_NOW) console.log("Demo clock: " + config.now().toISOString() + " (UTC)");
+  } else {
+    console.log("Open the website to toggle bugs, reset purchases, and run tests. Visitor data is isolated.");
+  }
 });
 
 server.on("error", error => {

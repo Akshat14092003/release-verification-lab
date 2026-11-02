@@ -1,5 +1,6 @@
 import { test, expect } from "../fixtures/lab.js";
 import { checkResponse, signIn } from "../support/api.js";
+import { LoginPage } from "../pages/shop.js";
 
 function displayedCents(text) {
   const amount = text.trim();
@@ -29,13 +30,34 @@ async function compareReceipt(page, lab, orderId, expectedCents, testInfo) {
   expect(row.total_cents).toBe(expectedCents);
   expect(row.ledger_cents).toBe(row.total_cents);
   expect(row.item_cents).toBe(row.total_cents);
-  expect(displayedCents(displayed.order)).toBe(row.ledger_cents);
+  expect(displayedCents(displayed.order), "Displayed receipt total must equal the independently summed ledger")
+    .toBe(row.ledger_cents);
   expect(displayedCents(displayed.ledger)).toBe(row.ledger_cents);
 }
 
-test("the two-item seed receipt matches independent ledger and item sums @total", async ({ page, lab }, testInfo) => {
-  await signIn(page.request, testInfo);
-  await compareReceipt(page, lab, 1001, 7300, testInfo);
+test.describe("fresh checkout", () => {
+  test.use({ sampleOrder: false });
+  test("a manually built multi-item receipt matches independent ledger and item sums @total", async ({ page, lab }, testInfo) => {
+    expect(lab.sql.prepare("SELECT COUNT(*) AS count FROM orders").get().count).toBe(0);
+    await new LoginPage(page).signInAs();
+    await page.goto("/products/1");
+    await page.getByLabel("Quantity", { exact: true }).fill("2");
+    await page.getByRole("button", { name: "Add to cart", exact: true }).click();
+    await expect(page.locator("#cart-toast-text")).toContainText("Everyday journal added");
+    await page.goto("/products/2");
+    await page.getByRole("button", { name: "Add to cart", exact: true }).click();
+    await expect(page.locator("#cart-toast-text")).toContainText("Studio headphones added");
+    await page.goto("/cart");
+    await expect(page.getByTestId("cart-total")).toHaveText("$101.00");
+    await page.getByRole("link", { name: "Proceed to checkout" }).click();
+    await expect(page.getByTestId("checkout-total")).toHaveText("$101.00");
+    await page.getByRole("button", { name: "Place demo order" }).click();
+    await expect(page).toHaveURL(/\/orders\/\d+$/);
+    const orderId = Number(new URL(page.url()).pathname.split("/").pop());
+    expect(lab.sql.prepare("SELECT COUNT(*) AS count FROM order_items WHERE order_id=?").get(orderId).count).toBe(2);
+    expect(lab.sql.prepare("SELECT opening_balance_cents + (SELECT SUM(amount_cents) FROM ledger WHERE user_id=1) AS cents FROM users WHERE id=1").get().cents).toBe(89900);
+    await compareReceipt(page, lab, orderId, 10100, testInfo);
+  });
 });
 
 test("a new purchase matches the displayed total, ledger, and remaining balance @total", async ({ page, lab }, testInfo) => {
@@ -59,7 +81,7 @@ test("a rejected weekday purchase leaves orders, items, and ledger unchanged @we
     " (SELECT COUNT(*) FROM order_items) AS items, (SELECT COUNT(*) FROM ledger) AS ledger";
   const before = lab.sql.prepare(query).get();
   await checkResponse(await request.post("/api/orders", {
-    data: { product_id: 1, offer_id: 1 }
+    data: { items: [{ product_id: 2 }, { product_id: 1, offer_id: 1 }] }
   }), 409, testInfo, "rejected-purchase");
   const after = lab.sql.prepare(query).get();
   await testInfo.attach("unchanged-database", {

@@ -7,13 +7,21 @@ Status: published and verified on GitHub Actions. [Successful run](https://githu
 
 | Job | Configuration | Required outcome |
 | --- | --- | --- |
-| green | All flags 0, Node 22.17.1, Ubuntu 24.04 | All 34 tests pass |
-| red | Depends on green; all flags 1 | Exactly 12 known failures, 22 passing controls |
+| green | All flags 0, Node 22.17.1, Ubuntu 24.04 | All 47 tests pass |
+| red | Depends on green; all flags 1 | Exactly 12 known failures, 35 passing controls |
 | publish | Depends on both; push to main only | Deploys the evidence site to GitHub Pages |
 
 The underlying red Playwright run exits 1 and contains real red assertions.
 The validation wrapper exits 0 only after checking exact failing identities, fresh report identity, test count, and absence of skips/setup failures.
 Unexpected outcomes fail the job. No blanket continue-on-error is used.
+
+Retries remain disabled. Visitor-interface regressions cover two asynchronous UI races:
+completed runs must not start another progress poll, and theme choices must be saved before
+a deferred View Transition callback can be cancelled by navigation. Progress responses from
+an older run cannot overwrite the active run. These fixes preserve the exact 12-assertion
+defect pattern; navigation errors and timeouts still invalidate red verification.
+The restored loading skeletons are decorative and stay outside the real result list. They
+disappear at the first streamed result or any terminal run state; reduced motion disables their sheen.
 
 ## Evidence and permissions
 
@@ -25,6 +33,10 @@ Unexpected outcomes fail the job. No blanket continue-on-error is used.
 - No production service or account secret is required. All accounts/data are synthetic.
 
 ## Local verification performed
+
+The original hosted measurements below use 34 tests. The interactive revision has 47 tests;
+see [interactive verification](INTERACTIVE-DEMO.md) and the current
+[pull request checks](https://github.com/Akshat14092003/release-verification-lab/pull/1/checks).
 
 - Clean npm ci completed; 72 packages audited, 0 vulnerabilities reported at that time.
 - All 34 correct-build tests passed with CI=true and 2 workers.

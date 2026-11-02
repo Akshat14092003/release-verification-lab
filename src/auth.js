@@ -40,7 +40,7 @@ export function login(db, email, password, now, response, bugs = {}) {
   db.prepare("INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)").run(
     tokenHash(token), user.id, now.getTime() + SESSION_SECONDS * 1000
   );
-  response.cookie(COOKIE, token, { httpOnly: true, sameSite: "lax", path: "/", maxAge: SESSION_SECONDS * 1000 });
+  response.cookie(COOKIE, token, { httpOnly: true, sameSite: "lax", secure: Boolean(response.req?.secure), path: "/", maxAge: SESSION_SECONDS * 1000 });
   return { id: user.id, email: user.email, name: user.name, role: user.role };
 }
 

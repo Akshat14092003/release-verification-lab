@@ -3,37 +3,17 @@ import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { BUG_FLAGS } from "../src/config.js";
 import { randomUUID } from "node:crypto";
+import { BASELINE_CHECKS, DEFECTS } from "../src/defects.js";
 
 const key = (project, title) => project + "::" + title;
-const expected = {
-  auth: [
-    key("api", "invalid credentials are rejected: wrong password @auth"),
-    key("api", "invalid credentials are rejected: unknown account @auth"),
-    key("e2e", "invalid credentials show an error without logging in @auth"),
-    key("security", "SQL-like email cannot authenticate @auth"),
-    key("security", "SQL-like password cannot authenticate @auth")
-  ],
-  weekend: [
-    key("api", "UTC offer window: Friday before opening @weekend"),
-    key("api", "UTC offer window: Monday at closing @weekend"),
-    key("e2e", "the Monday offer is unavailable in the UI @weekend"),
-    key("e2e", "a checkout opened on Sunday is refused after Monday begins @weekend"),
-    key("db", "a rejected weekday purchase leaves orders, items, and ledger unchanged @weekend")
-  ],
-  limit: [
-    key("api", "a direct second purchase of the same offer is refused @limit")
-  ],
-  total: [
-    key("db", "the two-item seed receipt matches independent ledger and item sums @total")
-  ]
-};
+const expected = Object.fromEntries(DEFECTS.map(defect => [defect.id, defect.failures]));
 const scenarios = [
-  { name: "baseline", flags: [], failures: [], count: 34 },
+  { name: "baseline", flags: [], failures: [], count: BASELINE_CHECKS },
   { name: "auth", flags: ["BUG_AUTH_BYPASS"], failures: expected.auth, count: 5 },
   { name: "weekend", flags: ["BUG_WEEKEND_OFFER"], failures: expected.weekend, count: 7 },
   { name: "limit", flags: ["BUG_NO_LIMIT"], failures: expected.limit, count: 2 },
   { name: "total", flags: ["BUG_TOTAL_MISMATCH"], failures: expected.total, count: 2 },
-  { name: "all", flags: BUG_FLAGS, failures: Object.values(expected).flat(), count: 34 }
+  { name: "all", flags: BUG_FLAGS, failures: Object.values(expected).flat(), count: BASELINE_CHECKS }
 ];
 const args = process.argv.slice(2);
 if (args.length > 1 || args.some(arg => arg !== "--red-only")) {

@@ -29,6 +29,7 @@ export function loadConfig(env = process.env) {
     host: env.HOST || "127.0.0.1",
     bugs: readBugFlags(env),
     port,
+    trustProxy: env.TRUST_PROXY === "1",
     databasePath: resolve(projectRoot, env.DATABASE_PATH || ".data/lab.sqlite"),
     now: () => fixedNow ? new Date(fixedNow) : new Date()
   };

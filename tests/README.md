@@ -2,6 +2,11 @@
 
 The baseline checks correct behaviour across API, browser, database, and security layers. Intentional defects are verified separately.
 
+The four Node unit checks in `unit/defect-detection.test.js` guard the visitor's bug-caught feedback:
+exact detector identities, enabled flags, assertion-only failures, provisional counts, and final
+verification. Run `node --test tests/unit/defect-detection.test.js` from the project root. These
+are separate from the 47 Playwright release checks and do not change the expected red counts.
+
 ## Run
 
 ~~~sh
@@ -26,7 +31,7 @@ No manually started app or shared demo database is required.
   role access, and UTC opening/closing boundaries.
 - e2e/: login/logout, error presentation, purchase/receipt, offers, stale checkout at expiry,
   mobile layout/sign-out, and administrator navigation.
-- db/: a multi-item seed receipt and a new purchase reconciled against independent SQL,
+- db/: a multi-item order created through checkout from an empty database and a new single-item purchase reconciled against independent SQL,
   remaining credit, and absence of writes after a rejected purchase.
 - security/: original SQL-like input and reflected/stored XSS probes against disposable app instances.
 - fixtures/: one real SQLite database and ephemeral server per test, plus a controlled clock.
@@ -39,6 +44,8 @@ Fixtures import the app factory, but business requests run over real HTTP.
 Database assertions use a second, read-only SQLite connection and independent queries.
 Tests never open or reset .data/lab.sqlite. Parallel tests cannot share accounts, orders, ports, or database files.
 Each test starts on Saturday; clock.setTime() changes only that test's server clock.
+The legacy fixtures explicitly include the sample order; the multi-item detector selects `sampleOrder: false`
+and builds its own receipt through the browser. Interactive startup defaults to no sample purchases.
 No test-only HTTP endpoint is exposed by the app.
 
 Browser tests block optional third-party CDN/font requests. Local HTML, JS, CSS, and API responses are real.
@@ -56,7 +63,20 @@ Reports:
   API-only tests use these structured attachments; they do not create browser screenshots.
 - Retries are disabled so the first failure stays visible.
 
-Reports are ignored by Git. The hosted workflow passed and uploaded both evidence artifacts. Standalone Pages report publication is pending.
+Reports are ignored by Git. The earlier version's hosted reports are published on Pages.
+The local interactive revision has 47 tests; see ../docs/INTERACTIVE-DEMO.md.
+Five storefront-control browser checks cover inline switches, visitor isolation/reset, themes,
+mobile layout, contextual hints, sidebar persistence, reduced motion, and run errors. Cart API
+checks cover quantity merging, validation, rollback, guest sign-in continuity, and cookie isolation.
+Nested launches are disabled in these fixtures; the real same-page run-to-report flow is verified
+separately with the actual runner.
+
+The theme check holds the animation callback pending while navigating, proving the preference
+is saved synchronously. The mobile report fixture maps GET responses by run ID and advances the
+browser clock across the former 500ms polling race: a completed run stays finished, with no
+extra poll and its evidence action still visible. Retries and detector expectations are unchanged.
+It also checks the loading skeletons before results arrive, their removal when results stream in,
+and their static appearance with reduced motion. Placeholders never count as test results.
 
 ## Defect verification
 

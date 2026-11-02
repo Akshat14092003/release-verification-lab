@@ -4,10 +4,11 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { hrtime } from "node:process";
 import os from "node:os";
+import { BASELINE_CHECKS } from "../src/defects.js";
 
 const args = process.argv.slice(2);
 let runs = 10;
-let expectedChecks = 34;
+let expectedChecks = BASELINE_CHECKS;
 for (const arg of args) {
   const runsArg = /^--runs=(\d+)$/.exec(arg);
   const expectArg = /^--expect=(\d+)$/.exec(arg);

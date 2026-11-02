@@ -63,6 +63,11 @@ own 201, not a test assertion message.
 
 ## 3. The displayed total that disagreed with the ledger
 
+Current manual reproduction: start with `--fresh`, select two journals and one pair of headphones
+via the product pages, add them to the cart, and complete checkout. With the flag on, the new receipt displays $56 while
+the ledger records $101. The detector now performs this browser journey itself; see [commands](../COMMANDS.md).
+The screenshot below retains the original $73 sample-order demonstration.
+
 **Flag:** `BUG_TOTAL_MISMATCH=1` - the receipt reuses the first order line as the order total. Stored
 data stays correct; only the rendered figure lies, which is the hardest class of money bug to notice.
 
@@ -75,7 +80,7 @@ total. The stored order, the line-item sum, and the ledger all still say $73.
 
 | Layer | Check |
 | --- | --- |
-| Database | `the two-item seed receipt matches independent ledger and item sums @total` |
+| Browser + database | `a manually built multi-item receipt matches independent ledger and item sums @total` |
 
 The check recomputes the total with read-only SQL over the stored lines and ledger entries, then
 compares it with the amount actually rendered. It never reads the displayed figure back into the
@@ -101,7 +106,8 @@ distinction is kept explicit so the demonstration is not oversold.
 
 ## Failing for the right reason
 
-Every red run must produce exactly this set of twelve failures with twenty-two controls still passing.
+The current red run must produce exactly twelve failures with thirty-five controls still passing.
+The screenshot below documents the earlier 34-test version with twenty-two controls.
 The harness matches failing-test identities, requires a fresh per-run report token, and rejects stale
 reports, extra failures, skips, retries, timeouts, and non-assertion setup errors - so a broken
 environment cannot be mistaken for successful detection.

@@ -33,7 +33,11 @@ export class ProductsPage {
   }
 
   async buy(name) {
-    await this.page.getByRole("link", { name: "Buy " + name, exact: true }).click();
+    await this.page.getByRole("link", { name: "View " + name, exact: true }).click();
+    await this.page.getByRole("button", { name: "Add to cart", exact: true }).click();
+    await this.page.getByRole("status").filter({ hasText: name + " added to your cart" }).waitFor();
+    await this.page.goto("/cart");
+    await this.page.getByRole("link", { name: "Proceed to checkout" }).click();
   }
 
   async navigate(name) {

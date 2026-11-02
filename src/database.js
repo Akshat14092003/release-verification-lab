@@ -28,12 +28,12 @@ export function openDatabase(path) {
   return db;
 }
 
-export function seedDatabase(db, { reset = false } = {}) {
+export function seedDatabase(db, { reset = false, includeSampleOrder = true } = {}) {
   if (!reset && db.prepare("SELECT COUNT(*) AS count FROM users").get().count > 0) return false;
   db.exec("BEGIN IMMEDIATE");
   try {
     if (reset) {
-      for (const table of ["sessions", "ledger", "order_items", "orders", "offers", "products", "users"]) {
+      for (const table of ["sessions", "cart_items", "ledger", "order_items", "orders", "offers", "products", "users"]) {
         db.exec("DELETE FROM " + table);
       }
       db.exec("DELETE FROM sqlite_sequence");
@@ -55,19 +55,21 @@ export function seedDatabase(db, { reset = false } = {}) {
     db.prepare(
       "INSERT INTO offers (id, product_id, name, price_cents, max_purchases_per_user, weekend_only) VALUES (?, ?, ?, ?, ?, ?)"
     ).run(1, 1, "The weekend edit", 1900, 1, 1);
-    db.prepare(
-      "INSERT INTO orders (id, user_id, total_cents, created_at) VALUES (?, ?, ?, ?)"
-    ).run(1001, 1, 7300, "2026-10-23T10:30:00.000Z");
-    const addItem = db.prepare(
-      "INSERT INTO order_items (id, order_id, product_id, product_name, unit_price_cents, quantity) VALUES (?, ?, ?, ?, ?, ?)"
-    );
-    addItem.run(1, 1001, 1, "Everyday journal", 2800, 1);
-    addItem.run(2, 1001, 2, "Studio headphones", 4500, 1);
-    const addEntry = db.prepare(
-      "INSERT INTO ledger (id, order_id, user_id, amount_cents, description, created_at) VALUES (?, ?, ?, ?, ?, ?)"
-    );
-    addEntry.run(1, 1001, 1, -2800, "Everyday journal", "2026-10-23T10:30:00.000Z");
-    addEntry.run(2, 1001, 1, -4500, "Studio headphones", "2026-10-23T10:30:00.000Z");
+    if (includeSampleOrder) {
+      db.prepare(
+        "INSERT INTO orders (id, user_id, total_cents, created_at) VALUES (?, ?, ?, ?)"
+      ).run(1001, 1, 7300, "2026-10-23T10:30:00.000Z");
+      const addItem = db.prepare(
+        "INSERT INTO order_items (id, order_id, product_id, product_name, unit_price_cents, quantity) VALUES (?, ?, ?, ?, ?, ?)"
+      );
+      addItem.run(1, 1001, 1, "Everyday journal", 2800, 1);
+      addItem.run(2, 1001, 2, "Studio headphones", 4500, 1);
+      const addEntry = db.prepare(
+        "INSERT INTO ledger (id, order_id, user_id, amount_cents, description, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+      );
+      addEntry.run(1, 1001, 1, -2800, "Everyday journal", "2026-10-23T10:30:00.000Z");
+      addEntry.run(2, 1001, 1, -4500, "Studio headphones", "2026-10-23T10:30:00.000Z");
+    }
     db.exec("COMMIT");
     return true;
   } catch (error) {
