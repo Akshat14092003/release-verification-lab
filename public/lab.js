@@ -204,8 +204,9 @@
     settings.hidden = !open;
     playgroundToggle.setAttribute("aria-expanded", String(open));
   }
-  try { setPlayground(!loginPage && localStorage.getItem("fieldwork-playground") !== "closed"); }
-  catch { setPlayground(!loginPage); }
+  const compactNavigation = window.matchMedia("(max-width: 850px)").matches;
+  try { setPlayground(!loginPage && !compactNavigation && localStorage.getItem("fieldwork-playground") !== "closed"); }
+  catch { setPlayground(!loginPage && !compactNavigation); }
   playgroundToggle.addEventListener("click", () => {
     const open = settings.hidden;
     setPlayground(open);

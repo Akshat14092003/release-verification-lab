@@ -92,7 +92,20 @@ test("mobile catalogue fits the screen and keeps sign-out accessible", async ({ 
     content: document.documentElement.scrollWidth, viewport: window.innerWidth
   }));
   expect(width.content).toBeLessThanOrEqual(width.viewport);
-  await expect(page.getByRole("button", { name: "Sign out", exact: true })).toBeInViewport();
+  const menu = page.getByRole("button", { name: "Open menu", exact: true });
+  await expect(page.locator("#mobile-navigation")).not.toBeVisible();
+  await expect(menu).toHaveAttribute("aria-expanded", "false");
+  await menu.click();
+  const drawer = page.getByRole("dialog", { name: "Navigation and account" });
+  await expect(drawer).toBeVisible();
+  await expect(drawer.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
+  await expect(drawer.getByRole("button", { name: "Switch to dark mode" })).toBeVisible();
+  await expect(drawer.getByRole("button", { name: "Open profile menu" })).toBeVisible();
+  await expect(drawer.getByRole("navigation").getByRole("link", { name: "Cart", exact: true })).toBeVisible();
+  await expect(drawer.getByRole("button", { name: "Sign out", exact: true })).toBeInViewport();
+  await page.keyboard.press("Escape");
+  await expect(drawer).not.toBeVisible();
+  await expect(menu).toBeFocused();
   await new ProductsPage(page).signOut();
   await expect(page).toHaveURL(/\/login$/);
 });

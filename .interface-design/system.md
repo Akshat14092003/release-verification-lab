@@ -81,6 +81,15 @@ pill toggle with a gear badge; contrasting white Run-checks button. Finite (non-
 animations only to keep the invitation brief. Earlier flakes were traced to polling and
 theme-persistence races; animation load was not established as their cause.
 
+### Mobile navigation
+At widths up to 850px, keep the brand, guest Sign in action and menu trigger in the 64px sticky topbar.
+A native modal side drawer contains navigation, cart, theme, role, credit, profile and QA
+controls. Its QA toolbar is static inside the drawer. Restore the original desktop positions
+when widening the viewport, including the saved desktop sidebar preference.
+Inside the drawer, use matching 44px rows and shared label/icon alignment for shop,
+account and QA controls. Omit duplicate cart controls and guest placeholder balances.
+Bug details start collapsed on mobile. The guest Sign in action also stays in the desktop header.
+
 ### Bug-caught celebration (keep the fun)
 Red (`--danger`) is the lab's signal colour. The catch popup keeps its bounce-in, target spin, ring
 and particle burst — this is intentional delight, not slop. Test progress and the pass/fail report
