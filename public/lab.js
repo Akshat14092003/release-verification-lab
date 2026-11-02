@@ -199,11 +199,13 @@
   $("close-tests").addEventListener("click", () => drawer.close());
   $("toggle-report-view").addEventListener("click", () => setReportView(!drawer.classList.contains("is-report-view")));
   const playgroundToggle = $("toggle-playground");
+  const loginPage = document.body.classList.contains("login-body");
   function setPlayground(open) {
     settings.hidden = !open;
     playgroundToggle.setAttribute("aria-expanded", String(open));
   }
-  try { setPlayground(localStorage.getItem("fieldwork-playground") !== "closed"); } catch { /* Start open. */ }
+  try { setPlayground(!loginPage && localStorage.getItem("fieldwork-playground") !== "closed"); }
+  catch { setPlayground(!loginPage); }
   playgroundToggle.addEventListener("click", () => {
     const open = settings.hidden;
     setPlayground(open);

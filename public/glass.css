@@ -133,3 +133,65 @@ html[data-theme="dark"] [data-status="failed"] .check-mark,html[data-theme="dark
   .test-progress.is-running>span:after,[data-status="running"] .check-mark:after,.check-loading:after { animation:none!important; }
   .test-progress>span,.sidebar-toggle svg { transition:none; }
 }
+
+/* Fit the sign-in experience below its navigation, with room for the contextual hint. */
+.login-body { --topbar-height:56px;height:100dvh;min-height:100dvh;display:flex;flex-direction:column; }
+.login-body .login-tools { min-height:56px;padding:9px 24px;flex-shrink:0; }
+.login-body .shop-lab { top:56px;min-height:56px;padding:9px 24px;flex-shrink:0;flex-wrap:nowrap; }
+.login-body .login-layout { order:1;flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr); }
+.login-body .login-story { min-height:0;padding:24px clamp(24px,4vw,60px);display:flex;flex-direction:column;gap:18px; }
+.login-body .story-copy { flex:1;min-height:0;margin:0;padding:0;display:flex;flex-direction:column;gap:12px; }
+.login-body .story-copy h1 { font-size:clamp(28px,5.2dvh,48px);line-height:1.12;letter-spacing:-1.5px;margin:0;max-width:none; }
+.login-body .story-copy>p { max-width:430px;font-size:13px;line-height:1.6; }
+.login-body .story-art.story-photo { flex:1;min-height:0;width:100%;max-width:640px;height:auto;margin:0;display:flex;align-items:center;border:0;box-shadow:none;background:transparent; }
+.login-body .story-photo .collection-photo { width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;border-radius:16px; }
+.login-body .story-footer { margin:0;font-size:10px; }
+.login-body .login-form-section { min-height:0;padding:20px clamp(18px,3vw,40px); }
+.login-body .login-card { max-width:440px;max-height:100%;overflow-y:auto;padding:24px; }
+.login-body .login-card h2 { font-size:clamp(22px,2.5vw,28px);margin:8px 0;line-height:1.2; }
+.login-body .login-card>.muted { font-size:13px;line-height:1.5; }
+.login-body .login-form { margin-top:20px;gap:8px; }
+.login-body .login-form input { padding:11px 13px;margin-bottom:6px;min-height:42px; }
+.login-body .login-form .button { min-height:44px;padding:11px; }
+.login-body .login-card .alert { padding:9px 12px;margin:10px 0;font-size:12px; }
+.login-body .demo-accounts { margin-top:20px;padding-top:16px; }
+.login-body .demo-accounts>p { margin:6px 0 10px;font-size:11px;line-height:1.5; }
+.login-body .role-choice { padding:8px 10px;font-size:11px; }
+.login-body .demo-accounts>.login-disclaimer { margin:10px 0 0;font-size:10px; }
+.login-body .context-guide { order:2;flex-shrink:0;margin:0;padding:10px 24px;border-radius:0;border-left:0;border-top:1px solid var(--line);gap:10px; }
+.login-body .guide-copy h2 { font-size:12px; }.login-body .guide-copy p { font-size:11px;line-height:1.5; }
+.login-body .context-guide .eyebrow { font-size:8px; }.login-body .guide-progress { margin-top:5px; }
+.login-body .lab-message { margin:0;padding:0 24px;flex-shrink:0; }
+.login-body .lab-message:empty { display:none; }
+.login-body .qa-playground { position:fixed;top:120px;left:16px;right:16px;max-height:calc(100dvh - 136px);overflow:auto;margin:0;z-index:32; }
+@media(max-height:740px) {
+  .login-body .login-story{padding-block:18px;gap:12px}.login-body .story-copy{gap:9px}
+  .login-body .story-copy h1{font-size:clamp(26px,5dvh,36px)}.login-body .story-copy>p{font-size:12px}
+  .login-body .login-form-section{padding-block:12px}.login-body .login-card{padding:16px 22px}
+  .login-body .login-card>.eyebrow{font-size:9px}.login-body .login-card h2{font-size:23px}
+  .login-body .login-card>.muted{display:none}
+  .login-body .login-form{margin-top:10px;gap:4px}.login-body .login-form input{margin-bottom:3px;padding:9px 12px}
+  .login-body .demo-accounts{margin-top:10px;padding-top:10px}.login-body .demo-accounts>p:not(.login-disclaimer){display:none}
+  .login-body .role-options{margin-top:8px}.login-body .context-guide{padding-block:8px}
+}
+@media(max-width:700px) {
+  .login-body .login-layout{grid-template-columns:minmax(0,1fr)}.login-body .login-story{display:none}
+  .login-body .login-form-section{padding-inline:18px}.login-body .login-card{max-width:420px}
+  .login-body .login-tools,.login-body .shop-lab{padding-inline:14px}.login-body #bug-count{display:none}
+  .login-body .playground-toggle{padding:7px 10px 7px 7px;font-size:11px;gap:7px}
+  .login-body .context-guide{padding:10px 16px}.login-body .context-guide>.button{margin-left:0;font-size:10px;padding:8px}
+  .login-body .context-guide>.icon-button{position:static;flex-shrink:0}.login-body .guide-copy{flex:1;flex-basis:65%}
+  .login-body .guide-copy p{padding-right:0}.login-body .context-guide{flex-wrap:wrap}
+}
+@media(max-width:700px) and (max-height:740px) {
+  .login-body .login-card h2{font-size:20px}
+  .login-body .context-guide{flex-wrap:nowrap;padding-block:8px}
+  .login-body .guide-copy{flex-basis:0}.login-body .guide-copy p,.login-body .context-guide>.button{display:none}
+}
+@media(max-width:700px) and (max-height:640px) {
+  .login-body .login-card{padding-block:12px}.login-body .login-card h2{margin-block:6px}
+  .login-body .demo-accounts{margin-top:8px;padding-top:8px}
+}
+@media(max-height:560px) {
+  .login-body .login-layout{flex:none;min-height:440px;grid-template-rows:auto auto}
+}
