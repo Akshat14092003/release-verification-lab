@@ -8,7 +8,7 @@ html { scroll-behavior:smooth; }
 .nav-link { position:relative; }
 .sidebar .nav-label { white-space:nowrap; }
 .sidebar .signout { white-space:nowrap; }
-.header-cart { display:flex;align-items:center;gap:5px;color:var(--ink);position:relative;min-height:40px;padding:0 6px;margin:0 -6px;border-radius:9px; }
+.header-cart { display:flex;align-items:center;gap:5px;color:var(--ink);position:relative;min-width:36px;min-height:40px;padding:0 6px;margin:0 -6px;border-radius:9px; }
 .header-cart>span { display:flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding-inline:3px;border-radius:50%;font-size:9px;font-weight:700;background:var(--accent);color:var(--accent-ink); }
 .cart-pop { animation:cart-pop .4s cubic-bezier(.2,.8,.3,1.5); }
 html[data-sidebar="collapsed"] { --sidebar-width:80px; }
@@ -112,7 +112,7 @@ html.theme-changing::view-transition-new(root) { animation:theme-reveal .5s ease
 .cart-line-info { flex:1;min-width:0; }.cart-line-info h2 { font-size:14px;margin:8px 0; }.cart-line-info .muted { font-size:11px; }
 .cart-line-actions { display:flex;align-items:center;gap:14px;margin-top:13px;flex-wrap:wrap; }
 .cart-line-actions>form { display:flex;align-items:center;gap:10px; }
-.cart-line-actions .quantity-control button { width:34px;height:36px;font-size:15px; }.cart-line-actions .quantity-control input { width:34px;font-size:11px;padding:7px 0; }
+.cart-line-actions .quantity-control button { width:36px;height:36px;font-size:15px; }.cart-line-actions .quantity-control input { width:34px;font-size:11px;padding:7px 0; }
 .subtle-button { background:none;border:0;padding:5px 0;font:inherit;font-size:10px;color:var(--muted);text-decoration:underline;text-underline-offset:3px; }
 .cart-line-total { align-self:flex-start;font-size:14px;padding-top:8px;white-space:nowrap; }.empty-cart>.icon { animation:label-float 6s ease-in-out infinite; }
 .cart-toast { position:fixed;bottom:25px;right:25px;z-index:50;display:flex;align-items:center;gap:12px;padding:15px 20px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 50px #0002;font-size:12px;max-width:calc(100vw - 32px);animation:toast-in .3s both; }

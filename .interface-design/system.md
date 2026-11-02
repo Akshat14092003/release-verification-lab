@@ -21,7 +21,7 @@ One accent (blue). Pass/fail keep their own semantic colours — never recolour 
 ```
 --ink      #172d49 / dark #e4edfc   primary text
 --muted    #61758d / dark #a3b5cf   supporting text, descriptions
---faint    #7a899f / dark #8695ad   captions, footnotes, meta (one notch below muted)
+--faint    #52617a / dark #9eafc9   small captions, footnotes, meta (contrast-safe)
 --line     #dce5f2 / dark #2c405d   hairline borders
 --surface  #ffffff / dark #142239   solid reading surfaces
 --background#f3f7fd / dark #0b1425   page canvas
@@ -68,15 +68,18 @@ Solid `--surface`, `--line` border, radius 12–18px, soft `--glass-shadow`. Pro
 hover (shadow + scale 1.025 on the image). No frost on content surfaces.
 
 ### Interactive target sizes
-Icon-only controls (theme, cart, avatar, add, quantity steppers, icon buttons) are **≥36px, 40px on
-mobile**; tap areas expanded with padding + negative margin where the visual must stay small. Target
-is WCAG 44 / 40 min.
+Icon-only controls (theme, cart, avatar, add, quantity steppers, icon buttons) are **≥36×36 CSS px,
+40×40 at widths up to 850px**. These are project usability targets. WCAG 2.2 SC 2.5.8 (AA)
+requires 24×24 CSS px, with exceptions; SC 2.5.5 (AAA) uses 44×44 CSS px.
+Tap areas must not overlap. Small captions use size and placement for hierarchy; their
+color must reach 4.5:1 against the rendered background in each theme.
 
 ### The lab band (headline feature)
 Full-width accent gradient band, sticky under the topbar (never set `position` on `.has-lab .shop-lab`
 — it inherits sticky from glass.css; a `position` override reintroduces the panel-overlap bug). Glass
 pill toggle with a gear badge; contrasting white Run-checks button. Finite (non-infinite) attention
-animations only — perpetual repaint here flakes the real-browser lab tests.
+animations only to keep the invitation brief. Earlier flakes were traced to polling and
+theme-persistence races; animation load was not established as their cause.
 
 ### Bug-caught celebration (keep the fun)
 Red (`--danger`) is the lab's signal colour. The catch popup keeps its bounce-in, target spin, ring
@@ -96,5 +99,5 @@ Every animation has a `prefers-reduced-motion: reduce` off-switch.
 | Hybrid depth: frost on chrome, solid on content | Frost signals "shell"; solid keeps reading surfaces calm and legible in both themes. | 2026-11-01 |
 | Single token file; no re-declaration downstream | Earlier green-vs-blue override wars came from duplicated tokens. One source keeps new components on-brand. | 2026-11-01 |
 | Lab band is bold and sticky; shop stays calm | The playground is the headline feature and must catch the eye; the shop must stay trustworthy. | 2026-11-02 |
-| Finite animations in the lab; no perpetual repaint | Infinite repaints near the real-browser test runs cause flakes. Delight without starving the suite. | 2026-11-02 |
+| Finite invitation animations in the lab | Keep attention cues brief. Loading and celebration effects remain; no causal claim about test flakes. | 2026-11-02 |
 | `tabular-nums` on all figures; `--faint` caption tier | It's a ledger/reconciliation app — aligned numbers and a real 3-step text ramp read as precise. | 2026-11-02 |

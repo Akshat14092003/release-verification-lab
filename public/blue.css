@@ -28,10 +28,19 @@ html[data-theme="dark"] .empty-state,html[data-theme="dark"] .stat-card {
 @media(max-width:560px) {
   .qa-playground{padding:18px;border-radius:16px}.product-card .product-details{padding:12px}
   .product-card .product-details h3{font-size:13px}.product-card .product-details p{font-size:11px!important}
-  .product-bottom{margin-top:10px}.product-bottom>strong{font-size:15px}.quick-add .button{font-size:10px;min-height:38px}
+  .product-bottom{margin-top:10px}.product-bottom>strong{font-size:15px}.quick-add .button{font-size:10px;min-height:40px}
 }
 
-/* Tertiary text tier: captions, footnotes and meta sit one notch below --muted
-   supporting text. Readable in both themes (see tokens.css --faint). */
-.page-footer,.credit span,.summary-note,.hero-note,.login-disclaimer,.lab-footnote,
+@media(max-width:850px) {
+  .icon-button,.avatar,.add-button,.theme-toggle,.header-cart { min-width:40px;min-height:40px; }
+  .cart-line-actions .quantity-control button { width:40px;height:40px; }
+}
+@media(max-width:560px) {
+  body:not(.login-body) .context-guide>.icon-button { top:12px;right:12px; }
+  body:not(.login-body) .context-guide .guide-copy { padding-right:36px; }
+}
+
+/* Small captions use a dedicated contrast-safe token; size and placement provide
+   tertiary emphasis without relying on lighter text. */
+.page-footer,.credit span,.summary-note,.hero-note,.demo-accounts>.login-disclaimer,.lab-footnote,
 .bento-foot,.detail-price-note,.story-footer,.collection-footnote { color:var(--faint); }
