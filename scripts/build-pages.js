@@ -31,7 +31,9 @@ const redRun = redSummary?.scenarios?.find(scenario => scenario.name === "red") 
 const repeat = readJson(pick("test-results/repeatability.json", "docs/repeatability.json"));
 
 const repo = "https://github.com/Akshat14092003/release-verification-lab";
-const run = repo + "/actions/runs/40180501884";
+const run = process.env.GITHUB_RUN_ID
+  ? repo + "/actions/runs/" + encodeURIComponent(process.env.GITHUB_RUN_ID)
+  : repo + "/actions/workflows/release-verification.yml";
 
 const greenLine = greenStats
   ? `${greenStats.expected} of ${greenStats.expected + greenStats.unexpected} checks passed in ${(greenStats.duration / 1000).toFixed(1)}s, ${greenStats.unexpected} unexpected failures, ${greenStats.skipped} skipped.`
