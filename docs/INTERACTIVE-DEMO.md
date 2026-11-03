@@ -53,7 +53,9 @@ Switch it off in QA playground to see the same stored purchase display correctly
 
 The sidebar collapses and remembers its state. The sun/moon theme control animates a theme transition
 and persists the preference across shop pages. Both themes now use blue accents and cool frosted
-navigation and overlays; reading and product surfaces stay solid for contrast. Pass/fail indicators
+navigation and overlays. The full theme reveal runs outside native dialogs; inside an open dialog,
+color/icon transitions keep its controls interactive instead of capturing them in a root snapshot.
+Reading and product surfaces stay solid for contrast. Pass/fail indicators
 keep their semantic colors. Successful Add to cart buttons briefly show Added with a tick.
 The storefront includes supplied Gemini photographs,
 a ribbon that moves once for four seconds, hover effects, card entrances, toast feedback, and count animations. Reduced-motion

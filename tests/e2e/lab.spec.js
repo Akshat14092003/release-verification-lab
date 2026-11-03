@@ -118,9 +118,15 @@ test("visitor switches, purchases and reset are isolated", async ({ page, demo }
 
 test("light and dark mode persist across the lab and shop", async ({ page }) => {
   await page.goto("/lab");
+  await page.evaluate(() => {
+    const start = document.startViewTransition.bind(document);
+    document.startViewTransition = (...args) => (window.shopThemeTransition = start(...args));
+  });
   const lightSidebar = await page.locator('.sidebar').evaluate(element => getComputedStyle(element).backgroundColor);
   await page.getByRole("button", { name: "Switch to dark mode" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  expect(await page.evaluate(() => Boolean(window.shopThemeTransition))).toBe(true);
+  await page.evaluate(() => window.shopThemeTransition.finished);
   expect(await page.locator('.sidebar').evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(lightSidebar);
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -208,13 +214,21 @@ test("mobile visitor guide and run errors remain usable", async ({ page }) => {
   await expect(page.locator("#report-frame")).toHaveCSS("background-color", "rgb(13, 17, 23)");
   await page.getByRole("button", { name: "Close test panel" }).click();
   await page.getByRole("button", { name: "Open menu", exact: true }).click();
+  // A root snapshot must not capture the interactive navigation dialog.
+  await page.addStyleTag({ content: 'html.theme-changing::view-transition-new(root){animation-duration:30s}' });
+  await page.evaluate(() => {
+    const start = document.startViewTransition.bind(document);
+    document.startViewTransition = (...args) => (window.testThemeTransition = start(...args));
+  });
   await page.getByRole("button", { name: "Switch to light mode" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  expect(await page.evaluate(() => Boolean(window.testThemeTransition))).toBe(false);
   await page.locator("#open-tests").click();
   await expect(page.frameLocator("#report-frame").locator("body")).toHaveCSS("background-color", "rgb(255, 255, 255)");
   await expect(page.locator("#bug-caught-alert")).toBeHidden();
   await expect(page.locator("#catch-popup")).toBeHidden();
   await page.getByRole("button", { name: "Run details", exact: true }).click();
+  await expect(page.locator("#test-drawer")).not.toHaveClass(/is-report-view/);
   const detectorChecks = [
     { id: "signal", project: "api", title: DEFECTS[0].failures[0].split("::")[1], status: "failed", detectedBug: { id: "auth", label: DEFECTS[0].label } },
     { id: "unexpected", project: "api", title: "An unrelated failure", status: "failed", detectedBug: null }

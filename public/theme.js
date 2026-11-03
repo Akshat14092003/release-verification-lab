@@ -26,7 +26,8 @@
         updateButtons();
         document.dispatchEvent(new CustomEvent("fieldwork:theme", { detail: { theme: next } }));
       };
-      if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      // Root snapshots capture native dialogs too, temporarily blocking their controls.
+      if (document.startViewTransition && !document.querySelector("dialog[open]") && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         document.documentElement.classList.add("theme-changing");
         const transition = document.startViewTransition(apply);
         transition.finished.catch(() => {}).finally(() => document.documentElement.classList.remove("theme-changing"));

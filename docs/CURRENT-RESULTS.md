@@ -37,6 +37,12 @@ failing identities cannot count as verified detection.
   (359px before the navigation resize listener finished). The regression now
   waits for the actual responsive reflow before requiring zero document overflow;
   its width limit and the suite's zero-retry policy are unchanged.
+- PR #6 run 41504346951 matched the twelve defect detectors but also timed out
+  in the mobile report-controls journey after a theme change. A deliberately
+  extended native View Transition reproduced pointer interception by the root
+  snapshot. Theme changes now use the existing color/icon transitions inside
+  open dialogs; the full reveal remains enabled on the storefront. The browser
+  regression checks both paths without adding retries or increasing timeouts.
 - Real local runner integration: 47 passes, live progress, owner-only report,
   preserved visitor cart/credit, cancellation response. Docker integration is a
   separate required CI job; local Docker is unavailable on the author's machine.
