@@ -199,19 +199,32 @@
   $("close-tests").addEventListener("click", () => drawer.close());
   $("toggle-report-view").addEventListener("click", () => setReportView(!drawer.classList.contains("is-report-view")));
   const playgroundToggle = $("toggle-playground");
-  const loginPage = document.body.classList.contains("login-body");
   function setPlayground(open) {
     settings.hidden = !open;
     playgroundToggle.setAttribute("aria-expanded", String(open));
+    if (open && !window.matchMedia("(max-width: 850px)").matches) {
+      const bounds = playgroundToggle.getBoundingClientRect();
+      settings.style.setProperty("--qa-top", Math.round(bounds.bottom + 12) + "px");
+      settings.style.setProperty("--qa-right", Math.max(20, innerWidth - bounds.right - 360) + "px");
+    }
   }
-  const compactNavigation = window.matchMedia("(max-width: 850px)").matches;
-  try { setPlayground(!loginPage && !compactNavigation && localStorage.getItem("fieldwork-playground") !== "closed"); }
-  catch { setPlayground(!loginPage && !compactNavigation); }
+  setPlayground(false);
   playgroundToggle.addEventListener("click", () => {
     const open = settings.hidden;
     setPlayground(open);
-    try { localStorage.setItem("fieldwork-playground", open ? "open" : "closed"); } catch { /* Optional preference. */ }
+    if (open) $("playground-heading").focus();
   });
+  $("close-playground").addEventListener("click", () => { setPlayground(false); playgroundToggle.focus(); });
+  document.addEventListener("click", event => {
+    if (!settings.hidden && !settings.contains(event.target) && !playgroundToggle.contains(event.target) &&
+        !event.target.closest("[data-open-playground],#reset-dialog")) setPlayground(false);
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && !settings.hidden && !$("reset-dialog").open) {
+      event.preventDefault(); setPlayground(false); playgroundToggle.focus();
+    }
+  });
+  window.matchMedia("(max-width: 850px)").addEventListener("change", () => setPlayground(false));
   window.Fieldwork.openTests = openDrawer;
 
   function message(text, error = false) {
@@ -241,6 +254,7 @@
     });
     $("demo-clock").value = state.clock;
     const count = switches.filter(input => input.checked).length;
+    $("toggle-playground").classList.toggle("has-active-bugs", count > 0);
     $("bug-count").textContent = count ? count + (count === 1 ? " bug on" : " bugs on") : "All off";
     const expected = switches.filter(input => input.checked).reduce((sum, input) => sum + Number(input.dataset.failureCount), 0);
     const total = Number(settings.dataset.totalChecks);

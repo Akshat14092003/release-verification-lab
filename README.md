@@ -27,9 +27,16 @@ npm start
 
 Open http://127.0.0.1:3000.
 
-The home page is the storefront. Product arrows open distinct detail pages; Add to cart builds a real
+The home page introduces the release verification lab, with an Enter the shop action, a short
+walkthrough and source/report links. A beetle follows your mouse (or roams on touch devices); catch it to trigger a
+full-screen jump. Choose Let it roam to release it or Fix it to throw it away and see Bug Fixeddd!
+Fixing removes the roaming beetle until the page is refreshed.
+Pause its movement with the small pause control.
+Products at `/products` is the catalogue. Product arrows open distinct detail pages; Add to cart builds a real
 basket with quantities and removal. Guests can browse and keep their cart through sign-in, then checkout.
-QA playground explains all four bug switches within the shop; on mobile it lives in the navigation drawer. Try the QA lab opens it directly. Contextual hints follow the visitor through products,
+QA playground is a compact header tool with an anchored settings panel, closed initially.
+On mobile it lives in the navigation drawer. Each bug explains what it changes, with reproduction
+steps under How to try it. Active bugs show a red state and count. Contextual hints follow the visitor through products,
 cart, checkout, and receipts. **Run checks** opens live progress and reports over the same page.
 The sidebar collapses, the sun/moon theme control animates, and the storefront has gentle motion with
 reduced-motion support. Each visitor gets an isolated SQLite sandbox. No separate guide page is needed.

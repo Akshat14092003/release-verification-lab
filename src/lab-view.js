@@ -9,22 +9,23 @@ const help = {
 
 export function labTools() {
   return '<section class="shop-lab" aria-label="Live demo controls">' +
-    '<button type="button" id="toggle-playground" class="playground-toggle" aria-expanded="true" aria-controls="qa-playground">' +
+    '<button type="button" id="toggle-playground" class="playground-toggle" aria-expanded="false" aria-controls="lab-settings">' +
     '<span aria-hidden="true">&#9881;</span> QA playground <span class="playground-chevron" aria-hidden="true">&#8964;</span></button>' +
     '<span class="playground-tagline">Introduce a bug. See what breaks.</span>' +
     '<div class="lab-toolbar-actions"><span id="bug-count" class="pill neutral">All off</span>' +
     '<button type="button" id="guide-toggle" class="lab-guide-button" aria-expanded="true">Guide</button>' +
     '<button type="button" id="open-tests" class="button test-launch"><span class="test-launch-icon" aria-hidden="true">&#9654;</span>' +
     '<span id="test-launch-label">Run checks</span></button></div></section>' +
-    '<form id="lab-settings" class="qa-playground" aria-labelledby="playground-heading" data-total-checks="' + BASELINE_CHECKS + '">' +
-    '<div class="playground-heading"><div><span class="eyebrow">EXPLORE THE QA PLAYGROUND</span><h2 id="playground-heading">Choose what goes wrong.</h2>' +
+    '<form id="lab-settings" class="qa-playground" aria-labelledby="playground-heading" hidden data-total-checks="' + BASELINE_CHECKS + '">' +
+    '<button type="button" id="close-playground" class="icon-button" aria-label="Close QA playground">&times;</button>' +
+    '<div class="playground-heading"><div><span class="eyebrow">EXPLORE THE QA PLAYGROUND</span><h2 id="playground-heading" tabindex="-1">Choose what goes wrong.</h2>' +
     '<p>These switches introduce intentional bugs in your own demo shop. Turn one on, try its steps, then run the checks to see the evidence.</p></div></div>' +
     '<div class="inline-switches">' + DEFECTS.map(defect => '<article class="bug-card"><label class="inline-switch" title="' + defect.description +
       '"><strong>' + help[defect.id][0] + '</strong><input type="checkbox" role="switch" aria-label="' + defect.label + '" name="' + defect.flag +
       '" aria-describedby="bug-help-' + defect.id + '" data-failure-count="' + defect.failures.length +
       '"/><span class="switch-track" aria-hidden="true"></span></label><p id="bug-help-' + defect.id + '">' + help[defect.id][1] +
-      '</p><p class="bug-try"><strong>Try it:</strong> ' + help[defect.id][2] + '</p><span class="bug-detection">' +
-      defect.failures.length + ' automated ' + (defect.failures.length === 1 ? 'check detects' : 'checks detect') + ' this bug</span></article>').join("") +
+      '</p><details class="bug-instructions"><summary>How to try it <span>' + defect.failures.length +
+      (defect.failures.length === 1 ? ' check' : ' checks') + '</span></summary><p class="bug-try">' + help[defect.id][2] + '</p></details></article>').join("") +
     '</div><div class="playground-footer"><p id="bug-expectation" role="status">All ' + BASELINE_CHECKS + ' checks should pass with the bugs off.</p>' +
     '<details class="lab-day"><summary>Day: <span id="clock-label">Saturday</span></summary><div class="day-popover">' +
     '<label for="demo-clock">Demo day (UTC)</label><select id="demo-clock" name="clock">' +

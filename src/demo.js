@@ -64,7 +64,7 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
     if (!req.is("application/json")) throw new ShopError("Send settings as JSON.", 415);
     next();
   };
-  app.get(["/", "/lab"], (req, res) => res.redirect("/products"));
+  app.get("/lab", (req, res) => res.redirect("/products"));
   app.get("/api/lab/state", (req, res) => res.json(snapshot(req.visitor)));
   app.post("/api/lab/settings", jsonOnly, (req, res) => {
     const { bugs, clock } = req.body || {};

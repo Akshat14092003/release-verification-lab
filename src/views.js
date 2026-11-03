@@ -8,6 +8,7 @@ const dateLabel = value => new Intl.DateTimeFormat("en-US", {
 }).format(new Date(value));
 
 const iconPaths = {
+  home: '<path d="m3 10 9-7 9 7v10H3V10Z"/><path d="M9 20v-7h6v7"/>',
   products: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
   offers: '<path d="M20 13 13 20a2 2 0 0 1-3 0l-7-7V3h10l7 7a2 2 0 0 1 0 3Z"/><circle cx="7.5" cy="7.5" r="1"/>',
   checkout: '<path d="M3 3h2l3 12h11l2-8H6M9 21h.01M18 21h.01"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>',
@@ -38,8 +39,8 @@ export function document(title, body, bodyClass = "", labControls = false) {
     '<title>' + e(title) + ' | Fieldwork</title><link rel="icon" href="/favicon.svg" type="image/svg+xml"/>' +
     '<script src="/theme.js"></script><link rel="stylesheet" href="/tokens.css"/><link rel="stylesheet" href="/styles.css"/><link rel="stylesheet" href="/theme.css"/>' +
     '<link rel="stylesheet" href="/shop.css"/>' + (labControls ? '<link rel="stylesheet" href="/lab.css"/>' : '') + '<link rel="stylesheet" href="/glass.css"/><link rel="stylesheet" href="/blue.css"/>' +
-    '<script src="/app.js" defer></script>' + (labControls ? '<script src="/lab.js" defer></script><script src="/guide.js" defer></script>' : '') + '</head>' +
-    '<body class="' + e(bodyClass) + (labControls ? ' has-lab' : '') + '">' + body +
+    '<link rel="stylesheet" href="/experience.css"/><script src="/app.js" defer></script><script src="/bug.js" defer></script>' + (labControls ? '<script src="/lab.js" defer></script><script src="/guide.js" defer></script>' : '') + '</head>' +
+    '<body class="' + e(bodyClass) + (labControls ? ' has-lab' : '') + '">' + body + bugHunt() +
     '<div class="cart-toast" id="cart-toast" role="status" aria-live="polite" hidden><span class="toast-check">&#10003;</span><span id="cart-toast-text"></span>' +
     '<a href="/cart">View cart &rarr;</a></div></body></html>';
 }
@@ -58,9 +59,9 @@ function bugBanners(bugs = {}) {
 }
 
 export function shell({ title, active, user, balance, now, body, bugs = {}, labControls = false, cart = { count: 0 } }) {
-  const navigation = [["products", "Products"], ["offers", "Offers"], ["cart", "Cart"], ["checkout", "Checkout"], ["orders", "Orders"], ["admin", "Admin"]]
+  const navigation = [["home", "Home"], ["products", "Products"], ["offers", "Offers"], ["cart", "Cart"], ["checkout", "Checkout"], ["orders", "Orders"], ["admin", "Admin"]]
     .filter(([key]) => key !== "admin" || user?.role === "admin")
-    .map(([key, label]) => '<a class="nav-link ' + (key === active ? "active" : "") + '" href="/' + key + '" aria-label="' + label + '" title="' + label + '"' +
+    .map(([key, label]) => '<a class="nav-link ' + (key === active ? "active" : "") + '" href="' + (key === 'home' ? '/' : '/' + key) + '" aria-label="' + label + '" title="' + label + '"' +
       (key === active ? ' aria-current="page"' : "") + '>' + icon(key === "cart" ? "checkout" : key) + '<span class="nav-text">' + label + '</span>' +
       (key === "cart" ? '<span class="nav-count" data-cart-count aria-hidden="true">' + cart.count + '</span>' : "") + '</a>').join("");
   const accountAction = user
@@ -74,14 +75,14 @@ export function shell({ title, active, user, balance, now, body, bugs = {}, labC
     '<form method="post" action="/logout"><button type="submit">' + icon("logout") + 'Log out</button></form>' :
     '<a href="/login">' + icon("logout") + 'Sign in to your account</a>') + '</div></details>';
   return document(title,
-    '<div class="app-shell"><aside class="sidebar"><a class="brand" href="/products" aria-label="Fieldwork home">' + logo() + '</a>' +
+    '<div class="app-shell"><aside class="sidebar"><a class="brand" href="/" aria-label="Fieldwork home">' + logo() + '</a>' +
     '<button type="button" class="sidebar-toggle icon-button" data-sidebar-toggle aria-label="Collapse sidebar" aria-expanded="true" aria-controls="main-navigation">' +
     '<svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16m7-11-3 3 3 3"/></svg></button>' +
     '<p class="nav-label">YOUR WORKSPACE</p><nav id="main-navigation" aria-label="Main navigation">' + navigation + '</nav>' +
     '<div class="sidebar-footer"><div class="demo-note"><span class="status-dot"></span><span>Demo storefront</span></div>' +
     '<p>A small shop. A little inspiration.</p>' + accountAction + '</div></aside>' +
-    '<div class="workspace"><header class="topbar"><a class="brand mobile-brand" href="/products" aria-label="Fieldwork home">' + logo() + '</a>' +
-    '<div class="breadcrumb"><a href="/products">Fieldwork</a><span>/</span><strong>' + e(title) + '</strong></div>' +
+    '<div class="workspace"><header class="topbar"><a class="brand mobile-brand" href="/" aria-label="Fieldwork home">' + logo() + '</a>' +
+    '<div class="breadcrumb"><a href="/">Fieldwork</a><span>/</span><strong>' + e(title) + '</strong></div>' +
     (!user ? '<a class="button header-sign-in" href="/login">Sign in</a>' : '') +
     '<div class="account-bar" data-account="' + (user ? 'member' : 'guest') + '"><p class="menu-section-label">ACCOUNT</p>' +
     '<a class="header-cart" href="/cart" aria-label="Open cart">' + icon("checkout") + '<span data-cart-count>' + cart.count + '</span></a>' + themeButton() +
@@ -158,18 +159,61 @@ function productCards(products) {
     '" aria-label="View ' + e(product.name) + '">' + icon("arrow") + '</a></div>' + addToCartForm(product, { quick: true }) + '</div></article>').join("") + '</div>';
 }
 
-export function productsPage(products, query = "", category = "", labControls = false) {
-  const categories = ["Stationery", "Audio", "Home", "Lighting"];
-  return '<section class="store-hero"><div class="hero-copy"><span class="eyebrow"><i class="live-spark"></i> INTERACTIVE RELEASE VERIFICATION LAB</span>' +
-    '<h1>Small finds.<br/><em>Good everyday.</em></h1><p>Shop with demo credit. Enable a bug, run real automated checks, and inspect the evidence.</p>' +
-    '<div class="hero-actions"><a class="button primary" href="#collection">Explore the collection ' + icon("arrow") +
-    '</a><a class="text-link" href="/offers">The weekend edit</a>' + (labControls ? '<button type="button" class="text-link hero-lab-link" data-open-playground>Try the QA lab ' + icon("arrow") + '</button>' : '') + '</div><span class="hero-note">Fictional credit. Real tests. Your own isolated shop.</span></div>' +
-    '<div class="hero-scene hero-photo-scene"><div class="hero-photo">' + collectionPhoto("(max-width: 560px) 90vw, 45vw") +
-    '<span class="floating-label label-demo"><span class="status-dot"></span> Real shopping. Demo credit.</span></div>' +
+function beetle() {
+  return '<svg class="lab-beetle" viewBox="0 0 160 180" fill="none" aria-hidden="true">' +
+    '<g class="beetle-legs" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="m52 69-24-16-10 9m33 31-30 4-9 17m42 8-23 26 3 15m74-94 24-16 10 9m-33 31 30 4 9 17m-42 8 23 26-3 15"/>' +
+    '<path d="m67 39-8-22m34 22 8-22"/></g><ellipse cx="80" cy="98" rx="43" ry="57" fill="currentColor"/>' +
+    '<path d="M80 52v98M43 80q37-22 74 0" stroke="var(--bug-shell-line)" stroke-width="3"/>' +
+    '<ellipse cx="80" cy="43" rx="25" ry="20" fill="currentColor"/><circle cx="70" cy="40" r="5" fill="var(--bug-eye)"/>' +
+    '<circle cx="90" cy="40" r="5" fill="var(--bug-eye)"/><path d="m68 107 9 9 17-21" class="beetle-tick" stroke="var(--bug-eye)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+
+function bugHunt() {
+  return '<button type="button" id="roaming-bug" class="roaming-bug" aria-label="Catch the roaming bug" title="Catch me if you can">' + beetle() + '</button>' +
+    '<button type="button" id="pause-bug" class="bug-pause" aria-label="Pause roaming bug" title="Pause roaming bug" aria-pressed="false">' +
+    '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path class="pause-mark" d="M8 5v14m8-14v14"/><path class="play-mark" d="m8 5 10 7-10 7V5Z"/></svg></button>' +
+    '<dialog id="bug-surprise" class="bug-surprise is-caught" aria-labelledby="surprise-heading" aria-describedby="bug-result"><form method="dialog"><button class="icon-button surprise-close" aria-label="Close bug surprise">&times;</button></form>' +
+    '<div id="bug-leap" class="bug-leap" aria-hidden="true" hidden>' + beetle() + '</div><div class="surprise-stage">' + beetle() + '<span class="bug-fixed-mark" aria-hidden="true">&#10003;</span></div>' +
+    '<div class="surprise-content"><span class="eyebrow" id="bug-caption">NICE CATCH</span><h2 id="surprise-heading">You caught the bug!</h2>' +
+    '<p id="bug-result">A tiny bug. A very big entrance. What happens next?</p><div class="surprise-actions"><button type="button" class="button secondary" id="release-bug" autofocus>Let it roam</button>' +
+    '<button type="button" class="button primary" id="fix-bug">Fix it</button><form method="dialog" id="bug-done" hidden><button class="button primary">Done</button></form></div>' +
+    '<p class="surprise-note">Just a playful stowaway. QA playground switches stay as you set them.</p></div></dialog>';
+}
+
+export function landingPage(user) {
+  const repo = "https://github.com/Akshat14092003/release-verification-lab";
+  return document("Release Verification Lab", '<a class="skip-link" href="#main-content">Skip to content</a>' +
+    '<header class="home-header"><a class="brand" href="/" aria-label="Fieldwork home">' + logo() + '</a>' +
+    '<nav aria-label="Main navigation"><a href="/" aria-current="page">Home</a><a href="/products">Shop</a><a href="#about-lab">About the lab</a></nav>' +
+    '<div class="home-account"><a class="button secondary" href="' + (user ? '/products' : '/login') + '">' + (user ? 'Open shop' : 'Sign in') + '</a>' + themeButton() + '</div></header>' +
+    '<main id="main-content" class="home-main" tabindex="-1"><section class="store-hero home-hero"><div class="hero-copy"><span class="eyebrow">FIELDWORK / RELEASE VERIFICATION LAB</span>' +
+    '<h1>A little shopping.<br/><em>A little bug hunting.</em></h1><p>A working demo shop with a twist. Introduce realistic bugs, run automated checks, and see the evidence for yourself.</p>' +
+    '<div class="hero-actions"><a class="button primary" href="/products">Enter the shop ' + icon("arrow") + '</a><a class="text-link" href="#how-it-works">How it works ' + icon("arrow") + '</a></div>' +
+    '<span class="hero-note">Fictional credit. Real tests. A sandbox of your own.</span></div><div class="hero-scene hero-photo-scene"><div class="hero-photo">' +
+    collectionPhoto("(max-width: 850px) 94vw, 48vw") + '<span class="floating-label label-demo"><span class="status-dot"></span> Real shopping. Demo credit.</span></div>' +
     '<span class="orbit-dot dot-one"></span><span class="orbit-dot dot-two"></span></div></section>' +
-    '<div class="store-ribbon" aria-hidden="true"><div>' + Array(2).fill('<span>Thoughtful finds</span><i>&#10022;</i><span>Build your own basket</span><i>&#10022;</i>' +
-    '<span>Try a bug. See the evidence.</span><i>&#10022;</i><span>No real payments</span><i>&#10022;</i>').join("") + '</div></div>' +
-    '<section id="collection"><div class="section-toolbar"><div><span class="eyebrow">THE COLLECTION</span><h2>Shop the essentials</h2></div>' +
+    '<div class="home-proof"><span>4 intentional bugs</span><span>47 release checks</span><span>Browser · API · Database · Security</span></div>' +
+    '<section id="how-it-works" class="home-section"><div class="section-intro"><span class="eyebrow">YOUR FIRST BUG HUNT</span><h2>Break it. Catch it.<br/>Make it right.</h2><p>Follow the steps in the shop. Every switch changes actual behavior; every result comes from a real test.</p></div>' +
+    '<ol class="home-steps">' + [
+      ["Shop", "Build a cart and checkout with $1,000 in fictional credit. No card details needed."],
+      ["Enable a bug", "Open QA playground and choose a rule to break. Each switch explains what to try."],
+      ["Run checks", "Watch actual browser, API, database, and security checks report their results."],
+      ["Inspect the evidence", "Open a failed check, read its error and trace, then turn the bug off and verify the fix."]
+    ].map(([title, copy], index) => '<li><span class="step-number">0' + (index + 1) + '</span><div><h3>' + title + '</h3><p>' + copy + '</p></div></li>').join("") + '</ol></section>' +
+    '<section id="about-lab" class="home-section home-about"><div class="section-intro"><span class="eyebrow">MORE THAN A SHOP</span><h2>A small release.<br/>Evidence at every layer.</h2><p>This is a QA portfolio project built with Express, SQLite, and Playwright. You can reproduce the bugs manually and see which checks catch them.</p></div>' +
+    '<div class="layer-list">' + [
+      ["Browser", "Real shopping journeys, screenshots, and traces."], ["API", "Login rules, ownership, pricing, and purchase limits."],
+      ["Database", "Order totals checked against independent SQL and ledger sums."], ["Security", "Focused SQL-like input and reflected/stored script probes."]
+    ].map(([title, copy]) => '<div><h3>' + title + '</h3><p>' + copy + '</p></div>').join("") + '</div></section>' +
+    '<section class="home-evidence"><div><span class="eyebrow">SEE HOW IT IS BUILT</span><h2>Every result has a paper trail.</h2><p>Explore the source or browse the latest published CI reports.</p></div>' +
+    '<div><a class="button secondary" href="' + repo + '">View source ' + icon("arrow") + '</a><a class="text-link" href="https://akshat14092003.github.io/release-verification-lab/">Browse test reports ' + icon("arrow") + '</a></div></section></main>' +
+    '<footer class="home-footer"><a class="brand" href="/">' + logo() + '</a><p>A synthetic shop. An actual bug hunt.</p></footer>', "landing-body");
+}
+
+export function productsPage(products, query = "", category = "") {
+  const categories = ["Stationery", "Audio", "Home", "Lighting"];
+  return '<section id="collection" class="catalogue"><div class="section-toolbar"><div><span class="eyebrow">THE COLLECTION</span><h1>Products</h1><p class="muted">Useful things. Yours to put to the test.</p></div>' +
     '<form action="/products" method="get" class="search-box"><label class="sr-only" for="search">Search products</label>' + icon("search") +
     '<input id="search" name="q" type="search" maxlength="100" value="' + e(query) + '" placeholder="Search the collection"/>' +
     '<button type="submit" class="sr-only">Search</button></form></div><div class="category-filters" aria-label="Product categories">' +

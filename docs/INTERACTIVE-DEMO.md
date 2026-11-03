@@ -1,7 +1,19 @@
 # Interactive storefront and contextual guidance
 
-The application now opens **the shop itself** at `/` ? `/products`. `/lab` is a compatibility
-redirect to the same storefront. There is no separate controls or tutorial page.
+The application opens a landing page at `/`, with the collection photograph, a project introduction,
+four-step overview, source/report links, and Enter the shop. `/products` is the catalogue without
+the marketing hero. `/lab` remains a compatibility redirect to `/products`. Home is available from
+the shopping navigation; the landing page has a simple header instead of the workspace sidebar.
+
+A small SVG beetle follows the mouse across the website, circling nearby when it catches up.
+Hover keeps it moving; keyboard focus or the pause/resume control pauses it. Without a mouse,
+it roams freely. Catching it triggers a
+600ms leap from its current location into a full-screen You caught the bug dialog.
+Let it roam dismisses the dialog and restarts movement. Fix it throws the beetle off-screen,
+shows Bug Fixeddd!, and removes it until the next page load. Refresh to replay the easter egg.
+Closing with × or Escape restarts the chase immediately; no extra click is needed. It is silent and
+does not touch bug switches/cart/login. Reduced motion keeps it still and opens the popup without
+the leap. Other native dialogs hide/pause it. Shop controls remain clickable when it crosses them.
 
 ## Shopping flow
 
@@ -27,11 +39,13 @@ Switch it off in QA playground to see the same stored purchase display correctly
 
 ## Controls stay in the website
 
-- **QA playground** opens an inline section with four bug cards, including before login. Each
+- **QA playground** opens an anchored panel from the desktop header, including before login. Each
   explains the broken behavior, how to reproduce it, and how many checks detect it. Icons and
   Correct behaviour/Bug active labels make the state clear; enabled cards and switches turn red.
   Switches apply automatically. Follow Flip a switch / Try the bug / Run checks.
-- The section can be collapsed while shopping and remembers that choice. Its expected-results
+- The panel starts closed on each page. Close it with its close button, Escape, or an outside click.
+  On mobile it expands inside the navigation drawer in matching rows. Reproduction steps are
+  disclosed under How to try it. Its expected-results
   summary updates for the chosen combination; Login + Weekday offers predicts 37 passes/10 failures.
 - **Day** in QA playground opens a small selector on the same page; choose a UTC day and apply it.
 - Reset and all-off actions are inside that selector. Reset asks for confirmation before clearing purchases, cart, and sign-in; cancelling preserves data. It affects only the current visitor.

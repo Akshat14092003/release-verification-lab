@@ -2,7 +2,7 @@
 
 The storefront is a synthetic shop wrapped around an interactive QA bug-catching lab.
 Two registers coexist: a calm, trustworthy shopping surface, and a bold, playful
-verification layer (the QA playground band + red bug-caught celebrations). Keep them
+verification layer (compact QA controls + red bug-caught celebrations). Keep them
 distinct — don't make the shop loud, don't make the lab timid.
 
 ## Direction
@@ -31,7 +31,7 @@ One accent (blue). Pass/fail keep their own semantic colours — never recolour 
 --danger   #e9565f (soft #fef2f2, ink #b91c1c)   FAIL / bug-active — semantic, not accent
 ```
 Accent budget ~60/30/10: neutrals carry structure, accent ≤ ~10% (primary CTAs, focal metric,
-the lab band). Status colours mean status only.
+compact QA controls). Status colours mean status only.
 
 ### Glass (chrome only)
 ```
@@ -74,12 +74,28 @@ requires 24×24 CSS px, with exceptions; SC 2.5.5 (AAA) uses 44×44 CSS px.
 Tap areas must not overlap. Small captions use size and placement for hierarchy; their
 color must reach 4.5:1 against the rendered background in each theme.
 
-### The lab band (headline feature)
-Full-width accent gradient band, sticky under the topbar (never set `position` on `.has-lab .shop-lab`
-— it inherits sticky from glass.css; a `position` override reintroduces the panel-overlap bug). Glass
-pill toggle with a gear badge; contrasting white Run-checks button. Finite (non-infinite) attention
-animations only to keep the invitation brief. Earlier flakes were traced to polling and
-theme-persistence races; animation load was not established as their cause.
+### Home, catalogue and compact QA
+The landing page at `/` introduces the lab, its test layers and the four-step bug hunt.
+It uses a simple header and the existing collection photograph; `/products` begins with the
+catalogue, filters and cards. Home is also in shopping navigation.
+
+QA playground is a quiet 40px desktop header control, with a blue Run checks action and
+an active-bug count. It starts closed; its anchored panel uses the established surface,
+border and radius tokens. Each bug keeps a visible explanation and discloses reproduction
+steps through native details. Escape, outside click and a close button dismiss the panel.
+Focus moves to its heading on open and returns to the trigger on Escape/close.
+Mobile QA stays inside the native navigation drawer in matching 44px rows.
+Active bugs use semantic red plus a text count; verified catches retain their red celebration.
+
+A small original SVG beetle follows the mouse, circling nearby once it catches up. Hover does
+not stop it. Keyboard focus and a visible pause/resume control pause it; touch/no mouse uses
+free roaming. It cannot intercept shop controls when crossing them. Activation triggers a
+600ms leap from its current location into a full-screen native You caught the bug dialog.
+Let it roam restarts movement; Fix it throws the beetle away over650ms and shows Bug Fixeddd!
+with a static check. Fixed state lasts until the next page load; refresh brings the bug back.
+No replay button. Dismissal restores focus.
+Reduced motion keeps it still, skips the leap and fades the fix over150ms; other
+native dialogs pause/hide it. No sound, flashes, automatic jumpscare, or changes to real bug flags.
 
 ### Mobile navigation
 At widths up to 850px, keep the brand, guest Sign in action and menu trigger in the 64px sticky topbar.
@@ -107,10 +123,10 @@ Every animation has a `prefers-reduced-motion: reduce` off-switch.
 | One blue accent; green=pass, red=fail as separate semantic tokens | It's a verification lab — status must read as status, not brand. Prevents accent creep. | 2026-11-01 |
 | Hybrid depth: frost on chrome, solid on content | Frost signals "shell"; solid keeps reading surfaces calm and legible in both themes. | 2026-11-01 |
 | Single token file; no re-declaration downstream | Earlier green-vs-blue override wars came from duplicated tokens. One source keeps new components on-brand. | 2026-11-01 |
-| Lab band is bold and sticky; shop stays calm | The playground is the headline feature and must catch the eye; the shop must stay trustworthy. | 2026-11-02 |
+| Compact QA in the header; introduction lives on Home | User requested a focused catalogue and an integrated QA control rather than a prominent band. | 2026-11-03 |
 | Finite invitation animations in the lab | Keep attention cues brief. Loading and celebration effects remain; no causal claim about test flakes. | 2026-11-02 |
 | `tabular-nums` on all figures; `--faint` caption tier | It's a ledger/reconciliation app — aligned numbers and a real 3-step text ramp read as precise. | 2026-11-02 |
 
 ## Readiness corrections
 
-Use the supporting-text token for table cells/headers and subtotal labels. Table scroll wrappers establish a positioning context so visually hidden headings cannot expand mobile pages. The home page names the lab and offers Try the QA lab. Destructive reset uses a consequence dialog with Keep shopping as its initial focus. The decorative ribbon completes once in four seconds; reduced motion disables it.
+Use the supporting-text token for table cells/headers and subtotal labels. Table scroll wrappers establish a positioning context so visually hidden headings cannot expand mobile pages. The home page introduces the lab and links into the shop. Destructive reset uses a consequence dialog with Keep shopping as its initial focus. The decorative ribbon completes once in four seconds; reduced motion disables it.

@@ -38,6 +38,8 @@
   const mobileToggle = document.querySelector("[data-mobile-menu]");
   const mobileViewport = window.matchMedia("(max-width: 850px)");
   const sidebar = document.querySelector(".app-shell>.sidebar");
+  const labToolbar = document.querySelector(".shop-lab");
+  const accountBar = document.querySelector(".account-bar");
   const mobileParts = sidebar ? [sidebar, document.querySelector(".account-bar"), document.querySelector(".shop-lab"),
     document.getElementById("lab-settings"), document.getElementById("lab-message")].filter(Boolean).map(element => {
     const placeholder = document.createComment("Desktop navigation position");
@@ -53,7 +55,10 @@
     if (mobileViewport.matches) {
       mobileMenu.append(sidebar);
       mobileParts.slice(1).forEach(({ element }) => sidebar.insertBefore(element, sidebar.querySelector(".sidebar-footer")));
-    } else mobileParts.forEach(({ element, placeholder }) => placeholder.after(element));
+    } else {
+      mobileParts.forEach(({ element, placeholder }) => placeholder.after(element));
+      if (labToolbar && accountBar) accountBar.before(labToolbar);
+    }
   }
   mobileMenu?.addEventListener("close", () => {
     mobileToggle.setAttribute("aria-expanded", "false");
