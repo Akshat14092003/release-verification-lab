@@ -140,7 +140,7 @@ ${repeatBlock}
 
   <footer>
     <a href="${repo}">Source repository</a> &middot;
-    <a href="${run}">First verified hosted run</a><br>
+    <a href="${run}">${process.env.GITHUB_RUN_ID ? "Workflow run for these reports" : "Verification workflow"}</a><br>
     Synthetic data and fictional accounts only. A seeded defect is a demonstration, not a security certification.
   </footer>
 </main>
