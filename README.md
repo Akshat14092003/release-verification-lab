@@ -7,8 +7,8 @@ A fictional shop where automated checks will demonstrate whether a release meets
 The portfolio goal is reproducible evidence: introduce a realistic defect, catch it at the right layer, inspect the evidence, and verify corrected behaviour.
 
 **Published and verified on GitHub Actions.**
-The published reports contain 47 checks. The current signup/admin revision has 53 checks,
-including 8 security probes; its red verifier expects 12 intended failures and 41 passing controls. Visitors can toggle bugs, run the real tests,
+The published reports contain 47 checks. The current revision has 54 checks,
+including 8 security probes; its red verifier expects 12 intended failures and 42 passing controls. Visitors can toggle bugs, run the real tests,
 watch progress, and inspect their report from the website. See [the interactive demo](docs/INTERACTIVE-DEMO.md).
 Historical measurements below are labeled by version. The interactive Node app is not publicly deployed yet; [free hosting findings](docs/HOSTING.md) explain the confirmed memory limit and remaining account/compute requirement.
 [View the successful hosted run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/41453518469) and download its green-evidence/red-evidence artifacts.
@@ -128,12 +128,22 @@ A server-side clock can also be injected into createApp for the later isolated t
 - /cart: review, update quantities, remove items, and proceed to checkout.
 - /checkout: final server-priced review of the current cart before purchase.
 - /orders and /orders/:id: personal orders, receipt, and transaction records.
-- /admin: administrator-only product management, order fulfilment, and customer overview.
+- /admin: management overview with ledger sales, paid/processing order counts, customers and recent orders.
+- /admin/products: add/edit products, prices and availability.
+- /admin/orders: filter by customer/status, review receipts and update fulfilment.
+- /admin/customers: customer credit, purchase counts and links to their orders.
 
 Roles are Customer and Admin. Existing store-owner accounts migrate to customers without losing
 orders or sessions. Admin can add/edit products, set prices, hide/restore products, and mark orders
 Processing, Shipped or Delivered. Hidden products are rejected at checkout, including direct requests
 and existing carts. Price/name edits preserve paid order lines and ledger records; offer prices stay separate.
+Admin signs in directly to `/admin`, with management navigation and customer receipt review at
+`/admin/orders/:id`. Home, logos and breadcrumbs return admin to management; `/` redirects admin
+to `/admin`. Overview, Products, Orders and Customers are separate management pages.
+Cart, offers, checkout, personal order history and personal demo credit belong
+to customers. Admin cannot purchase through browser forms, cart APIs, direct order requests or
+the QA repeat-offer helper. Requests for shopping pages redirect admin to the dashboard; shopping
+API mutations are denied with403. Customer and guest shopping behavior stays available.
 Checkout supports multiple products and quantities 1-99. An order can use one promotion, with
 quantity 1 for that offer item. Products, prices, eligibility, available credit, and all totals
 are resolved by the server. Order lines and ledger entries commit in one transaction.

@@ -75,7 +75,7 @@ export function seedDatabase(db, { reset = false, includeSampleOrder = true } = 
     );
     for (const user of DEMO_ACCOUNTS) {
       addUser.run(user.id, user.email, user.name, user.role,
-        passwordHash(DEMO_PASSWORD, user.email).toString("hex"), 100000);
+        passwordHash(DEMO_PASSWORD, user.email).toString("hex"), user.role === "admin" ? 0 : 100000);
     }
     const addProduct = db.prepare(
       "INSERT INTO products (id, name, category, description, price_cents, artwork) VALUES (?, ?, ?, ?, ?, ?)"

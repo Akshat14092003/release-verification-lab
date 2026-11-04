@@ -5,9 +5,9 @@ The baseline checks correct behaviour across API, browser, database, and securit
 The four defect-detection Node unit checks in `unit/defect-detection.test.js` guard the visitor's bug-caught feedback:
 exact detector identities, enabled flags, assertion-only failures, provisional counts, and final
 verification. Run `node --test tests/unit/defect-detection.test.js` from the project root. These
-are separate from the 53 Playwright release checks and do not change the expected red counts.
+are separate from the 54 Playwright release checks and do not change the expected red counts.
 
-Three additional runner lifecycle guards cover cancellation, startup errors, timeout, ownership, and the active-process lock. A database migration guard verifies legacy owner data is preserved and the removed role is rejected. `npm run test:unit` runs all eight. `npm run test:runner` exercises the actual Playwright subprocess separately from the 53 release checks, preventing recursive test launches. CI runs that integration in the deployment container under a 1 GB memory limit.
+Three additional runner lifecycle guards cover cancellation, startup errors, timeout, ownership, and the active-process lock. A database migration guard verifies legacy owner data is preserved and the removed role is rejected. `npm run test:unit` runs all eight. `npm run test:runner` exercises the actual Playwright subprocess separately from the 54 release checks, preventing recursive test launches. CI runs that integration in the deployment container under a 1 GB memory limit.
 
 ## Run
 
@@ -66,7 +66,7 @@ Reports:
 - Retries are disabled so the first failure stays visible.
 
 Reports are ignored by Git. The earlier version's hosted reports are published on Pages.
-The local signup/admin revision has 53 tests; see ../docs/INTERACTIVE-DEMO.md. Published 47-check evidence remains historical.
+The local role-separation revision has 54 tests; see ../docs/INTERACTIVE-DEMO.md. Published 47-check evidence remains historical.
 Five storefront-control browser checks cover inline switches, visitor isolation/reset, themes,
 mobile layout, contextual hints, sidebar persistence, reduced motion, and run errors. Cart API
 checks cover quantity merging, validation, rollback, guest sign-in continuity, and cookie isolation.

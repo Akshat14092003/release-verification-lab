@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 import { projectRoot, readBugFlags } from "./config.js";
 import { balanceCents, openDatabase, seedDatabase } from "./database.js";
 import { findSession, login, logout, signup } from "./auth.js";
-import { listCustomers, saveProduct, updateOrderStatus } from "./admin.js";
+import { listCustomers, ORDER_STATUSES, saveProduct, updateOrderStatus } from "./admin.js";
 import { getOrder, getProduct, listOffers, listOrders, listProducts, placeOrder, quoteOrder, ShopError } from "./shop.js";
 import { addCartItem, cartRequestItems, getCart, removeCartItem, updateCartItem } from "./cart.js";
 import * as view from "./views.js";
@@ -38,8 +38,8 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
 
   const isApi = req => req.path.startsWith("/api/");
   const page = (req, res, title, active, body, status = 200) => res.status(status).send(view.shell({
-    title, active, user: req.user, balance: req.user ? balanceCents(db, req.user.id) : null, now: now(), body, bugs, labControls,
-    cart: getCart(db, req.cartKey)
+    title, active, user: req.user, balance: req.user?.role === "customer" ? balanceCents(db, req.user.id) : null, now: now(), body, bugs, labControls,
+    cart: req.user?.role === "admin" ? { count: 0 } : getCart(db, req.cartKey)
   }));
   const authenticated = (req, res, next) => {
     if (req.user) return next();
@@ -50,17 +50,25 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
     if (req.user.role === "admin") return next();
     throw new ShopError("This page is for administrators.", 403);
   };
+  app.use((req, res, next) => {
+    if (req.user?.role !== "admin") return next();
+    const shopPage = /^\/(?:products(?:\/|$)|offers\/?$|cart(?:\/|$)|checkout(?:\/|$)|orders\/?$)/i.test(req.path);
+    const shopApi = /^\/api\/(?:cart(?:\/|$)|checkout\/?$|offers\/?$|orders\/?$)/i.test(req.path);
+    if (shopPage && ["GET", "HEAD"].includes(req.method)) return res.redirect("/admin");
+    if (shopPage || shopApi) throw new ShopError("Shopping is for customer accounts. Use a customer account to buy products.", 403);
+    next();
+  });
 
   app.get("/health", (req, res) => res.json({ status: "ok", application: "release-verification-lab" }));
-  app.get("/", (req, res) => res.send(view.landingPage(req.user)));
+  app.get("/", (req, res) => req.user?.role === "admin" ? res.redirect("/admin") : res.send(view.landingPage(req.user)));
   const nextPage = value => ["/checkout", "/cart", "/products"].includes(value) ? value : "/products";
-  app.get("/login", (req, res) => req.user ? res.redirect(nextPage(req.query.next))
+  app.get("/login", (req, res) => req.user ? res.redirect(req.user.role === "admin" ? "/admin" : nextPage(req.query.next))
     : res.send(view.loginPage("", "", bugs, labControls, nextPage(req.query.next))));
 
   const signIn = (req, res, next) => {
     try {
       const user = login(db, req.body?.email, req.body?.password, now(), res, bugs);
-      return isApi(req) ? res.json({ user }) : res.redirect(303, nextPage(req.body?.next));
+      return isApi(req) ? res.json({ user }) : res.redirect(303, user.role === "admin" ? "/admin" : nextPage(req.body?.next));
     } catch (error) {
       if (!isApi(req) && error instanceof ShopError) {
         const email = typeof req.body?.email === "string" ? req.body.email.slice(0, 254) : "";
@@ -71,7 +79,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   };
   app.post("/login", signIn);
   app.post("/api/auth/login", signIn);
-  app.get("/signup", (req, res) => req.user ? res.redirect(nextPage(req.query.next))
+  app.get("/signup", (req, res) => req.user ? res.redirect(req.user.role === "admin" ? "/admin" : nextPage(req.query.next))
     : res.send(view.loginPage("", "", bugs, labControls, nextPage(req.query.next), { signup: true })));
   app.post(["/signup", "/api/auth/signup"], (req, res, next) => {
     try {
@@ -94,7 +102,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   app.post("/logout", signOut);
   app.post("/api/auth/logout", signOut);
   app.get("/api/auth/me", authenticated, (req, res) => {
-    res.json({ user: req.user, balance_cents: balanceCents(db, req.user.id) });
+    res.json({ user: req.user, ...(req.user.role === "customer" ? { balance_cents: balanceCents(db, req.user.id) } : {}) });
   });
 
   app.get("/products", (req, res) => {
@@ -170,8 +178,13 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
     req, res, "Orders", "orders", view.ordersPage(listOrders(db, req.user))
   ));
   app.get("/api/orders", authenticated, (req, res) => res.json({ orders: listOrders(db, req.user) }));
-  app.get("/orders/:id", authenticated, (req, res) => page(
-    req, res, "Orders", "orders", view.receiptPage(getOrder(db, req.user, req.params.id), bugs)
+  app.get("/orders/:id", authenticated, (req, res) => req.user.role === "admin"
+    ? res.redirect("/admin/orders/" + encodeURIComponent(req.params.id))
+    : page(req, res, "Orders", "orders", view.receiptPage(getOrder(db, req.user, req.params.id), bugs)));
+  app.get("/admin/orders/:id", authenticated, administrator, (req, res) => page(
+    req, res, "Order review", "orders", view.receiptPage(getOrder(db, req.user, req.params.id), bugs, {
+      admin: true, customer: db.prepare("SELECT name,email FROM users WHERE id=(SELECT user_id FROM orders WHERE id=?)").get(req.params.id)
+    })
   ));
   app.get("/api/orders/:id", authenticated, (req, res) => {
     res.json({ order: getOrder(db, req.user, req.params.id) });
@@ -185,11 +198,29 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
     };
     return { stats, orders: listOrders(db, req.user, { all: true }), products: listProducts(db, "", { includeInactive: true }), customers: listCustomers(db) };
   };
-  const renderAdmin = (req, res, options = {}, status = 200) => page(req, res, "Admin", "admin", view.adminPage(adminData(req), options), status);
-  app.get("/admin", authenticated, administrator, (req, res) => renderAdmin(req, res, {
-    message: req.query.saved === "product" ? "Product saved. The catalogue and checkout now use these settings. Existing receipts keep their original prices."
-      : req.query.saved === "order" ? "Order status updated. The customer can see it in their order history." : ""
+  const orderFilters = (status = "", customer = "") => {
+    if (typeof status !== "string" || (status && !ORDER_STATUSES.includes(status))) throw new ShopError("Choose a valid order status. Clear filters to see all orders.");
+    if (typeof customer !== "string" || (customer && !/^[1-9]\d{0,9}$/.test(customer))) throw new ShopError("Choose a valid customer. Clear filters to see all orders.");
+    if (customer && !db.prepare("SELECT id FROM users WHERE id=? AND role='customer'").get(Number(customer))) throw new ShopError("Customer not found. Clear filters to see all orders.", 404);
+    return { status, customer };
+  };
+  const renderAdmin = (req, res, section = "overview", options = {}, status = 200) => {
+    const sections = {
+      overview: ["Overview", "admin", view.adminPage], products: ["Products", "products", view.adminProductsPage],
+      orders: ["Orders", "orders", view.adminOrdersPage], customers: ["Customers", "customers", view.adminCustomersPage]
+    };
+    const [title, active, render] = sections[section];
+    return page(req, res, title, active, render(adminData(req), options), status);
+  };
+  app.get("/admin", authenticated, administrator, (req, res) => renderAdmin(req, res));
+  app.get("/admin/products", authenticated, administrator, (req, res) => renderAdmin(req, res, "products", {
+    message: req.query.saved === "product" ? "Product saved. Future purchases use these settings. Existing receipts keep their original prices." : ""
   }));
+  app.get("/admin/orders", authenticated, administrator, (req, res) => renderAdmin(req, res, "orders", {
+    filters: orderFilters(req.query.status, req.query.customer),
+    message: req.query.saved === "order" ? "Order status updated. The customer can see it in their order history." : ""
+  }));
+  app.get("/admin/customers", authenticated, administrator, (req, res) => renderAdmin(req, res, "customers"));
   app.get("/api/admin", authenticated, administrator, (req, res) => res.json(adminData(req)));
   const productAction = (req, res, next) => {
     try {
@@ -201,9 +232,9 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
           ? Number(whole) * 100 + Number(fraction.padEnd(2, "0")) : NaN };
       }
       const product = saveProduct(db, input, req.params.id ?? null);
-      return isApi(req) ? res.status(req.params.id ? 200 : 201).json({ product }) : res.redirect(303, "/admin?saved=product#manage-products");
+      return isApi(req) ? res.status(req.params.id ? 200 : 201).json({ product, html: view.adminProductEntry(product) }) : res.redirect(303, "/admin/products?saved=product");
     } catch (error) {
-      if (!isApi(req) && error instanceof ShopError) return renderAdmin(req, res, {
+      if (!isApi(req) && error instanceof ShopError) return renderAdmin(req, res, "products", {
         error: error.message, draft: req.body, editingId: req.params.id ?? "new"
       }, error.status);
       next(error);
@@ -213,10 +244,11 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   app.patch("/api/admin/products/:id", authenticated, administrator, productAction);
   const orderAction = (req, res, next) => {
     try {
+      const filters = isApi(req) ? {} : orderFilters(req.body?.filter_status, req.body?.filter_customer);
       const order = updateOrderStatus(db, req.params.id, req.body?.status);
-      return isApi(req) ? res.json({ order }) : res.redirect(303, "/admin?saved=order#manage-orders");
+      return isApi(req) ? res.json({ order }) : res.redirect(303, "/admin/orders?" + new URLSearchParams({ saved: "order", ...filters }));
     } catch (error) {
-      if (!isApi(req) && error instanceof ShopError) return renderAdmin(req, res, { error: error.message }, error.status);
+      if (!isApi(req) && error instanceof ShopError) return renderAdmin(req, res, "orders", { error: error.message }, error.status);
       next(error);
     }
   };
@@ -235,7 +267,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
     if (status === 500) console.error(error);
     if (isApi(req)) return res.status(status).json({ error: message });
     if (!req.cartKey) return res.status(status).send(view.loginPage(message, "", bugs, labControls));
-    return page(req, res, "Something went wrong", "", view.errorPage(status, message), status);
+    return page(req, res, "Something went wrong", "", view.errorPage(status, message, { admin: req.user?.role === "admin" }), status);
   });
 
   return { app, db, close: () => db.close() };

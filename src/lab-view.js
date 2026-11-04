@@ -7,7 +7,7 @@ const help = {
   total: ["Show the wrong receipt total", "Shows only the first product line on a multi-product receipt. Checkout and the transaction ledger still record the full amount.", "Buy two different products, then compare the receipt total with Transactions."]
 };
 
-export function labTools() {
+export function labTools({ admin = false } = {}) {
   return '<section class="shop-lab" aria-label="Live demo controls">' +
     '<button type="button" id="toggle-playground" class="playground-toggle" aria-expanded="false" aria-controls="lab-settings">' +
     '<span aria-hidden="true">&#9881;</span> QA playground <span class="playground-chevron" aria-hidden="true">&#8964;</span></button>' +
@@ -33,7 +33,7 @@ export function labTools() {
     '<option value="monday">Monday ? offer closed</option><option value="real">Today ? real clock</option></select>' +
     '<p id="clock-value" class="summary-note"></p><button type="submit" class="button primary">Apply day</button>' +
     '<button type="button" class="button secondary" id="all-off">Switch all bugs off</button>' +
-    '<button type="button" class="button secondary" id="reset-shop">Reset my purchases</button></div></details>' +
+    '<button type="button" class="button secondary" id="reset-shop">' + (admin ? 'Reset demo shop' : 'Reset my purchases') + '</button></div></details>' +
     '</div></form>' +
     '<div id="lab-message" class="lab-message" role="status" aria-live="polite"></div>' +
     '<aside id="guide-coach" class="context-guide" aria-label="Shopping guide" hidden>' +
@@ -48,7 +48,7 @@ export function labTools() {
 
 export function labDialogs() {
   return '<dialog id="reset-dialog" class="reset-dialog" aria-labelledby="reset-heading" aria-describedby="reset-description">' +
-    '<h2 id="reset-heading">Reset your demo shop?</h2><p id="reset-description">This deletes your cart and purchases and signs out all demo accounts in your shop. Credit returns to $1,000 per account. This cannot be undone. Your bug switches and demo day stay the same.</p>' +
+    '<h2 id="reset-heading">Reset your demo shop?</h2><p id="reset-description">This clears carts, purchases and registered accounts, and signs out demo accounts in your shop. Seeded customers return to $1,000 credit. This cannot be undone. Your bug switches and demo day stay the same.</p>' +
     '<p id="reset-error" role="alert"></p><form method="dialog" class="reset-actions"><button class="button secondary" value="cancel" autofocus>Keep shopping</button>' +
     '<button type="button" id="confirm-reset" class="button danger">Reset purchases</button></form></dialog>' +
     '<dialog id="test-drawer" class="verification-drawer" aria-labelledby="run-heading">' +

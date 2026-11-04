@@ -1,15 +1,40 @@
 (() => {
-  let toastTimer;
+  const motion = window.FieldworkMotion;
+  const toastBox = document.getElementById("cart-toast");
+  let toastTimer, toastDeadline = 0, toastRemaining = 3800;
   const addedTimers = new WeakMap();
+  const money = cents => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
+  function holdToast() {
+    if (toastDeadline) toastRemaining = Math.max(0, toastDeadline - performance.now());
+    clearTimeout(toastTimer); toastDeadline = 0;
+  }
+  function dismissToast() {
+    holdToast();
+    if (toastBox && !toastBox.hidden) motion.exit(toastBox, () => { toastBox.hidden = true; }, "toast");
+  }
+  function resumeToast() {
+    if (!toastBox || toastBox.hidden || document.hidden || toastBox.matches(":hover,:focus-within")) return;
+    clearTimeout(toastTimer); toastDeadline = performance.now() + toastRemaining;
+    toastTimer = setTimeout(dismissToast, toastRemaining);
+  }
+  toastBox?.addEventListener("pointerenter", holdToast);
+  toastBox?.addEventListener("pointerleave", resumeToast);
+  toastBox?.addEventListener("focusin", holdToast);
+  toastBox?.addEventListener("focusout", () => queueMicrotask(resumeToast));
+  document.getElementById("dismiss-cart-toast")?.addEventListener("click", dismissToast);
+  document.addEventListener("visibilitychange", () => document.hidden ? holdToast() : resumeToast());
   function toast(text, error = false) {
-    const box = document.getElementById("cart-toast");
+    const box = toastBox;
     if (!box) return;
     clearTimeout(toastTimer);
+    const wasHidden = box.hidden;
+    motion.cancel(box);
     document.getElementById("cart-toast-text").textContent = text;
     box.classList.toggle("is-error", error);
     box.querySelector(".toast-check").textContent = error ? "!" : "✓";
     box.hidden = false;
-    toastTimer = setTimeout(() => { box.hidden = true; }, 3800);
+    if (wasHidden) motion.enter(box, "toast");
+    toastRemaining = 3800; toastDeadline = 0; resumeToast();
   }
   function syncCart(cart, added = false) {
     document.querySelectorAll("[data-cart-count]").forEach(badge => {
@@ -27,6 +52,72 @@
     if (next && current) { current.replaceChildren(...next.childNodes); document.dispatchEvent(new Event("fieldwork:content")); }
   }
   window.Fieldwork = { toast, syncCart, refresh };
+  async function updateCartPage(cart) {
+    const rows = document.querySelectorAll("[data-cart-line]");
+    if (!rows.length) return;
+    if (!cart.items.length) {
+      await refresh(); document.getElementById("main-content").focus({ preventScroll: true }); return;
+    }
+    rows.forEach(row => {
+      const line = cart.items.find(item => String(item.product.id) === row.dataset.cartLine);
+      if (!line) { row.remove(); return; }
+      row.querySelector(".cart-line-total").textContent = money(line.total_cents);
+      const input = row.querySelector('[name="quantity"]');
+      input.value = input.defaultValue = line.quantity;
+      row.querySelector('[data-quantity-step="-1"]').disabled = line.quantity <= 1;
+      row.querySelector('[data-quantity-step="1"]').disabled = Boolean(line.offer) || line.quantity >= 99;
+    });
+    document.querySelectorAll('[data-testid="cart-total"],[data-cart-subtotal]').forEach(el => { el.textContent = money(cart.total_cents); });
+    const copy = document.querySelector(".page-heading .muted");
+    if (copy) copy.textContent = cart.count + (cart.count === 1 ? " item" : " items") + " picked. Ready when you are.";
+  }
+  async function saveAdminProduct(form) {
+    if (!form.reportValidity() || form.getAttribute("aria-busy") === "true") return;
+    const data = Object.fromEntries(new FormData(form)), id = form.dataset.adminProduct;
+    const button = form.querySelector('button[type="submit"]'), feedback = form.querySelector("[data-admin-feedback]");
+    const fields = [...form.querySelectorAll("input,select,textarea,button")].map(el => [el, el.disabled]);
+    const focused = document.activeElement;
+    const label = id === "new" ? "Add product" : "Save product";
+    button.textContent = "Saving…"; form.setAttribute("aria-busy", "true");
+    fields.forEach(([el]) => { el.disabled = true; }); feedback.hidden = true;
+    try {
+      const [whole, fraction = ""] = data.price.split(".");
+      const response = await fetch("/api/admin/products" + (id === "new" ? "" : "/" + id), {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, active: data.active === "1", price_cents: Number(whole) * 100 + Number(fraction.padEnd(2, "0")) })
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Product could not be saved. Try again.");
+      const product = result.product;
+      if (id === "new") {
+        document.getElementById("manage-products").insertAdjacentHTML("beforeend", result.html);
+        form.reset();
+        const count = document.querySelectorAll("[data-admin-product-id]").length;
+        document.querySelector("#manage-products .panel-heading .pill").textContent = count + " products";
+        const tile = [...document.querySelectorAll(".bento-tile")].find(el => el.querySelector(".bento-label")?.textContent === "Products");
+        if (tile) tile.querySelector(".bento-figure").textContent = count;
+      } else {
+        const detail = form.closest("details"); detail.open = true;
+        detail.querySelector("[data-product-name]").textContent = product.name;
+        detail.querySelector("[data-product-summary]").textContent = money(product.price_cents) + " · " + (product.active ? "For sale" : "Hidden");
+      }
+      button.textContent = "Saved ✓"; feedback.setAttribute("role", "status");
+      feedback.textContent = id === "new" ? product.name + " added. You can add another product." : "Saved. Catalogue settings are up to date.";
+      document.dispatchEvent(new Event("fieldwork:content"));
+    } catch (error) {
+      button.textContent = label; feedback.setAttribute("role", "alert"); feedback.textContent = error.message;
+    } finally {
+      feedback.hidden = false; form.removeAttribute("aria-busy");
+      fields.forEach(([el, disabled]) => { el.disabled = disabled; });
+      if (focused?.isConnected && document.activeElement === document.body) focused.focus({ preventScroll: true });
+    }
+  }
+  document.addEventListener("input", event => {
+    const form = event.target.closest("[data-admin-product]");
+    if (!form || form.getAttribute("aria-busy") === "true") return;
+    form.querySelector("[data-admin-feedback]").hidden = true;
+    form.querySelector('button[type="submit"]').textContent = form.dataset.adminProduct === "new" ? "Add product" : "Save product";
+  });
   function updateSidebar() {
     const collapsed = document.documentElement.dataset.sidebar === "collapsed";
     document.querySelectorAll("[data-sidebar-toggle]").forEach(button => {
@@ -46,12 +137,12 @@
     element.before(placeholder);
     return { element, placeholder };
   }) : [];
-  function closeMobileMenu() {
-    if (mobileMenu?.open) mobileMenu.close();
+  function closeMobileMenu(immediate = false) {
+    if (mobileMenu?.open) motion.exit(mobileMenu, () => mobileMenu.close(), "drawer", immediate);
   }
   function syncMobileNavigation() {
     if (!mobileMenu || !sidebar) return;
-    closeMobileMenu();
+    closeMobileMenu(true);
     if (mobileViewport.matches) {
       mobileMenu.append(sidebar);
       mobileParts.slice(1).forEach(({ element }) => sidebar.insertBefore(element, sidebar.querySelector(".sidebar-footer")));
@@ -65,6 +156,7 @@
     document.documentElement.classList.remove("mobile-menu-open");
     if (mobileViewport.matches && !document.querySelector("dialog[open]")) mobileToggle.focus();
   });
+  mobileMenu?.addEventListener("cancel", event => { event.preventDefault(); closeMobileMenu(true); });
   mobileMenu?.addEventListener("click", event => {
     if (event.target === mobileMenu) {
       const bounds = mobileMenu.getBoundingClientRect();
@@ -74,10 +166,14 @@
   mobileViewport.addEventListener("change", syncMobileNavigation);
   syncMobileNavigation();
   updateSidebar();
+  function closeProfile(menu, immediate = false) {
+    menu.dataset.closing = "true";
+    motion.exit(menu.querySelector(".profile-panel"), () => { menu.open = false; delete menu.dataset.closing; }, "popover", immediate);
+  }
   document.addEventListener("keydown", event => {
     if (event.key === "Escape") document.querySelectorAll(".profile-menu[open]").forEach(menu => {
       event.preventDefault();
-      menu.open = false;
+      closeProfile(menu, true);
       menu.querySelector("summary").focus();
     });
   });
@@ -91,14 +187,22 @@
     }
     if (event.target.closest("[data-mobile-menu]")) {
       mobileMenu.showModal();
+      motion.enter(mobileMenu, "drawer");
       mobileToggle.setAttribute("aria-expanded", "true");
       document.documentElement.classList.add("mobile-menu-open");
       mobileMenu.querySelector("[data-mobile-close]").focus();
     }
-    if (event.target.closest("[data-mobile-close]") ||
-        (mobileMenu?.open && event.target.closest("a[href],#open-tests,#guide-toggle"))) closeMobileMenu();
+    if (event.target.closest("[data-mobile-close]")) closeMobileMenu();
+    else if (mobileMenu?.open && event.target.closest("a[href],#open-tests,#guide-toggle")) closeMobileMenu(true);
+    const profileTrigger = event.target.closest(".profile-menu>summary");
+    if (profileTrigger) {
+      event.preventDefault();
+      const menu = profileTrigger.parentElement;
+      if (menu.open && !menu.dataset.closing) closeProfile(menu);
+      else { delete menu.dataset.closing; menu.open = true; motion.enter(menu.querySelector(".profile-panel"), "popover", profileTrigger); }
+    }
     document.querySelectorAll(".profile-menu[open]").forEach(menu => {
-      if (!menu.contains(event.target)) menu.open = false;
+      if (!menu.contains(event.target)) closeProfile(menu);
     });
     const role = event.target.closest("[data-demo-role]");
     if (role) {
@@ -128,8 +232,10 @@
   });
   document.addEventListener("submit", async event => {
     const form = event.target;
+    if (form.hasAttribute("data-admin-product")) { event.preventDefault(); await saveAdminProduct(form); return; }
     if (form.hasAttribute("data-cart-form")) {
       event.preventDefault();
+      if (form.classList.contains("is-pending")) return;
       if (!form.reportValidity()) return;
       clearTimeout(addedTimers.get(form));
       form.classList.remove("just-added");
@@ -139,20 +245,23 @@
         submitLabel.textContent = submitLabel.dataset.cartLabel;
       }
       const data = Object.fromEntries(new FormData(form));
-      const states = [...form.querySelectorAll("button, input")].map(element => [element, element.disabled]);
+      const focused = document.activeElement;
+      const updating = form.hasAttribute("data-cart-update");
+      let updatedCart;
+      const states = [...(updating ? document.querySelectorAll("[data-cart-line] button,[data-cart-line] input") : form.querySelectorAll("button, input"))].map(element => [element, element.disabled]);
       states.forEach(([element]) => { element.disabled = true; });
       form.classList.add("is-pending");
       try {
         const response = await fetch(form.dataset.cartApi, { method: form.dataset.cartMethod || "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || "Could not update your cart.");
-        const added = !form.hasAttribute("data-cart-reload");
+        const added = !updating;
         syncCart(result.cart, added);
         const name = result.cart.items.find(line => String(line.product.id) === data.product_id)?.product.name;
         const text = added ? (name || "Item") + " added to your cart" : "Your cart is updated";
-        if (form.hasAttribute("data-cart-reload")) {
-          try { sessionStorage.setItem("cart-message", text); } catch { /* No storage required. */ }
-          location.reload();
+        if (updating) {
+          updatedCart = result.cart;
+          toast(text);
         } else {
           toast(text);
           form.classList.add("just-added");
@@ -162,10 +271,19 @@
             if (submitLabel) submitLabel.textContent = submitLabel.dataset.cartLabel;
           }, 1600));
         }
-      } catch (error) { toast(error.message, true); }
+      } catch (error) {
+        if (updating) { const input = form.querySelector('[name="quantity"]'); if (input) input.value = input.defaultValue; }
+        toast(error.message, true);
+      }
       finally {
         form.classList.remove("is-pending");
         states.forEach(([element, disabled]) => { element.disabled = disabled; });
+        if (updatedCart) {
+          try { await updateCartPage(updatedCart); }
+          catch { toast("Cart updated. Refresh the page to see the latest contents.", true); }
+        }
+        if (focused?.isConnected && document.activeElement === document.body) (focused.disabled ? form.querySelector('[name="quantity"]') : focused)?.focus({ preventScroll: true });
+        else if (!focused?.isConnected && updatedCart?.items.length) document.querySelector('[data-cart-line] input[name="quantity"]')?.focus({ preventScroll: true });
       }
       return;
     }
@@ -175,6 +293,6 @@
       if (button) { button.disabled = true; button.setAttribute("aria-busy", "true"); }
     }
   });
-  fetch("/api/cart", { cache: "no-store" }).then(r => r.json()).then(data => syncCart(data.cart)).catch(() => {});
+  if (!document.body.classList.contains("admin-body")) fetch("/api/cart", { cache: "no-store" }).then(r => r.json()).then(data => syncCart(data.cart)).catch(() => {});
   try { const text = sessionStorage.getItem("cart-message"); if (text) { sessionStorage.removeItem("cart-message"); toast(text); } } catch { /* Optional toast. */ }
 })();

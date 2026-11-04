@@ -15,7 +15,7 @@ export class LoginPage {
     await this.open();
     await this.page.getByRole("button", { name: role, exact: true }).click();
     await this.submitButton.click();
-    await this.page.waitForURL("**/products");
+    await this.page.waitForURL(role === "Admin" ? "**/admin" : "**/products");
   }
 
   async submit(email, password) {

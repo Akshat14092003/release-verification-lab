@@ -96,3 +96,33 @@
 .admin-product-form>.button { justify-self:end; }.order-status-form { display:flex;align-items:center;gap:8px; }.order-status-form select { width:auto;font-size:12px; }.order-status-form .button { min-height:44px;padding:8px 12px; }
 #manage-products,#manage-orders,#manage-customers { scroll-margin-block-start:100px; }
 @media (max-width:560px) { .admin-product-form { grid-template-columns:minmax(0,1fr); }.admin-product-form>.button { justify-self:stretch; }.admin-product summary>span { overflow-wrap:anywhere; }.admin-product summary>span+span { display:block;margin:8px 0 0 16px; }.signup-body .login-card { padding-inline:18px; } }
+
+/* Short, interruptible pointer feedback; keyboard actions stay immediate. */
+.cart-toast,.profile-panel,.mobile-navigation[open] { animation:none; }
+.cart-toast { flex-wrap:wrap; }.cart-toast #cart-toast-text { flex:1;min-width:90px; }
+.cart-toast #dismiss-cart-toast { width:28px;height:28px;min-width:28px;flex-shrink:0; }
+.admin-product-form>.button { min-inline-size:128px; }
+.admin-save-feedback { grid-column:1/-1;font-size:12px;color:var(--muted);line-height:1.6;margin:0; }
+.admin-save-feedback[role="alert"] { color:var(--danger-ink); }
+/* Management pages share the shop's tokens, with task-focused content. */
+.admin-metrics { grid-auto-rows:auto; }
+.admin-metrics .bento-figure { font-size:clamp(26px,2.8vw,36px);overflow-wrap:anywhere; }
+.admin-tasks { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-block:0 28px; }
+.admin-task { display:flex;align-items:center;gap:14px;min-width:0;padding:20px;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);text-decoration:none; }
+.admin-task>.bento-icon { flex-shrink:0; }.admin-task>span:nth-child(2) { flex:1;min-width:0; }.admin-task strong { display:block;font-size:14px; }.admin-task>span>span { display:block;margin-block-start:6px;font-size:12px;line-height:1.6;color:var(--muted); }.admin-task>.icon { flex-shrink:0;width:18px;color:var(--accent); }
+.admin-task:focus-visible { outline:2px solid var(--accent);outline-offset:3px; }
+.admin-sandbox-note { margin-block:20px 0;font-size:12px;line-height:1.8;color:var(--muted);max-width:78ch; }
+.admin-filters { display:flex;flex-wrap:wrap;align-items:end;gap:16px;margin-block:0 24px; }
+.admin-filter-field { display:grid;gap:8px;flex:1;min-width:180px;max-width:360px;font-size:12px;color:var(--muted); }
+.admin-filters select { width:100%;min-width:0;min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit; }
+.admin-filters>.button,.admin-filters>.subtle-link { min-height:44px;display:inline-flex;align-items:center; }
+.admin-order-customer { display:flex;flex-wrap:wrap;gap:8px 20px;font-size:13px;line-height:1.7;margin-block:0 24px;overflow-wrap:anywhere; }.admin-order-customer span { color:var(--muted); }
+.admin-customers td:nth-child(2) { overflow-wrap:anywhere; }
+.admin-body .guide-progress { display:none; }
+@media (hover:hover) { .admin-task:hover { border-color:var(--accent);background:var(--soft); } }
+@media (max-width:1100px) { .admin-tasks { grid-template-columns:minmax(0,1fr); }.admin-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:560px) { .admin-filters { gap:12px; }.admin-filter-field { min-width:0;flex-basis:100%;max-width:none; }.admin-metrics { grid-template-columns:minmax(0,1fr); } }
+@media (prefers-reduced-motion:no-preference) {
+  :is(.button,.icon-button,.theme-toggle,.role-choice,.playground-toggle,.lab-guide-button,.subtle-button) { transition:background-color 150ms ease,border-color 150ms ease,color 150ms ease,transform 160ms ease-out,scale 120ms cubic-bezier(.23,1,.32,1); }
+  html[data-input="pointer"] :is(.button,.icon-button,.theme-toggle,.role-choice,.playground-toggle,.lab-guide-button,.subtle-button):not(:disabled):active { scale:.97; }
+}

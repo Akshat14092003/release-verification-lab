@@ -1,5 +1,6 @@
 (() => {
   const bug = document.getElementById("roaming-bug");
+  const roamingSprite = bug.querySelector(".lab-beetle");
   const pause = document.getElementById("pause-bug");
   const leap = document.getElementById("bug-leap");
   const sprite = leap.querySelector(".lab-beetle");
@@ -8,12 +9,30 @@
   const fix = document.getElementById("fix-bug");
   const stage = surprise.querySelector(".surprise-stage .lab-beetle");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
-  let paused = false, catching = false, fixed = false, fixing = false, pointer = null, animation, last = 0, elapsed = 0;
+  let paused = false, catching = false, fixed = false, fixing = false, pointer = null, animation, last = 0, frame = 0, dirty = true;
   let width = innerWidth, height = innerHeight;
   let x = Math.max(12, width - 100), y = Math.max(100, height - 150), angle = 0;
   let target = { x: 24, y: Math.max(100, height - 100) }, obstacles = [];
   try { paused = localStorage.getItem("fieldwork-bug-paused") === "1"; } catch { /* Optional preference. */ }
-  function paint() { bug.style.transform = `translate(${x}px,${y}px)`; bug.style.setProperty("--bug-angle", angle + "deg"); }
+  function paint() { bug.style.transform = `translate(${x}px,${y}px)`; roamingSprite.style.rotate = angle + "deg"; }
+  function moving() {
+    return !document.hidden && !document.querySelector("dialog[open]") && !paused && !reduced.matches && !catching && !fixed && document.activeElement !== bug;
+  }
+  function hitTarget() { const value = blocked(x, y) ? "none" : "auto"; if (bug.style.pointerEvents !== value) bug.style.pointerEvents = value; }
+  function wake() {
+    const modal = Boolean(document.querySelector("dialog[open]"));
+    const visibility = modal || catching || fixed ? "hidden" : "visible";
+    if (bug.style.visibility !== visibility) bug.style.visibility = visibility;
+    const hidePause = modal || catching || fixed || reduced.matches;
+    if (pause.hidden !== hidePause) pause.hidden = hidePause;
+    if (moving()) { if (!frame) { last = 0; frame = requestAnimationFrame(tick); } }
+    else if (frame) { cancelAnimationFrame(frame); frame = 0; }
+  }
+  function invalidate() {
+    dirty = true;
+    if (!moving() && !fixed && !document.hidden && !document.querySelector("dialog[open]")) { scan(); hitTarget(); dirty = false; }
+    wake();
+  }
   function updatePause() {
     const stopped = paused || reduced.matches;
     pause.setAttribute("aria-pressed", String(stopped));
@@ -21,6 +40,7 @@
     pause.title = stopped ? "Resume roaming bug" : "Pause roaming bug";
     bug.classList.toggle("is-resting", stopped);
     pause.hidden = fixed || reduced.matches;
+    wake();
   }
   function chooseTarget() {
     for (let attempt = 0; attempt < 30; attempt++) {
@@ -39,13 +59,11 @@
     return obstacles.some(b => left < b.right + 6 && left + 52 > b.left - 6 && top < b.bottom + 6 && top + 52 > b.top - 6);
   }
   function tick(now) {
-    const dt = Math.min(40, now - (last || now)); last = now; elapsed += dt;
-    const modal = Boolean(document.querySelector("dialog[open]"));
-    bug.style.visibility = modal || catching || fixed ? "hidden" : "visible";
-    pause.hidden = modal || catching || fixed || reduced.matches;
-    bug.style.pointerEvents = blocked(x, y) ? "none" : "auto";
-    if (elapsed > 350) { scan(); elapsed = 0; }
-    if (!document.hidden && !modal && !paused && !reduced.matches && !catching && !fixed && document.activeElement !== bug) {
+    frame = 0;
+    if (!moving()) { wake(); return; }
+    const dt = Math.min(40, now - (last || now)); last = now;
+    if (dirty) { scan(); dirty = false; }
+    {
       if (pointer) {
         const orbit = Math.hypot(pointer.x - x - 26, pointer.y - y - 26) < 54 ? 18 : 0;
         target = {
@@ -62,7 +80,7 @@
         else { x = nextX; y = nextY; angle = Math.atan2(dy, dx) * 180 / Math.PI + 90; paint(); }
       }
     }
-    requestAnimationFrame(tick);
+    hitTarget(); frame = requestAnimationFrame(tick);
   }
   pause.addEventListener("click", () => {
     if (reduced.matches) { bug.focus(); return; }
@@ -72,18 +90,26 @@
   });
   reduced.addEventListener("change", () => { updatePause(); if (reduced.matches && (catching || fixing)) animation?.finish(); });
   document.addEventListener("pointermove", event => {
-    if (event.pointerType !== "touch") pointer = { x: event.clientX, y: event.clientY };
+    if (event.pointerType !== "touch") { pointer = { x: event.clientX, y: event.clientY }; wake(); }
   }, { passive: true });
   document.documentElement.addEventListener("pointerleave", () => { pointer = null; chooseTarget(); });
   addEventListener("resize", () => {
     width = innerWidth; height = innerHeight;
     x = Math.max(8, Math.min(x, width - 60)); y = Math.max(8, Math.min(y, height - 60));
-    chooseTarget(); scan(); paint();
+    chooseTarget(); paint(); invalidate();
   });
+  document.addEventListener("visibilitychange", wake);
+  document.addEventListener("focusin", () => queueMicrotask(wake));
+  document.addEventListener("focusout", () => queueMicrotask(wake));
+  document.addEventListener("scroll", invalidate, { passive: true, capture: true });
+  new MutationObserver(records => {
+    if (records.some(record => ![bug, pause, leap].includes(record.target))) invalidate();
+  }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["open", "hidden"] });
   bug.addEventListener("click", async () => {
     if (catching) return;
     catching = true;
     const bounds = bug.getBoundingClientRect();
+    wake();
     bug.style.visibility = "hidden";
     surprise.returnValue = "";
     surprise.showModal();
@@ -112,6 +138,7 @@
   fix.addEventListener("click", async () => {
     if (fixing || fixed) return;
     fixed = fixing = true;
+    wake();
     release.disabled = fix.disabled = true;
     animation = stage.animate(reduced.matches ? [{ opacity: 1 }, { opacity: 0 }] : [
       { transform: "translate(0,0) rotate(0deg) scale(1)", opacity: 1 },
@@ -142,5 +169,5 @@
       (reduced.matches ? bug : pause).focus({ preventScroll: true });
     }
   });
-  scan(); paint(); updatePause(); requestAnimationFrame(tick);
+  scan(); paint(); hitTarget(); updatePause(); wake();
 })();

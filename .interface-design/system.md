@@ -102,10 +102,22 @@ Only Customer and Admin roles are visible. Signup reuses the sign-in glass layou
 keep the four labelled fields, submit action and sign-in link visible at normal mobile heights.
 Its contextual guide uses a compact row to preserve room for the form. Explain sandbox lifetime
 beside the form. Public signup always creates a customer and retains the guest cart.
-Admin uses the existing workspace: overview tiles, native product-edit details, labelled forms,
+Admin signs in to management and sees Overview/Products/Orders/Customers navigation and customer
+receipts. Keep cart/checkout/offers/personal orders and personal credit out of every admin shell,
+profile and empty state. Shopping is customer-only, with equivalent server-side enforcement.
+Admin Home, logos and breadcrumbs lead to /admin; / redirects signed-in admin to that overview.
+Keep the buyer marketing hero out of management. Use separate pages for catalogue, fulfilment
+and customer records. Overview prioritizes actual ledger sales, order counts, processing work
+and recent orders; customer counts exclude staff. Customer rows link to their filtered orders.
+Native status/customer filters retain context after status saves and offer a clear reset when
+empty. Receipts identify the customer, keep Orders active and return there.
+Admin uses overview tiles, native product-edit details, labelled forms,
 order-status controls and the customer table. Keep inputs at least44px, grid columns flexible,
 and tables contained in their scroll wrapper. Availability uses For sale/Hidden text; saved order
 prices remain historical. Admin guidance describes management rather than the shopping journey.
+Product saves stay inline: Saving… → Saved ✓, keep the editor open, retain values on errors,
+and announce the outcome beside the form. Cart quantities/totals update without a document reload
+and preserve focus; monetary values update immediately rather than counting through intermediate amounts.
 
 ### Mobile navigation
 At widths up to 850px, keep the brand, guest Sign in action and menu trigger in the 64px sticky topbar.
@@ -122,9 +134,15 @@ and particle burst — this is intentional delight, not slop. Test progress and 
 stay precise and legible (tabular counts, clear status). All of it respects `prefers-reduced-motion`.
 
 ## Motion
-Durations ~0.2–0.6s, ease-out `cubic-bezier(.2,.8,.2,1)`; animate `transform`/`opacity`/`box-shadow`,
-never `transition: all`. Theme switch uses a `::view-transition` reveal. Product cards stagger in.
-Every animation has a `prefers-reduced-motion: reduce` off-switch.
+Pointer popovers enter in160ms from their trigger; mobile menu/toast entries take180ms and
+exits120ms, using `cubic-bezier(.23,1,.32,1)`. Use transform/opacity through the shared motion
+helper and cancel interrupted animations. Keyboard opens/closes are immediate; reduced motion
+uses opacity only. Press feedback is scale(.97) over120ms on enabled pointer controls.
+Theme switch uses a `::view-transition` reveal. Product cards stagger in. The intentional bug
+surprise keeps its existing playful timing. Every animation respects reduced motion.
+Pause toast dismissal on hover, keyboard focus and hidden tabs; include an explicit dismiss action.
+The roaming bug schedules frames only while it can move; cache obstacles and invalidate from
+layout events instead of polling when paused, fixed, obscured by a modal, or in a hidden tab.
 
 ## Decisions
 

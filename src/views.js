@@ -14,6 +14,7 @@ const iconPaths = {
   checkout: '<path d="M3 3h2l3 12h11l2-8H6M9 21h.01M18 21h.01"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>',
   orders: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/>',
   admin: '<path d="M12 3 3 7v5c0 5 9 9 9 9s9-4 9-9V7l-9-4Z"/><path d="m8 12 3 3 5-6"/>',
+  customers: '<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 4v3"/>',
   arrow: '<path d="M5 12h14m-5-5 5 5-5 5"/>',
   logout: '<path d="M9 4H4v16h5m5-13 5 5-5 5m-6-5h12"/>',
   search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',
@@ -34,15 +35,16 @@ export function themeButton() {
     '<path d="M20 14a8.5 8.5 0 0 1-10-10 8.5 8.5 0 1 0 10 10Z"/></svg><span class="menu-control-label">Appearance</span></button>';
 }
 export function document(title, body, bodyClass = "", labControls = false) {
+  const admin = bodyClass.split(" ").includes("admin-body");
   return '<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>' +
     '<meta name="description" content="Fieldwork is a fictional shop in the Release Verification Lab."/>' +
     '<title>' + e(title) + ' | Fieldwork</title><link rel="icon" href="/favicon.svg" type="image/svg+xml"/>' +
     '<script src="/theme.js"></script><link rel="stylesheet" href="/tokens.css"/><link rel="stylesheet" href="/styles.css"/><link rel="stylesheet" href="/theme.css"/>' +
     '<link rel="stylesheet" href="/shop.css"/>' + (labControls ? '<link rel="stylesheet" href="/lab.css"/>' : '') + '<link rel="stylesheet" href="/glass.css"/><link rel="stylesheet" href="/blue.css"/>' +
-    '<link rel="stylesheet" href="/experience.css"/><script src="/app.js" defer></script><script src="/bug.js" defer></script>' + (labControls ? '<script src="/lab.js" defer></script><script src="/guide.js" defer></script>' : '') + '</head>' +
+    '<link rel="stylesheet" href="/experience.css"/><script src="/motion.js" defer></script><script src="/app.js" defer></script><script src="/bug.js" defer></script>' + (labControls ? '<script src="/lab.js" defer></script><script src="/guide.js" defer></script>' : '') + '</head>' +
     '<body class="' + e(bodyClass) + (labControls ? ' has-lab' : '') + '">' + body + bugHunt() +
     '<div class="cart-toast" id="cart-toast" role="status" aria-live="polite" hidden><span class="toast-check">&#10003;</span><span id="cart-toast-text"></span>' +
-    '<a href="/cart">View cart &rarr;</a></div></body></html>';
+    (admin ? '' : '<a href="/cart">View cart &rarr;</a>') + '<button type="button" class="icon-button" id="dismiss-cart-toast" aria-label="Dismiss notification">&times;</button></div></body></html>';
 }
 function bugBanners(bugs = {}) {
   const labels = {
@@ -59,9 +61,11 @@ function bugBanners(bugs = {}) {
 }
 
 export function shell({ title, active, user, balance, now, body, bugs = {}, labControls = false, cart = { count: 0 } }) {
-  const navigation = [["home", "Home"], ["products", "Products"], ["offers", "Offers"], ["cart", "Cart"], ["checkout", "Checkout"], ["orders", "Orders"], ["admin", "Admin"]]
-    .filter(([key]) => key !== "admin" || user?.role === "admin")
-    .map(([key, label]) => '<a class="nav-link ' + (key === active ? "active" : "") + '" href="' + (key === 'home' ? '/' : '/' + key) + '" aria-label="' + label + '" title="' + label + '"' +
+  const admin = user?.role === "admin";
+  const home = admin ? "/admin" : "/";
+  const navigation = (admin ? [["admin", "Overview", "/admin"], ["products", "Products", "/admin/products"], ["orders", "Orders", "/admin/orders"], ["customers", "Customers", "/admin/customers"]]
+    : [["home", "Home", "/"], ["products", "Products"], ["offers", "Offers"], ["cart", "Cart"], ["checkout", "Checkout"], ["orders", "Orders"]])
+    .map(([key, label, href]) => '<a class="nav-link ' + (key === active ? "active" : "") + '" href="' + (href || '/' + key) + '" aria-label="' + label + '" title="' + label + '"' +
       (key === active ? ' aria-current="page"' : "") + '>' + icon(key === "cart" ? "checkout" : key) + '<span class="nav-text">' + label + '</span>' +
       (key === "cart" ? '<span class="nav-count" data-cart-count aria-hidden="true">' + cart.count + '</span>' : "") + '</a>').join("");
   const accountAction = user
@@ -71,30 +75,30 @@ export function shell({ title, active, user, balance, now, body, bugs = {}, labC
     '<span class="profile-initials">' + e(user ? user.name.split(" ").map(part => part[0]).join("") : "?") + '</span>' +
     '<span class="menu-control-label">' + e(user?.name || "Guest account") + '</span></summary><div class="profile-panel">' +
     '<strong>' + e(user?.name || "Welcome to Fieldwork") + '</strong><span>' + e(user ? roleName(user.role) : "Browsing as a guest") + '</span>' +
-    '<a href="/cart">' + icon("checkout") + 'View cart</a>' + (user ? '<a href="/orders">' + icon("orders") + 'My orders</a>' +
+    (admin ? '<a href="/admin">' + icon("admin") + 'Store management</a>' : '<a href="/cart">' + icon("checkout") + 'View cart</a>') + (user ? (admin ? '' : '<a href="/orders">' + icon("orders") + 'My orders</a>') +
     '<form method="post" action="/logout"><button type="submit">' + icon("logout") + 'Log out</button></form>' :
     '<a href="/login">' + icon("logout") + 'Sign in / Sign up</a>') + '</div></details>';
   return document(title,
-    '<div class="app-shell"><aside class="sidebar"><a class="brand" href="/" aria-label="Fieldwork home">' + logo() + '</a>' +
+    '<div class="app-shell"><aside class="sidebar"><a class="brand" href="' + home + '" aria-label="Fieldwork home">' + logo() + '</a>' +
     '<button type="button" class="sidebar-toggle icon-button" data-sidebar-toggle aria-label="Collapse sidebar" aria-expanded="true" aria-controls="main-navigation">' +
     '<svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16m7-11-3 3 3 3"/></svg></button>' +
-    '<p class="nav-label">YOUR WORKSPACE</p><nav id="main-navigation" aria-label="Main navigation">' + navigation + '</nav>' +
-    '<div class="sidebar-footer"><div class="demo-note"><span class="status-dot"></span><span>Demo storefront</span></div>' +
-    '<p>A small shop. A little inspiration.</p>' + accountAction + '</div></aside>' +
-    '<div class="workspace"><header class="topbar"><a class="brand mobile-brand" href="/" aria-label="Fieldwork home">' + logo() + '</a>' +
-    '<div class="breadcrumb"><a href="/">Fieldwork</a><span>/</span><strong>' + e(title) + '</strong></div>' +
+    '<p class="nav-label">' + (admin ? 'STORE MANAGEMENT' : 'YOUR WORKSPACE') + '</p><nav id="main-navigation" aria-label="Main navigation">' + navigation + '</nav>' +
+    '<div class="sidebar-footer"><div class="demo-note"><span class="status-dot"></span><span>' + (admin ? 'Store administration' : 'Demo storefront') + '</span></div>' +
+    '<p>' + (admin ? 'Catalogue, orders and customers.' : 'A small shop. A little inspiration.') + '</p>' + accountAction + '</div></aside>' +
+    '<div class="workspace"><header class="topbar"><a class="brand mobile-brand" href="' + home + '" aria-label="Fieldwork home">' + logo() + '</a>' +
+    '<div class="breadcrumb"><a href="' + home + '">' + (admin ? 'Management' : 'Fieldwork') + '</a><span>/</span><strong>' + e(title) + '</strong></div>' +
     (!user ? '<a class="button header-sign-in" href="/login">Sign in / Sign up</a>' : '') +
     '<div class="account-bar" data-account="' + (user ? 'member' : 'guest') + '"><p class="menu-section-label">ACCOUNT</p>' +
-    '<a class="header-cart" href="/cart" aria-label="Open cart">' + icon("checkout") + '<span data-cart-count>' + cart.count + '</span></a>' + themeButton() +
-    '<span class="role-badge">' + e(user ? roleName(user.role) : "Guest") + '</span><div class="credit"><span>Demo credit</span><strong>' +
-    (balance === null ? '&mdash;' : money(balance)) + '</strong></div>' + profile + '</div>' +
+    (admin ? '' : '<a class="header-cart" href="/cart" aria-label="Open cart">' + icon("checkout") + '<span data-cart-count>' + cart.count + '</span></a>') + themeButton() +
+    '<span class="role-badge">' + e(user ? roleName(user.role) : "Guest") + '</span>' + (admin ? '' : '<div class="credit"><span>Demo credit</span><strong>' +
+    (balance === null ? '&mdash;' : money(balance)) + '</strong></div>') + profile + '</div>' +
     '<button type="button" class="mobile-menu-toggle icon-button" data-mobile-menu aria-label="Open menu" aria-expanded="false" aria-controls="mobile-navigation">' +
     '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></header>' +
-    (labControls ? labTools() : '') + '<main id="main-content" class="main">' + bugBanners(bugs) + body + '</main>' +
-    '<footer class="page-footer"><span>Fieldwork &copy; 2026</span><span>Demo purchases only &middot; ' +
+    (labControls ? labTools({ admin }) : '') + '<main id="main-content" class="main">' + bugBanners(bugs) + body + '</main>' +
+    '<footer class="page-footer"><span>Fieldwork &copy; 2026</span><span>' + (admin ? 'Demo management only' : 'Demo purchases only') + ' &middot; ' +
     e(now.toISOString().slice(0, 10)) + ' UTC</span></footer></div></div>' +
     '<dialog id="mobile-navigation" class="mobile-navigation" aria-label="Navigation and account"><button type="button" class="icon-button mobile-menu-close" data-mobile-close aria-label="Close menu">&times;</button></dialog>' +
-    (labControls ? labDialogs() : ''), "", labControls);
+    (labControls ? labDialogs() : ''), admin ? "admin-body" : "", labControls);
 }
 export function loginPage(error = "", email = "", bugs = {}, labControls = false, next = "/products", options = {}) {
   const registering = options.signup === true;
@@ -189,13 +193,15 @@ function bugHunt() {
 
 export function landingPage(user) {
   const repo = "https://github.com/Akshat14092003/release-verification-lab";
+  const admin = user?.role === "admin";
+  const destination = admin ? "/admin" : "/products";
   return document("Release Verification Lab", '<a class="skip-link" href="#main-content">Skip to content</a>' +
     '<header class="home-header"><a class="brand" href="/" aria-label="Fieldwork home">' + logo() + '</a>' +
-    '<nav aria-label="Main navigation"><a href="/" aria-current="page">Home</a><a href="/products">Shop</a><a href="#about-lab">About the lab</a></nav>' +
-    '<div class="home-account"><a class="button secondary" href="' + (user ? '/products' : '/login') + '">' + (user ? 'Open shop' : 'Sign in / Sign up') + '</a>' + themeButton() + '</div></header>' +
+    '<nav aria-label="Main navigation"><a href="/" aria-current="page">Home</a><a href="' + destination + '">' + (admin ? 'Admin' : 'Shop') + '</a><a href="#about-lab">About the lab</a></nav>' +
+    '<div class="home-account"><a class="button secondary" href="' + (user ? destination : '/login') + '">' + (admin ? 'Manage shop' : user ? 'Open shop' : 'Sign in / Sign up') + '</a>' + themeButton() + '</div></header>' +
     '<main id="main-content" class="home-main" tabindex="-1"><section class="store-hero home-hero"><div class="hero-copy"><span class="eyebrow">FIELDWORK / RELEASE VERIFICATION LAB</span>' +
     '<h1>A little shopping.<br/><em>A little bug hunting.</em></h1><p>A working demo shop with a twist. Introduce realistic bugs, run automated checks, and see the evidence for yourself.</p>' +
-    '<div class="hero-actions"><a class="button primary" href="/products">Enter the shop ' + icon("arrow") + '</a><a class="text-link" href="#how-it-works">How it works ' + icon("arrow") + '</a></div>' +
+    '<div class="hero-actions"><a class="button primary" href="' + destination + '">' + (admin ? 'Open dashboard ' : 'Enter the shop ') + icon("arrow") + '</a><a class="text-link" href="#how-it-works">How it works ' + icon("arrow") + '</a></div>' +
     '<span class="hero-note">Fictional credit. Real tests. A sandbox of your own.</span></div><div class="hero-scene hero-photo-scene"><div class="hero-photo">' +
     collectionPhoto("(max-width: 850px) 94vw, 48vw") + '<span class="floating-label label-demo"><span class="status-dot"></span> Real shopping. Demo credit.</span></div>' +
     '<span class="orbit-dot dot-one"></span><span class="orbit-dot dot-two"></span></div></section>' +
@@ -214,7 +220,7 @@ export function landingPage(user) {
     ].map(([title, copy]) => '<div><h3>' + title + '</h3><p>' + copy + '</p></div>').join("") + '</div></section>' +
     '<section class="home-evidence"><div><span class="eyebrow">SEE HOW IT IS BUILT</span><h2>Every result has a paper trail.</h2><p>Explore the source or browse the latest published CI reports.</p></div>' +
     '<div><a class="button secondary" href="' + repo + '">View source ' + icon("arrow") + '</a><a class="text-link" href="https://akshat14092003.github.io/release-verification-lab/">Browse test reports ' + icon("arrow") + '</a></div></section></main>' +
-    '<footer class="home-footer"><a class="brand" href="/">' + logo() + '</a><p>A synthetic shop. An actual bug hunt.</p></footer>', "landing-body");
+    '<footer class="home-footer"><a class="brand" href="/">' + logo() + '</a><p>A synthetic shop. An actual bug hunt.</p></footer>', "landing-body" + (admin ? " admin-body" : ""));
 }
 
 export function productsPage(products, query = "", category = "") {
@@ -253,15 +259,15 @@ export function cartPage(cart) {
     '" aria-label="View ' + e(line.product.name) + '">' + artwork(line.product.artwork, { size: "thumb" }) + '</a><div class="cart-line-info"><span class="eyebrow">' +
     e(line.product.category) + '</span><h2><a href="/products/' + line.product.id + '">' + e(line.product.name) + '</a></h2><p class="muted">' + money(line.unit_price_cents) +
     ' each' + (line.offer ? ' ? ' + e(line.offer.name) : '') + '</p><div class="cart-line-actions"><form method="post" action="/cart/items/' + line.product.id +
-    '" data-cart-form data-cart-reload data-cart-api="/api/cart/items/' + line.product.id + '"><label class="sr-only" for="cart-quantity-' + line.product.id + '">Quantity for ' + e(line.product.name) +
+    '" data-cart-form data-cart-update data-cart-api="/api/cart/items/' + line.product.id + '"><label class="sr-only" for="cart-quantity-' + line.product.id + '">Quantity for ' + e(line.product.name) +
     '</label><div class="quantity-control"><button type="button" data-quantity-step="-1" data-auto-submit aria-label="Decrease ' + e(line.product.name) + ' quantity"' + (line.quantity === 1 ? ' disabled' : '') +
     '>&minus;</button><input id="cart-quantity-' + line.product.id + '" type="number" name="quantity" min="1" max="' + (line.offer ? '1' : '99') + '" value="' + line.quantity +
     '" required/><button type="button" data-quantity-step="1" data-auto-submit aria-label="Increase ' + e(line.product.name) + ' quantity"' + (line.offer || line.quantity === 99 ? ' disabled' : '') +
     '>+</button></div><button type="submit" class="subtle-button">Update</button></form><form method="post" action="/cart/remove/' + line.product.id +
-    '" data-cart-form data-cart-reload data-cart-method="DELETE" data-cart-api="/api/cart/items/' + line.product.id + '">' +
+    '" data-cart-form data-cart-update data-cart-method="DELETE" data-cart-api="/api/cart/items/' + line.product.id + '">' +
     '<button type="submit" class="subtle-button" aria-label="Remove ' + e(line.product.name) + '">Remove</button></form></div></div><strong class="cart-line-total">' +
     money(line.total_cents) + '</strong></article>').join("") + '<a class="text-link" href="/products">&larr; Continue exploring</a></section>' +
-    '<aside class="panel order-summary"><h2>Your order, so far.</h2><dl><div><dt>Subtotal</dt><dd>' + money(cart.total_cents) + '</dd></div>' +
+    '<aside class="panel order-summary"><h2>Your order, so far.</h2><dl><div><dt>Subtotal</dt><dd data-cart-subtotal>' + money(cart.total_cents) + '</dd></div>' +
     '<div><dt>Delivery</dt><dd class="green-text">Free</dd></div><div class="summary-total"><dt>Total</dt><dd data-testid="cart-total">' + money(cart.total_cents) +
     '</dd></div></dl><a class="button primary full" href="/checkout">Proceed to checkout ' + icon("arrow") + '</a>' +
     '<p class="summary-note">Review before you buy. Demo credit only.</p></aside></div>';
@@ -291,22 +297,23 @@ export function checkoutPage(quote) {
     money(quote.total_cents) + '</dd></div></dl><form method="post" action="/checkout"><button class="button primary full" type="submit">Place demo order ' + icon("arrow") +
     '</button></form><p class="summary-note">Available demo credit: ' + money(quote.balance_cents) + '</p></aside></div>';
 }
-function orderTable(orders, all = false) {
-  if (!orders.length) return '<div class="empty-state"><h2>No orders yet</h2><p>Your first good find is just around the corner.</p><a class="button primary" href="/products">Browse products</a></div>';
+function orderTable(orders, all = false, { editable = true, filters = {} } = {}) {
+  if (!orders.length) return '<div class="empty-state"><h2>No orders yet</h2><p>' + (all ? 'Customer purchases will appear here.' : 'Your first good find is just around the corner.') + '</p>' +
+    (all ? '' : '<a class="button primary" href="/products">Browse products</a>') + '</div>';
   return '<div class="table-scroll"><table><thead><tr><th>Order</th>' + (all ? '<th>Customer</th>' : "") +
     '<th>Date (UTC)</th><th>Status</th><th class="align-right">Total</th><th><span class="sr-only">Details</span></th></tr></thead><tbody>' +
     orders.map(order => '<tr><td><strong>#FW-' + order.id + '</strong></td>' + (all ? '<td>' + e(order.customer_name) + '</td>' : "") +
-    '<td>' + e(dateLabel(order.created_at)) + '</td><td>' + (all ? '<form method="post" action="/admin/orders/' + order.id + '/status" class="order-status-form"><label class="sr-only" for="order-status-' + order.id + '">Status for order FW-' + order.id + '</label><select id="order-status-' + order.id + '" name="status">' +
-      ORDER_STATUSES.map(status => '<option value="' + status + '"' + (order.status === status ? ' selected' : '') + '>' + status[0].toUpperCase() + status.slice(1) + '</option>').join('') + '</select><button type="submit" class="button secondary" aria-label="Update order FW-' + order.id + '">Update</button></form>' :
+    '<td>' + e(dateLabel(order.created_at)) + '</td><td>' + (all && editable ? '<form method="post" action="/admin/orders/' + order.id + '/status" class="order-status-form"><label class="sr-only" for="order-status-' + order.id + '">Status for order FW-' + order.id + '</label><select id="order-status-' + order.id + '" name="status">' +
+      ORDER_STATUSES.map(status => '<option value="' + status + '"' + (order.status === status ? ' selected' : '') + '>' + status[0].toUpperCase() + status.slice(1) + '</option>').join('') + '</select><input type="hidden" name="filter_status" value="' + e(filters.status) + '"/><input type="hidden" name="filter_customer" value="' + e(filters.customer) + '"/><button type="submit" class="button secondary" aria-label="Update order FW-' + order.id + '">Update</button></form>' :
       '<span class="pill neutral">' + e(order.status[0].toUpperCase() + order.status.slice(1)) + '</span>') + '</td>' +
-    '<td class="align-right">' + money(order.total_cents) + '</td><td><a class="subtle-link" href="/orders/' + order.id + '">View order ' +
+    '<td class="align-right">' + money(order.total_cents) + '</td><td><a class="subtle-link" href="' + (all ? '/admin/orders/' : '/orders/') + order.id + '">View order ' +
     icon("arrow") + '</a></td></tr>').join("") + '</tbody></table></div>';
 }
 export function ordersPage(orders) {
   return heading("YOUR GOOD FINDS", "Order history.", "Everything you have picked up, all in one place.") +
     '<section class="panel table-panel">' + orderTable(orders) + '</section>';
 }
-export function receiptPage(order, bugs = {}) {
+export function receiptPage(order, bugs = {}, { admin = false, customer } = {}) {
   // Seeded presentation defect: the summary reuses the first line-item total
   // instead of the complete order. The stored order and ledger stay correct.
   const firstItem = order.items[0];
@@ -314,8 +321,9 @@ export function receiptPage(order, bugs = {}) {
     ? (firstItem?.unit_price_cents || 0) * (firstItem?.quantity || 0)
     : order.total_cents;
   const ledgerTotal = -order.ledger.reduce((sum, entry) => sum + entry.amount_cents, 0);
-  return heading("THANK YOU FOR STOPPING BY", "A good choice.", "Your demo order is complete. Here is your receipt.",
-    '<a class="button secondary" href="/products">Back to the collection ' + icon("arrow") + '</a>') +
+  return heading(admin ? "CUSTOMER ORDER REVIEW" : "THANK YOU FOR STOPPING BY", admin ? "Order #FW-" + order.id : "A good choice.", admin ? "Review fulfilment and the recorded payment evidence." : "Your demo order is complete. Here is your receipt.",
+    '<a class="button secondary" href="' + (admin ? '/admin/orders' : '/products') + '">' + (admin ? 'Back to orders ' : 'Back to the collection ') + icon("arrow") + '</a>') +
+    (admin && customer ? '<p class="admin-order-customer"><strong>Customer: ' + e(customer.name) + '</strong><span>' + e(customer.email) + '</span></p>' : '') +
     '<section class="panel"><div class="panel-heading"><div><span class="eyebrow">ORDER #FW-' + order.id + '</span><h2>Order details</h2></div>' +
     '<span class="pill success">' + icon("check") + 'Paid</span><span class="pill neutral" data-testid="order-status">' + e(order.status[0].toUpperCase() + order.status.slice(1)) + '</span></div>' +
     order.items.map(item => '<div class="receipt-line"><span>' + e(item.product_name) + ' <span class="muted">&times; ' + item.quantity +
@@ -339,37 +347,70 @@ function adminProductForm(product = {}, { draft = {}, editingId } = {}) {
   const values = String(editingId) === key ? { ...product, ...draft, active: draft.active === "1" } : product;
   const price = String(editingId) === key ? draft.price : product.price_cents ? (product.price_cents / 100).toFixed(2) : "";
   const options = (items, selected) => items.map(item => '<option value="' + e(item) + '"' + (selected === item ? ' selected' : '') + '>' + e(item[0].toUpperCase() + item.slice(1)) + '</option>').join('');
-  return '<form method="post" action="/admin/products' + (product.id ? '/' + product.id : '') + '" class="admin-product-form">' +
+  return '<form method="post" action="/admin/products' + (product.id ? '/' + product.id : '') + '" class="admin-product-form" data-admin-product="' + key + '">' +
     '<label for="product-name-' + key + '">Name<input id="product-name-' + key + '" name="name" required maxlength="100" value="' + e(values.name || '') + '"/></label>' +
     '<label for="product-price-' + key + '">Price ($)<input id="product-price-' + key + '" name="price" type="number" min="0.01" max="9999.99" step="0.01" required value="' + e(price || '') + '"/></label>' +
     '<label for="product-category-' + key + '">Category<select id="product-category-' + key + '" name="category">' + options(CATEGORIES, values.category) + '</select></label>' +
     '<label for="product-artwork-' + key + '">Photo<select id="product-artwork-' + key + '" name="artwork">' + options(ARTWORK, values.artwork) + '</select></label>' +
     '<label class="admin-description" for="product-description-' + key + '">Description<textarea id="product-description-' + key + '" name="description" required maxlength="300" rows="2">' + e(values.description || '') + '</textarea></label>' +
     '<label class="admin-availability"><input type="checkbox" name="active" value="1"' + ((values.active ?? !product.id) ? ' checked' : '') + '/>Available for sale</label>' +
-    '<button class="button primary" type="submit">' + (product.id ? 'Save product' : 'Add product') + '</button></form>';
+    '<button class="button primary" type="submit">' + (product.id ? 'Save product' : 'Add product') + '</button><p class="admin-save-feedback" data-admin-feedback role="status" aria-live="polite" hidden></p></form>';
 }
-export function adminPage({ stats, orders, products, customers }, options = {}) {
-  return heading("STORE MANAGEMENT", "Make the shop your own.", "Manage products, fulfil orders, and see your customers. Changes apply to this demo shop.") +
-    '<nav class="admin-links" aria-label="Admin sections"><a href="#manage-products">Products</a><a href="#manage-orders">Orders</a><a href="#manage-customers">Customers</a></nav>' +
-    (options.error ? '<div class="alert error" role="alert">' + e(options.error) + '</div>' : options.message ? '<div class="alert" role="status">' + e(options.message) + '</div>' : '') +
-    '<div class="bento">' +
-    bentoTile("check", "Recorded sales", money(stats.sales_cents), { foot: "Reconciled against the ledger", classes: "bento-hero" }) +
-    bentoTile("products", "Products", stats.products) +
-    bentoTile("admin", "Customers & staff", stats.users) +
-    bentoTile("orders", "Paid orders", stats.orders, { classes: "bento-wide" }) +
-    '</div>' +
+export function adminProductEntry(product, options = {}) {
+  return '<details class="admin-product" data-admin-product-id="' + product.id + '"' + (String(options.editingId) === String(product.id) ? ' open' : '') + '><summary><span data-product-name>' + e(product.name) + '</span><span class="muted" data-product-summary>' + money(product.price_cents) + ' · ' + (product.active ? 'For sale' : 'Hidden') + '</span></summary>' + adminProductForm(product, options) + '</details>';
+}
+function adminNotice(options) {
+  return options.error ? '<div class="alert error" role="alert">' + e(options.error) + '</div>' : options.message ? '<div class="alert" role="status">' + e(options.message) + '</div>' : '';
+}
+export function adminPage({ stats, orders, products, customers }) {
+  const processing = orders.filter(order => order.status === "processing").length;
+  const active = products.filter(product => product.active).length;
+  const task = (href, name, copy, iconName) => '<a class="admin-task" href="' + href + '"><span class="bento-icon">' + icon(iconName) + '</span><span><strong>' + e(name) + '</strong><span>' + e(copy) + '</span></span>' + icon("arrow") + '</a>';
+  return heading("STORE MANAGEMENT", "Store overview.", "Track customer purchases, keep the catalogue current, and manage fulfilment.",
+    '<a class="button primary" href="/admin/orders?status=processing">Review processing orders ' + icon("arrow") + '</a>') +
+    '<div class="bento admin-metrics">' +
+    bentoTile("check", "Recorded sales", money(stats.sales_cents), { foot: "All time · synthetic purchases · ledger total" }) +
+    bentoTile("orders", "Paid orders", stats.orders, { foot: "All customer orders" }) +
+    bentoTile("clock", "Processing", processing, { foot: "Awaiting fulfilment" }) +
+    bentoTile("customers", "Customers", customers.length, { foot: "Customer accounts only" }) + '</div>' +
+    '<section class="admin-tasks" aria-label="Management shortcuts">' +
+    task("/admin/products", "Manage products", active + " for sale · " + (products.length - active) + " hidden", "products") +
+    task("/admin/orders", "Manage orders", "Review receipts and update fulfilment", "orders") +
+    task("/admin/customers", "View customers", "Inspect demo credit and purchase history", "customers") + '</section>' +
+    '<section class="panel table-panel"><div class="panel-heading"><h2>Recent orders</h2><a class="subtle-link" href="/admin/orders">All orders ' + icon("arrow") + '</a></div>' +
+    orderTable(orders.slice(0, 5), true, { editable: false }) + '</section>' +
+    '<p class="admin-sandbox-note">This is your isolated demo shop. To try a purchase, sign out and use a customer account. QA playground checks use separate test data.</p>';
+}
+export function adminProductsPage({ products }, options = {}) {
+  return heading("STORE MANAGEMENT", "Products.", "Edit prices and availability, or add a product to the catalogue.") + adminNotice(options) +
     '<section class="panel admin-catalogue" id="manage-products"><div class="panel-heading"><h2>Manage products</h2><span class="pill neutral">' + products.length + ' products</span></div>' +
     '<p class="muted">Hidden products cannot be purchased. Price changes affect future purchases; saved receipts keep their original amounts. Offer prices are separate.</p>' +
     '<details class="admin-product"' + (options.editingId === 'new' ? ' open' : '') + '><summary>Add a product</summary>' + adminProductForm({}, options) + '</details>' +
-    products.map(product => '<details class="admin-product"' + (String(options.editingId) === String(product.id) ? ' open' : '') + '><summary><span>' + e(product.name) + '</span><span class="muted">' + money(product.price_cents) + ' · ' + (product.active ? 'For sale' : 'Hidden') + '</span></summary>' + adminProductForm(product, options) + '</details>').join('') + '</section>' +
-    '<section class="panel table-panel" id="manage-orders"><div class="panel-heading"><h2>All orders</h2><span class="pill neutral">Admin access</span></div>' +
-    orderTable(orders, true) + '</section>' +
-    '<section class="panel table-panel" id="manage-customers"><div class="panel-heading"><h2>Customers</h2><span class="muted">Demo credit and purchase history</span></div><div class="table-scroll"><table><thead><tr><th>Name</th><th>Email</th><th>Orders</th><th class="align-right">Demo credit</th></tr></thead><tbody>' +
-    customers.map(customer => '<tr><td>' + e(customer.name) + '</td><td>' + e(customer.email) + '</td><td>' + customer.orders + '</td><td class="align-right">' + money(customer.balance_cents) + '</td></tr>').join('') + '</tbody></table></div></section>';
+    products.map(product => adminProductEntry(product, options)).join('') + '</section>';
 }
-export function errorPage(status, message) {
+export function adminOrdersPage({ orders, customers }, options = {}) {
+  const filters = options.filters || {};
+  const filtered = orders.filter(order => (!filters.status || order.status === filters.status) && (!filters.customer || String(order.user_id) === filters.customer));
+  const option = (value, label, selected) => '<option value="' + e(value) + '"' + (String(value) === selected ? ' selected' : '') + '>' + e(label) + '</option>';
+  return heading("STORE MANAGEMENT", "Orders.", "Review customer receipts and update delivery status. Status changes keep paid amounts unchanged.") + adminNotice(options) +
+    '<form class="admin-filters" method="get" action="/admin/orders"><div class="admin-filter-field"><label for="admin-order-status">Order status</label><select id="admin-order-status" name="status">' + option("", "All statuses", filters.status) +
+    ORDER_STATUSES.map(status => option(status, status[0].toUpperCase() + status.slice(1), filters.status)).join('') + '</select></div>' +
+    '<div class="admin-filter-field"><label for="admin-order-customer">Customer</label><select id="admin-order-customer" name="customer">' + option("", "All customers", filters.customer) +
+    customers.map(customer => option(customer.id, customer.name + " · " + customer.email, filters.customer)).join('') + '</select></div><button class="button secondary" type="submit">Filter orders</button>' +
+    (filters.status || filters.customer ? '<a class="subtle-link" href="/admin/orders">Clear filters</a>' : '') + '</form>' +
+    '<section class="panel table-panel" id="manage-orders"><div class="panel-heading"><h2>' + (filters.status || filters.customer ? 'Filtered orders' : 'All orders') + '</h2><span class="pill neutral">Orders: ' + filtered.length + '</span></div>' +
+    (!filtered.length && (filters.status || filters.customer) ? '<div class="empty-state"><h2>No orders match these filters</h2><p>Try another status or customer.</p><a class="button secondary" href="/admin/orders">Show all orders</a></div>' : orderTable(filtered, true, { filters })) + '</section>';
+}
+export function adminCustomersPage({ customers }) {
+  return heading("STORE MANAGEMENT", "Customers.", "View customer credit and open their purchase history. Admin accounts are excluded.") +
+    '<section class="panel table-panel admin-customers" id="manage-customers"><div class="panel-heading"><h2>Customer accounts</h2><span class="pill neutral">Customers: ' + customers.length + '</span></div>' +
+    (customers.length ? '<div class="table-scroll"><table><thead><tr><th>Name</th><th>Email</th><th>Orders</th><th class="align-right">Demo credit</th><th><span class="sr-only">Purchase history</span></th></tr></thead><tbody>' +
+    customers.map(customer => '<tr><td>' + e(customer.name) + '</td><td>' + e(customer.email) + '</td><td>' + customer.orders + '</td><td class="align-right">' + money(customer.balance_cents) + '</td><td><a class="subtle-link" href="/admin/orders?customer=' + customer.id + '">View orders ' + icon("arrow") + '</a></td></tr>').join('') + '</tbody></table></div>' :
+    '<div class="empty-state"><h2>No customers yet</h2><p>Customer accounts appear here after they sign up.</p></div>') + '</section>';
+}
+export function errorPage(status, message, { admin = false } = {}) {
   return '<div class="empty-state"><span class="eyebrow">' + status + '</span><h1>' + e(message) +
-    '</h1><a class="button secondary" href="/products">Return to products</a></div>';
+    '</h1><a class="button secondary" href="' + (admin ? '/admin' : '/products') + '">' + (admin ? 'Return to management' : 'Return to products') + '</a></div>';
 }
 import { labDialogs, labTools } from "./lab-view.js";
 import { ARTWORK, CATEGORIES, ORDER_STATUSES } from "./admin.js";

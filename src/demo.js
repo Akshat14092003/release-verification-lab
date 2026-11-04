@@ -81,7 +81,7 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
   app.post("/api/lab/reset", jsonOnly, (req, res) => {
     seedDatabase(req.visitor.runtime.db, { reset: true, includeSampleOrder: false });
     res.clearCookie("fieldwork_session", { path: "/" });
-    res.json({ ...snapshot(req.visitor), message: "Your shop is reset: $1,000 credit, no purchases. Sign in again to shop." });
+    res.json({ ...snapshot(req.visitor), message: "Your shop is reset: $1,000 per customer, no purchases. Sign in again." });
   });
   app.post("/api/lab/repeat-offer", jsonOnly, async (req, res, next) => {
     // The shop API still enforces the rule. This is only a visible client for the same request

@@ -199,32 +199,37 @@
   $("close-tests").addEventListener("click", () => drawer.close());
   $("toggle-report-view").addEventListener("click", () => setReportView(!drawer.classList.contains("is-report-view")));
   const playgroundToggle = $("toggle-playground");
-  function setPlayground(open) {
-    settings.hidden = !open;
+  function setPlayground(open, immediate = false) {
     playgroundToggle.setAttribute("aria-expanded", String(open));
+    if (!open) {
+      window.FieldworkMotion.exit(settings, () => { settings.hidden = true; }, "popover", immediate || window.matchMedia("(max-width: 850px)").matches);
+      return;
+    }
+    settings.hidden = false;
     if (open && !window.matchMedia("(max-width: 850px)").matches) {
       const bounds = playgroundToggle.getBoundingClientRect();
       settings.style.setProperty("--qa-top", Math.round(bounds.bottom + 12) + "px");
       settings.style.setProperty("--qa-right", Math.max(20, innerWidth - bounds.right - 360) + "px");
+      window.FieldworkMotion.enter(settings, "popover", playgroundToggle);
     }
   }
-  setPlayground(false);
+  setPlayground(false, true);
   playgroundToggle.addEventListener("click", () => {
-    const open = settings.hidden;
+    const open = playgroundToggle.getAttribute("aria-expanded") !== "true";
     setPlayground(open);
     if (open) $("playground-heading").focus();
   });
   $("close-playground").addEventListener("click", () => { setPlayground(false); playgroundToggle.focus(); });
   document.addEventListener("click", event => {
-    if (!settings.hidden && !settings.contains(event.target) && !playgroundToggle.contains(event.target) &&
+    if (playgroundToggle.getAttribute("aria-expanded") === "true" && !settings.contains(event.target) && !playgroundToggle.contains(event.target) &&
         !event.target.closest("[data-open-playground],#reset-dialog")) setPlayground(false);
   });
   document.addEventListener("keydown", event => {
     if (event.key === "Escape" && !settings.hidden && !$("reset-dialog").open) {
-      event.preventDefault(); setPlayground(false); playgroundToggle.focus();
+      event.preventDefault(); setPlayground(false, true); playgroundToggle.focus();
     }
   });
-  window.matchMedia("(max-width: 850px)").addEventListener("change", () => setPlayground(false));
+  window.matchMedia("(max-width: 850px)").addEventListener("change", () => setPlayground(false, true));
   window.Fieldwork.openTests = openDrawer;
 
   function message(text, error = false) {

@@ -1,10 +1,19 @@
 # Current verification evidence
 
-The local signup/admin revision now has **53 release checks** (26 API, 16 browser,
+The current local admin-workspace revision has **54 release checks** (27 API, 16 browser,
+3 database, 8 security). Local checks on 2026-11-04 passed **54/54** with two workers (74.5 seconds),
+red verification matched **42 passing controls / 12 intended failures** (82.1 seconds),
+and unit guards passed **8/8**. Ten admin width/theme combinations passed (320/390/850/1024/1440px,
+light/dark), covering empty shops, real multi-item customer purchases, management navigation,
+filters and receipts, with no document overflow or page errors. Guide actions, inline product
+creation, error retention and HTML fallback passed. The preceding role-separation pass also
+verified the blocked interactive repeat-offer purchase. No hosted CI or publication for this revision.
+
+The preceding signup/admin revision had **53 release checks** (26 API, 16 browser,
 3 database, 8 security), with 8 separate unit guards. Published results below describe
 the earlier 47-check revision. The new revision has not been published or CI-verified yet.
 
-Local validation on 2026-11-04: **53/53** with two workers (1.9 minutes), red **41 passing
+Earlier signup/admin validation on 2026-11-04: **53/53** with two workers (1.9 minutes), red **41 passing
 controls and exactly 12 intended failures** (186.0 seconds), and **8/8 unit guards**.
 The real one-worker runner completed **53 passes**, streamed progress, preserved cart/credit,
 served its owner-only report and verified cancellation. The signup/login/admin screens passed

@@ -17,11 +17,24 @@
     coach.hidden = dismissed;
     $("guide-toggle").setAttribute("aria-expanded", String(!dismissed));
     const path = location.pathname, state = window.Fieldwork.labState;
-    $("direct-tools").hidden = !(state?.bugs.BUG_NO_LIMIT && path === "/offers");
+    const admin = document.body.classList.contains("admin-body");
+    coach.setAttribute("aria-label", admin ? "Admin guide" : "Shopping guide");
+    $("direct-tools").hidden = admin || !(state?.bugs.BUG_NO_LIMIT && path === "/offers");
     if (dismissed) return;
     let step = 1, title = "Find something you like.", copy = "Browse a product, choose a quantity, and build your own cart. We’ll guide you as you go.", label = "View an item";
     action = () => document.querySelector('.product-card .add-button')?.click();
-    if (path === "/products" && !document.querySelector(".product-card")) {
+    if (admin) {
+      const receipt = path.startsWith("/admin/orders/");
+      const section = receipt ? "receipt" : path.split("/")[2] || "overview";
+      const steps = {
+        overview: ["Your management workspace.", "Sales come from the ledger. Review processing orders, manage the catalogue, or inspect customer purchases. Use a customer account to try shopping.", "Review processing orders", () => location.assign("/admin/orders?status=processing")],
+        products: ["Keep the catalogue current.", "Edit a product's price or availability and save it here. Changes affect future purchases; existing receipts keep their paid amounts.", "Add a product", () => { const detail = document.querySelector("#manage-products details"); detail.open = true; highlight("#product-name-new"); }],
+        orders: ["Manage customer orders.", "Filter by customer or status, update fulfilment, and open an order to inspect its receipt and payment records.", "Filter orders", () => highlight("#admin-order-status")],
+        customers: ["Review customer activity.", "Customer accounts show remaining demo credit and purchase counts. Open View orders to inspect one customer's purchases.", "View customer accounts", () => highlight("#manage-customers")],
+        receipt: ["Review the customer's order.", "Compare each line and the receipt total with its recorded payment. Return to Orders to update fulfilment.", "Back to orders", () => location.assign("/admin/orders")]
+      };
+      [title, copy, label, action] = steps[section] || steps.overview;
+    } else if (path === "/products" && !document.querySelector(".product-card")) {
       title = "Let’s find another good thing."; copy = "No products match this search. Clear the filters to explore the collection again.";
       label = "Show all products"; action = () => location.assign("/products");
     } else if (path === "/products" && state?.bugs.BUG_AUTH_BYPASS) {
@@ -72,9 +85,6 @@
       action = total !== ledger ? () => window.Fieldwork.openTests() : lines > 1 ? () => {
         const input = document.querySelector('[name="BUG_TOTAL_MISMATCH"]'); input.checked = true; input.dispatchEvent(new Event("change"));
       } : () => location.assign("/products");
-    } else if (path === "/admin") {
-      title = "Your shop, your controls."; copy = "Edit catalogue details and availability, update fulfilment, or review your customers. These changes stay in this demo sandbox.";
-      label = "Manage products"; action = () => highlight("#manage-products");
     } else if (path === "/signup") {
       step = 4; title = "A fresh account, a fresh start.";
       copy = "Use fictional details to create a customer account with $1,000 demo credit. Your cart comes with you. Resetting this sandbox clears the account.";
@@ -100,7 +110,7 @@
         label = "Browse collection"; action = () => location.assign("/products");
       }
     }
-    $("guide-step").textContent = path === "/admin" ? "ADMIN GUIDE" : "SHOPPING GUIDE · " + step + " OF 5";
+    $("guide-step").textContent = admin ? "ADMIN GUIDE" : "SHOPPING GUIDE · " + step + " OF 5";
     $("guide-title").textContent = title; $("guide-copy").textContent = copy;
     $("guide-action").textContent = label; $("guide-progress-fill").style.width = step * 20 + "%";
   }

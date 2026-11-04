@@ -29,6 +29,28 @@ checkout through the UI, an existing cart, or a direct request. Paid receipts an
 retain their original prices/names. Admin edits affect the current visitor's sandbox, while
 automated checks always run on isolated test data.
 
+Admin accounts sign in directly to the management dashboard. Their sidebar/profile contains
+management actions instead of cart, offers, checkout or personal purchases; no personal credit
+is shown. Customer receipts open at `/admin/orders/:id`. Server-side guards reject admin shopping
+APIs and purchase forms, including the direct-repeat helper. Use the Customer shortcut or signup
+for manual purchasing tests. QA controls and automated verification remain available to admin.
+
+Admin Home is the management overview, including when visiting `/`. Its sidebar is Overview,
+Products, Orders and Customers. Overview shows actual ledger sales, paid/processing order counts,
+customer accounts and five recent orders. Use Products to edit the catalogue, Orders to filter
+by status/customer and update fulfilment, and Customers to open a customer's purchase history.
+Receipt review identifies the customer and returns to Orders. Status updates retain the selected
+filters; an order moved out of a filtered status disappears from that result. Clear filters to
+see it again. Fresh demo shops show empty orders until a customer buys something.
+
+Cart quantity and removal controls update the current page and totals without navigating; focus
+stays in the cart. Product editing saves inline with Saving… / Saved ✓ and retains the expanded
+editor. Validation failures keep the entered values. Adding a product appends its new editor.
+Notifications pause their dismissal while hovered, keyboard-focused, or in a background tab,
+and have a dismiss button. Menus use short pointer transitions and immediate keyboard actions;
+reduced motion fades without movement. The beetle stops background frame/layout work when paused
+or fixed, while keeping mouse-following, click-to-catch, close-to-resume and refresh-to-return behavior.
+
 1. Browse the collection or filter/search it. Each product arrow opens that product's detail page.
 2. Choose a quantity and **Add to cart**, or use a card's quick-add button. A toast and cart badge confirm the change.
 3. Open **Cart** to update quantities, remove lines, and review the server-priced total.

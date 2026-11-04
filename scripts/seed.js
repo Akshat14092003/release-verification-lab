@@ -12,7 +12,7 @@ try {
   const fresh = args.includes("--fresh");
   const sample = args.includes("--reset");
   const changed = seedDatabase(db, { reset: fresh || sample, includeSampleOrder: sample });
-  console.log(changed ? !sample ? "Fresh demo: $1,000 credit per account, no purchases or sessions."
+  console.log(changed ? !sample ? "Fresh demo: $1,000 per customer, admin management access, no purchases or sessions."
     : "Synthetic demo data seeded (includes the $73 sample order)."
     : "Existing demo data preserved. Use --reset for sample data or --fresh for no purchases.");
   console.log("Database: " + config.databasePath);

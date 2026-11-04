@@ -112,27 +112,51 @@ test("mobile catalogue fits the screen and keeps sign-out accessible", async ({ 
 
 test("an administrator can inspect the store overview", async ({ page }) => {
   await new LoginPage(page).signInAs("Admin");
+  await expect(page).toHaveURL(/\/admin$/);
   await expect(page.locator(".role-badge")).toHaveText("Admin");
-  await new ProductsPage(page).navigate("Admin");
-  await expect(page.getByRole("heading", { name: "All orders", exact: true })).toBeVisible();
+  const navigation = page.getByRole("navigation", { name: "Main navigation", exact: true });
+  await expect(navigation.getByRole("link")).toHaveText(["Overview", "Products", "Orders", "Customers"]);
+  await expect(page.locator(".header-cart,.account-bar .credit")).toHaveCount(0);
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/admin$/);
+  await expect(page.getByRole("heading", { name: "Store overview.", exact: true })).toBeVisible();
+  await expect(page.locator(".home-hero,#manage-products")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Recent orders", exact: true })).toBeVisible();
   await expect(page.getByRole("row").filter({ hasText: "#FW-1001" })).toContainText("Alex Morgan");
+  await navigation.getByRole("link", { name: "Products", exact: true }).click();
   const product = page.locator("details.admin-product").filter({ has: page.locator("summary", { hasText: "Everyday journal" }) });
   await product.locator("summary").click();
+  await page.evaluate(() => { window.adminPageStayed = true; });
   await product.getByLabel("Price ($)", { exact: true }).fill("29.50");
   await product.getByRole("button", { name: "Save product", exact: true }).click();
-  await expect(page.locator(".alert[role='status']")).toContainText("Product saved");
+  await expect(product.locator("[data-admin-feedback]")).toContainText("Saved.");
+  await expect(product).toHaveAttribute("open", "");
+  expect(await page.evaluate(() => window.adminPageStayed)).toBe(true);
+  await expect(product.locator("summary")).toContainText("$29.50");
+  await navigation.getByRole("link", { name: "Orders", exact: true }).click();
   await page.getByLabel("Status for order FW-1001", { exact: true }).selectOption("shipped");
   await page.getByRole("button", { name: "Update order FW-1001", exact: true }).click();
   await expect(page.getByLabel("Status for order FW-1001", { exact: true })).toHaveValue("shipped");
-  await page.goto("/products/1");
-  await expect(page.locator(".product-detail")).toContainText("$29.50");
-  await page.goto("/orders/1001");
+  await page.getByRole("link", { name: "View order", exact: true }).click();
+  await expect(navigation.getByRole("link", { name: "Orders", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(page.locator(".admin-order-customer")).toContainText("Alex Morgan");
   await expect(page.getByTestId("order-status")).toHaveText("Shipped");
   await expect(page.getByTestId("ledger-total")).toHaveText("$73.00");
-  await page.goto("/admin");
+  await page.getByRole("link", { name: "Back to orders", exact: true }).click();
+  await navigation.getByRole("link", { name: "Customers", exact: true }).click();
+  await page.getByRole("row").filter({ hasText: "Alex Morgan" }).getByRole("link", { name: "View orders", exact: true }).click();
+  await expect(page.getByLabel("Customer", { exact: true })).toHaveValue("1");
+  await page.getByLabel("Order status", { exact: true }).selectOption("processing");
+  await page.getByRole("button", { name: "Filter orders", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "No orders match these filters", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Show all orders", exact: true }).click();
   await page.setViewportSize({ width: 320, height: 568 });
   // The media-query listener moves navigation into its drawer after resize.
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
+  await page.getByRole("button", { name: "Open menu", exact: true }).click();
+  await expect(navigation.getByRole("link")).toHaveText(["Overview", "Products", "Orders", "Customers"]);
+  await navigation.getByRole("link", { name: "Overview", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Store overview.", exact: true })).toBeVisible();
 });
 
 test("a visitor signs up from checkout, keeps their cart and signs in again", async ({ page }) => {
@@ -192,8 +216,11 @@ test("product pages, cart updates and guest sign-in form a complete shopping jou
   await expect(page.locator("#cart-toast-text")).toContainText("Everyday journal added");
   await page.getByRole("link", { name: "Open cart", exact: true }).click();
   await expect(page.getByTestId("cart-total")).toHaveText("$56.00");
+  await page.evaluate(() => { window.cartPageStayed = true; });
   await page.getByRole("button", { name: "Increase Everyday journal quantity", exact: true }).click();
   await expect(page.getByTestId("cart-total")).toHaveText("$84.00");
+  expect(await page.evaluate(() => window.cartPageStayed)).toBe(true);
+  await expect(page.getByRole("button", { name: "Increase Everyday journal quantity", exact: true })).toBeFocused();
   await page.getByRole("button", { name: "Remove Everyday journal", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Your cart is waiting." })).toBeVisible();
   await page.goto("/products");
