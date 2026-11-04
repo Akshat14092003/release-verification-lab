@@ -13,8 +13,13 @@ export class LoginPage {
 
   async signInAs(role = "Customer") {
     await this.open();
-    await this.page.getByRole("button", { name: role, exact: true }).click();
-    await this.submitButton.click();
+    if (role === "Admin") {
+      // Admin leaves no trace on the buyer-facing login, so sign in with credentials.
+      await this.submit("admin@example.test", "DemoShop!2026");
+    } else {
+      await this.page.getByRole("button", { name: role, exact: true }).click();
+      await this.submitButton.click();
+    }
     await this.page.waitForURL(role === "Admin" ? "**/admin" : "**/products");
   }
 

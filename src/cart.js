@@ -2,7 +2,7 @@ import { positiveId, quoteOrder, ShopError } from "./shop.js";
 
 export function getCart(db, cartKey) {
   const rows = db.prepare(
-    "SELECT c.product_id, c.offer_id, c.quantity, p.name, p.category, p.description, p.artwork, p.price_cents," +
+    "SELECT c.product_id, c.offer_id, c.quantity, p.name, p.category, p.description, p.artwork, p.price_cents, p.active," +
     " o.name AS offer_name, o.price_cents AS offer_price FROM cart_items c " +
     "JOIN products p ON p.id=c.product_id LEFT JOIN offers o ON o.id=c.offer_id WHERE c.cart_key=? ORDER BY c.product_id"
   ).all(cartKey);
@@ -10,6 +10,7 @@ export function getCart(db, cartKey) {
     product: { id: row.product_id, name: row.name, category: row.category, description: row.description, artwork: row.artwork, price_cents: row.price_cents },
     offer: row.offer_id ? { id: row.offer_id, name: row.offer_name, price_cents: row.offer_price } : null,
     quantity: row.quantity,
+    available: Boolean(row.active),
     unit_price_cents: row.offer_id ? row.offer_price : row.price_cents,
     total_cents: (row.offer_id ? row.offer_price : row.price_cents) * row.quantity
   }));

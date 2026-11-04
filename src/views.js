@@ -102,7 +102,8 @@ export function shell({ title, active, user, balance, now, body, bugs = {}, labC
 }
 export function loginPage(error = "", email = "", bugs = {}, labControls = false, next = "/products", options = {}) {
   const registering = options.signup === true;
-  const accounts = [["customer", "Customer"], ["admin", "Admin"]];
+  // Buyer-facing login shows customer demo accounts only; admin leaves no trace here.
+  const accounts = [["customer", "Customer"], ["jamie", "Jamie"]];
   const nextQuery = "?next=" + encodeURIComponent(next);
   return document(registering ? "Create account" : "Sign in",
     '<div class="login-tools"><a class="lab-return" href="/products">Back to shop</a>' + themeButton() + '</div>' + (labControls ? labTools() : '') +
@@ -121,7 +122,7 @@ export function loginPage(error = "", email = "", bugs = {}, labControls = false
     '<button class="button primary full" type="submit">' + (registering ? 'Create account' : 'Sign in') + ' ' + icon("arrow") + '</button></form>' +
     '<p class="auth-switch">' + (registering ? 'Already have an account? <a href="/login' + nextQuery + '">Sign in</a>' : 'New here? <a href="/signup' + nextQuery + '">Create account</a>') + '</p>' +
     (registering ? '<p class="signup-note">Use fictional details. In the interactive demo, reset or sandbox expiry clears this account.</p>' :
-    '<div class="demo-accounts"><span class="eyebrow">TRY A DEMO ACCOUNT</span><p>Choose a role to fill in its sign-in details.</p><div class="role-options">' +
+    '<div class="demo-accounts"><span class="eyebrow">TRY A DEMO ACCOUNT</span><p>Choose an account to fill in its sign-in details.</p><div class="role-options">' +
     accounts.map(([key, name]) => '<button type="button" class="role-choice" data-demo-role="' + key + '">' + name + '</button>').join("") +
     '</div><p class="login-disclaimer">Fictional accounts and purchases. No payment information needed.</p></div>') + '</div></section></main>' + (labControls ? labDialogs() : ''), "login-body" + (registering ? " signup-body" : ""), labControls);
 }
@@ -258,7 +259,9 @@ export function cartPage(cart) {
     '<article class="cart-line" data-cart-line="' + line.product.id + '"><a class="cart-art art-' + e(line.product.artwork) + '" href="/products/' + line.product.id +
     '" aria-label="View ' + e(line.product.name) + '">' + artwork(line.product.artwork, { size: "thumb" }) + '</a><div class="cart-line-info"><span class="eyebrow">' +
     e(line.product.category) + '</span><h2><a href="/products/' + line.product.id + '">' + e(line.product.name) + '</a></h2><p class="muted">' + money(line.unit_price_cents) +
-    ' each' + (line.offer ? ' ? ' + e(line.offer.name) : '') + '</p><div class="cart-line-actions"><form method="post" action="/cart/items/' + line.product.id +
+    ' each' + (line.offer ? ' ? ' + e(line.offer.name) : '') + '</p>' +
+    (line.available === false ? '<span class="pill neutral" data-cart-unavailable>No longer available &middot; remove to check out</span>' : '') +
+    '<div class="cart-line-actions"><form method="post" action="/cart/items/' + line.product.id +
     '" data-cart-form data-cart-update data-cart-api="/api/cart/items/' + line.product.id + '"><label class="sr-only" for="cart-quantity-' + line.product.id + '">Quantity for ' + e(line.product.name) +
     '</label><div class="quantity-control"><button type="button" data-quantity-step="-1" data-auto-submit aria-label="Decrease ' + e(line.product.name) + ' quantity"' + (line.quantity === 1 ? ' disabled' : '') +
     '>&minus;</button><input id="cart-quantity-' + line.product.id + '" type="number" name="quantity" min="1" max="' + (line.offer ? '1' : '99') + '" value="' + line.quantity +

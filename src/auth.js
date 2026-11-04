@@ -75,8 +75,14 @@ export function signup(db, input, now, response) {
 }
 
 export function logout(db, cookieHeader, response) {
-  const pair = String(cookieHeader || "").split(";").map(part => part.trim())
-    .find(part => part.startsWith(COOKIE + "="));
+  const cookies = String(cookieHeader || "").split(";").map(part => part.trim());
+  const pair = cookies.find(part => part.startsWith(COOKIE + "="));
   if (pair) db.prepare("DELETE FROM sessions WHERE token_hash = ?").run(tokenHash(pair.slice(COOKIE.length + 1)));
+  // Carts are keyed by the fieldwork_cart cookie, not the account. Drop both the
+  // rows and the cookie so a shared browser never carries one person's cart to the next.
+  const cartPair = cookies.find(part => part.startsWith("fieldwork_cart="));
+  const cartKey = cartPair?.slice("fieldwork_cart=".length);
+  if (/^[a-f0-9]{32}$/.test(cartKey || "")) db.prepare("DELETE FROM cart_items WHERE cart_key = ?").run(cartKey);
   response.clearCookie(COOKIE, { httpOnly: true, sameSite: "lax", path: "/" });
+  response.clearCookie("fieldwork_cart", { httpOnly: true, sameSite: "lax", path: "/" });
 }

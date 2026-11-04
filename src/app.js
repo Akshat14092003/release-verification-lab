@@ -21,6 +21,15 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
 
   app.use((req, res, next) => {
     res.set("Cache-Control", "no-store");
+    res.set("X-Content-Type-Options", "nosniff");
+    res.set("Referrer-Policy", "same-origin");
+    res.set("X-Frame-Options", "SAMEORIGIN");
+    // Strict CSP: all scripts/styles are same-origin files (no inline script); fonts come
+    // from Google Fonts; one inline style attribute needs 'unsafe-inline' for styles only.
+    res.set("Content-Security-Policy",
+      "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; " +
+      "img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; " +
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self'; connect-src 'self'");
     // Normal browser forms are same-origin; reject cross-origin mutations.
     if (!["GET", "HEAD", "OPTIONS"].includes(req.method)) {
       const origin = req.get("origin");
@@ -65,11 +74,31 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   app.get("/login", (req, res) => req.user ? res.redirect(req.user.role === "admin" ? "/admin" : nextPage(req.query.next))
     : res.send(view.loginPage("", "", bugs, labControls, nextPage(req.query.next))));
 
+  // In-memory per-(ip,email) sign-in throttle to blunt password guessing.
+  const loginAttempts = new Map();
+  const MAX_LOGIN_ATTEMPTS = 10, LOGIN_WINDOW_MS = 15 * 60 * 1000;
+  const loginKey = req => (req.ip || "?") + "|" + String(req.body?.email ?? "").slice(0, 254).trim().toLowerCase();
+  const guardLogin = key => {
+    const entry = loginAttempts.get(key);
+    if (entry && Date.now() - entry.first > LOGIN_WINDOW_MS) loginAttempts.delete(key);
+    if ((loginAttempts.get(key)?.count ?? 0) >= MAX_LOGIN_ATTEMPTS) {
+      throw new ShopError("Too many sign-in attempts. Please wait a few minutes and try again.", 429);
+    }
+  };
+  const recordLoginFailure = key => {
+    const entry = loginAttempts.get(key) ?? { count: 0, first: Date.now() };
+    loginAttempts.set(key, { count: entry.count + 1, first: entry.first });
+    if (loginAttempts.size > 1000) for (const [k, v] of loginAttempts) if (Date.now() - v.first > LOGIN_WINDOW_MS) loginAttempts.delete(k);
+  };
   const signIn = (req, res, next) => {
+    const key = loginKey(req);
     try {
+      guardLogin(key);
       const user = login(db, req.body?.email, req.body?.password, now(), res, bugs);
+      loginAttempts.delete(key);
       return isApi(req) ? res.json({ user }) : res.redirect(303, user.role === "admin" ? "/admin" : nextPage(req.body?.next));
     } catch (error) {
+      if (error instanceof ShopError && error.status === 401) recordLoginFailure(key);
       if (!isApi(req) && error instanceof ShopError) {
         const email = typeof req.body?.email === "string" ? req.body.email.slice(0, 254) : "";
         return res.status(error.status).send(view.loginPage(error.message, email, bugs, labControls, nextPage(req.body?.next)));
