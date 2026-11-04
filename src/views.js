@@ -41,7 +41,7 @@ export function document(title, body, bodyClass = "", labControls = false) {
     '<title>' + e(title) + ' | Fieldwork</title><link rel="icon" href="/favicon.svg" type="image/svg+xml"/>' +
     '<script src="/theme.js"></script><link rel="stylesheet" href="/tokens.css"/><link rel="stylesheet" href="/styles.css"/><link rel="stylesheet" href="/theme.css"/>' +
     '<link rel="stylesheet" href="/shop.css"/>' + (labControls ? '<link rel="stylesheet" href="/lab.css"/>' : '') + '<link rel="stylesheet" href="/glass.css"/><link rel="stylesheet" href="/blue.css"/>' +
-    '<link rel="stylesheet" href="/experience.css"/><script src="/motion.js" defer></script><script src="/app.js" defer></script><script src="/bug.js" defer></script>' + (labControls ? '<script src="/lab.js" defer></script><script src="/guide.js" defer></script>' : '') + '</head>' +
+    '<link rel="stylesheet" href="/experience.css"/><script src="/motion.js" defer></script><script src="/app.js" defer></script><script src="/bug.js" defer></script><script src="/home.js" defer></script>' + (labControls ? '<script src="/lab.js" defer></script><script src="/guide.js" defer></script>' : '') + '</head>' +
     '<body class="' + e(bodyClass) + (labControls ? ' has-lab' : '') + '">' + body + bugHunt() +
     '<div class="cart-toast" id="cart-toast" role="status" aria-live="polite" hidden><span class="toast-check">&#10003;</span><span id="cart-toast-text"></span>' +
     (admin ? '' : '<a href="/cart">View cart &rarr;</a>') + '<button type="button" class="icon-button" id="dismiss-cart-toast" aria-label="Dismiss notification">&times;</button></div></body></html>';
@@ -192,6 +192,18 @@ function bugHunt() {
     '<p class="surprise-note">Just a playful stowaway. QA playground switches stay as you set them.</p></div></dialog>';
 }
 
+function checkTicker() {
+  // Illustrative only — a staged entrance, never a claim that real tests just ran.
+  const checks = [
+    "Checkout total matches the ledger",
+    "Offer limit blocks a repeat purchase",
+    "Login rejects a wrong password"
+  ];
+  return '<div class="check-ticker" data-check-ticker aria-label="Example automated checks">' +
+    '<span class="eyebrow ticker-label">EXAMPLE CHECKS</span><ul class="ticker-list">' +
+    checks.map((text, i) => '<li data-check style="--row:' + i + '"><span class="check-dot" aria-hidden="true"></span>' + e(text) + '</li>').join("") +
+    '</ul><span class="ticker-note">Illustrative preview &middot; ' + BASELINE_CHECKS + ' automated checks run in the shop.</span></div>';
+}
 export function landingPage(user) {
   const repo = "https://github.com/Akshat14092003/release-verification-lab";
   const admin = user?.role === "admin";
@@ -201,24 +213,24 @@ export function landingPage(user) {
     '<nav aria-label="Main navigation"><a href="/" aria-current="page">Home</a><a href="' + destination + '">' + (admin ? 'Admin' : 'Shop') + '</a><a href="#about-lab">About the lab</a></nav>' +
     '<div class="home-account"><a class="button secondary" href="' + (user ? destination : '/login') + '">' + (admin ? 'Manage shop' : user ? 'Open shop' : 'Sign in / Sign up') + '</a>' + themeButton() + '</div></header>' +
     '<main id="main-content" class="home-main" tabindex="-1"><section class="store-hero home-hero"><div class="hero-copy"><span class="eyebrow">FIELDWORK / RELEASE VERIFICATION LAB</span>' +
-    '<h1>A little shopping.<br/><em>A little bug hunting.</em></h1><p>A working demo shop with a twist. Introduce realistic bugs, run automated checks, and see the evidence for yourself.</p>' +
+    '<h1>A little shopping.<br/><em>A little bug hunting.</em></h1><p>A working demo shop with a twist. Introduce realistic bugs, run automated checks, and see the evidence for yourself.</p>' + checkTicker() +
     '<div class="hero-actions"><a class="button primary" href="' + destination + '">' + (admin ? 'Open dashboard ' : 'Enter the shop ') + icon("arrow") + '</a><a class="text-link" href="#how-it-works">How it works ' + icon("arrow") + '</a></div>' +
     '<span class="hero-note">Fictional credit. Real tests. A sandbox of your own.</span></div><div class="hero-scene hero-photo-scene"><div class="hero-photo">' +
     collectionPhoto("(max-width: 850px) 94vw, 48vw") + '<span class="floating-label label-demo"><span class="status-dot"></span> Real shopping. Demo credit.</span></div>' +
     '<span class="orbit-dot dot-one"></span><span class="orbit-dot dot-two"></span></div></section>' +
-    '<div class="home-proof"><span>4 intentional bugs</span><span>' + BASELINE_CHECKS + ' release checks</span><span>Browser · API · Database · Security</span></div>' +
+    '<div class="home-proof"><span data-reveal="slow">4 intentional bugs</span><span data-reveal="slow">' + BASELINE_CHECKS + ' release checks</span><span data-reveal="slow">Browser · API · Database · Security</span></div>' +
     '<section id="how-it-works" class="home-section"><div class="section-intro"><span class="eyebrow">YOUR FIRST BUG HUNT</span><h2>Break it. Catch it.<br/>Make it right.</h2><p>Follow the steps in the shop. Every switch changes actual behavior; every result comes from a real test.</p></div>' +
     '<ol class="home-steps">' + [
       ["Shop", "Build a cart and checkout with $1,000 in fictional credit. No card details needed."],
       ["Enable a bug", "Open QA playground and choose a rule to break. Each switch explains what to try."],
       ["Run checks", "Watch actual browser, API, database, and security checks report their results."],
       ["Inspect the evidence", "Open a failed check, read its error and trace, then turn the bug off and verify the fix."]
-    ].map(([title, copy], index) => '<li><span class="step-number">0' + (index + 1) + '</span><div><h3>' + title + '</h3><p>' + copy + '</p></div></li>').join("") + '</ol></section>' +
+    ].map(([title, copy], index) => '<li data-reveal><span class="step-number">0' + (index + 1) + '</span><div><h3>' + title + '</h3><p>' + copy + '</p></div></li>').join("") + '</ol></section>' +
     '<section id="about-lab" class="home-section home-about"><div class="section-intro"><span class="eyebrow">MORE THAN A SHOP</span><h2>A small release.<br/>Evidence at every layer.</h2><p>This is a QA portfolio project built with Express, SQLite, and Playwright. You can reproduce the bugs manually and see which checks catch them.</p></div>' +
     '<div class="layer-list">' + [
       ["Browser", "Real shopping journeys, screenshots, and traces."], ["API", "Login rules, ownership, pricing, and purchase limits."],
       ["Database", "Order totals checked against independent SQL and ledger sums."], ["Security", "Focused SQL-like input and reflected/stored script probes."]
-    ].map(([title, copy]) => '<div><h3>' + title + '</h3><p>' + copy + '</p></div>').join("") + '</div></section>' +
+    ].map(([title, copy]) => '<div data-reveal><h3>' + title + '</h3><p>' + copy + '</p></div>').join("") + '</div></section>' +
     '<section class="home-evidence"><div><span class="eyebrow">SEE HOW IT IS BUILT</span><h2>Every result has a paper trail.</h2><p>Explore the source or browse the latest published CI reports.</p></div>' +
     '<div><a class="button secondary" href="' + repo + '">View source ' + icon("arrow") + '</a><a class="text-link" href="https://akshat14092003.github.io/release-verification-lab/">Browse test reports ' + icon("arrow") + '</a></div></section></main>' +
     '<footer class="home-footer"><a class="brand" href="/">' + logo() + '</a><p>A synthetic shop. An actual bug hunt.</p></footer>', "landing-body" + (admin ? " admin-body" : ""));
