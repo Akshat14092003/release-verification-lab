@@ -162,7 +162,7 @@ function addToCartForm(product, { quantity = false, offer = null, label = "Add t
 
 function productCards(products) {
   return '<div class="product-grid">' + products.map((product, index) =>
-    '<article class="product-card" style="--card-index:' + index + '"><a class="art-panel art-' + e(product.artwork) + '" href="/products/' + product.id +
+    '<article class="product-card" style="--card-index:' + index + '"><a class="art-panel art-' + e(product.artwork) + '" style="view-transition-name:product-' + product.id + '" href="/products/' + product.id +
     '" aria-label="Preview ' + e(product.name) + '">' + artwork(product.artwork) + '<span class="product-category">' + e(product.category) +
     '</span><span class="product-peek" aria-hidden="true">Take a closer look ' + icon("arrow") + '</span></a><div class="product-details">' +
     '<a href="/products/' + product.id + '"><h3>' + e(product.name) + '</h3></a><p>' + e(product.description) + '</p>' +
@@ -252,7 +252,7 @@ export function productsPage(products, query = "", category = "") {
 
 export function productPage(product, related) {
   return '<a class="text-link back-link" href="/products">&larr; Back to the collection</a><section class="product-detail">' +
-    '<div class="product-gallery art-' + e(product.artwork) + '"><span class="product-category">' + e(product.category) + '</span>' + artwork(product.artwork, { size: "detail", eager: true }) +
+    '<div class="product-gallery art-' + e(product.artwork) + '" style="view-transition-name:product-' + product.id + '"><span class="product-category">' + e(product.category) + '</span>' + artwork(product.artwork, { size: "detail", eager: true }) +
     '<span class="gallery-caption">The little things, considered.</span></div><div class="product-info"><span class="eyebrow">' + e(product.category) +
     '</span><h1>' + e(product.name) + '</h1><p class="product-description">' + e(product.description) + '</p><strong class="detail-price">' +
     money(product.price_cents) + '</strong><p class="detail-price-note">Per item ? paid with demo credit</p>' + addToCartForm(product, { quantity: true }) +
@@ -309,7 +309,7 @@ export function checkoutPage(quote) {
     '<div class="payment-note">' + icon("admin") + '<div><strong>Paid with your demo credit</strong><p>No payment details needed. Each item is recorded in the ledger.</p></div></div></section>' +
     '<aside class="panel order-summary"><h2>Order summary</h2><dl><div><dt>Subtotal</dt><dd>' + money(quote.total_cents) + '</dd></div>' +
     '<div><dt>Delivery</dt><dd class="green-text">Free</dd></div><div class="summary-total"><dt>Total</dt><dd data-testid="checkout-total" data-cents="' + quote.total_cents + '">' +
-    money(quote.total_cents) + '</dd></div></dl><form method="post" action="/checkout"><button class="button primary full" type="submit">Place demo order ' + icon("arrow") +
+    money(quote.total_cents) + '</dd></div></dl><form method="post" action="/checkout"><button class="button primary full" type="submit" data-busy-label="Placing order"><span class="btn-label">Place demo order</span> ' + icon("arrow") +
     '</button></form><p class="summary-note">Available demo credit: ' + money(quote.balance_cents) + '</p></aside></div>';
 }
 function orderTable(orders, all = false, { editable = true, filters = {} } = {}) {
