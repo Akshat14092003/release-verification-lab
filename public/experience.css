@@ -76,3 +76,23 @@
   .roaming-bug:not(.is-resting):not(:focus) .beetle-legs { transform-origin:80px 98px;animation:bug-scuttle 180ms ease-in-out infinite alternate; }
 }
 @keyframes bug-scuttle { from { transform:rotate(-5deg); } to { transform:rotate(5deg); } }
+
+/* Account creation and store management share the existing glass and form tokens. */
+.auth-switch { margin-block:12px 0;font-size:12px;color:var(--muted); }.auth-switch a { color:var(--accent);font-weight:650; }
+@media (max-width:560px) { .topbar .header-sign-in,.home-account>.button { max-width:100px;white-space:normal;text-align:center;line-height:1.25; } }
+.signup-note { margin-block-start:14px;font-size:11px;line-height:1.6;color:var(--muted); }
+.signup-body .context-guide { display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;padding:8px 16px; }
+.signup-body .context-guide>.guide-orbit,.signup-body .guide-copy p,.signup-body .guide-progress { display:none; }
+.signup-body .context-guide .guide-copy { padding:0; }.signup-body .context-guide .guide-copy h2 { font-size:11px; }
+.login-body .login-form label .muted { font-size:10px;font-weight:400; }
+.admin-links { display:flex;flex-wrap:wrap;gap:12px;margin-block:0 24px; }.admin-links a { padding:10px 14px;border-radius:10px;border:1px solid var(--line);color:var(--ink);background:var(--surface);font-size:13px; }
+.admin-catalogue>p { font-size:13px;line-height:1.7;margin-block-end:20px; }
+.admin-product { border-block-start:1px solid var(--line);padding-block:4px; }.admin-product summary { cursor:pointer;padding-block:16px;font-size:14px; }.admin-product summary>span+span { margin-inline-start:12px;font-size:12px; }
+.admin-product-form { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding-block:8px 20px; }
+.admin-product-form label { display:flex;flex-direction:column;gap:8px;min-width:0;font-size:13px;font-weight:600; }
+.admin-product-form input,.admin-product-form select,.admin-product-form textarea,.order-status-form select { width:100%;min-width:0;min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--background);color:var(--ink);font:inherit; }
+.admin-product-form textarea { resize:vertical; }.admin-description { grid-column:1/-1; }
+.admin-product-form .admin-availability { flex-direction:row;align-items:center;gap:10px; }.admin-product-form .admin-availability input { width:20px;min-height:20px;accent-color:var(--accent); }
+.admin-product-form>.button { justify-self:end; }.order-status-form { display:flex;align-items:center;gap:8px; }.order-status-form select { width:auto;font-size:12px; }.order-status-form .button { min-height:44px;padding:8px 12px; }
+#manage-products,#manage-orders,#manage-customers { scroll-margin-block-start:100px; }
+@media (max-width:560px) { .admin-product-form { grid-template-columns:minmax(0,1fr); }.admin-product-form>.button { justify-self:stretch; }.admin-product summary>span { overflow-wrap:anywhere; }.admin-product summary>span+span { display:block;margin:8px 0 0 16px; }.signup-body .login-card { padding-inline:18px; } }

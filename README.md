@@ -7,8 +7,8 @@ A fictional shop where automated checks will demonstrate whether a release meets
 The portfolio goal is reproducible evidence: introduce a realistic defect, catch it at the right layer, inspect the evidence, and verify corrected behaviour.
 
 **Published and verified on GitHub Actions.**
-The published reports and storefront suite have 47 checks, including 8 security probes;
-its red verifier expects 12 intended failures and 35 passing controls. Visitors can toggle bugs, run the real tests,
+The published reports contain 47 checks. The current signup/admin revision has 53 checks,
+including 8 security probes; its red verifier expects 12 intended failures and 41 passing controls. Visitors can toggle bugs, run the real tests,
 watch progress, and inspect their report from the website. See [the interactive demo](docs/INTERACTIVE-DEMO.md).
 Historical measurements below are labeled by version. The interactive Node app is not publicly deployed yet; [free hosting findings](docs/HOSTING.md) explain the confirmed memory limit and remaining account/compute requirement.
 [View the successful hosted run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/41453518469) and download its green-evidence/red-evidence artifacts.
@@ -52,10 +52,13 @@ Use npm run dev for automatic server restarts.
 | Role | Email | Password |
 | --- | --- | --- |
 | Customer | customer@example.test | DemoShop!2026 |
-| Store Owner | owner@example.test | DemoShop!2026 |
 | Admin | admin@example.test | DemoShop!2026 |
 
 These are deliberately public, fictional local-demo credentials.
+Visitors can also create a customer account at `/signup`, starting with $1,000 demo credit.
+Signup uses a random salt and scrypt password hash and retains the guest cart. Only customer
+accounts can be created publicly. The interactive lab keeps each visitor's accounts and admin
+changes inside their own sandbox; reset, expiry or server restart clears that sandbox.
 The app simulates purchases using demo credit; there is no payment gateway.
 
 ### Repeatable data
@@ -118,15 +121,19 @@ A server-side clock can also be injected into createApp for the later isolated t
 ### Pages
 
 - /login: role shortcuts, sign-in, and a visible error state.
+- /signup: customer registration, automatic sign-in, and password confirmation.
 - /products: searchable product cards with supplied Gemini product photographs.
 - /offers: the weekend offer and its actual availability.
 - /products/:id: individual product details, quantity selector, and Add to cart.
 - /cart: review, update quantities, remove items, and proceed to checkout.
 - /checkout: final server-priced review of the current cart before purchase.
 - /orders and /orders/:id: personal orders, receipt, and transaction records.
-- /admin: administrator-only, read-only store overview.
+- /admin: administrator-only product management, order fulfilment, and customer overview.
 
-Store Owner is a separate seeded role; additional owner-management workflows are outside this scaffold.
+Roles are Customer and Admin. Existing store-owner accounts migrate to customers without losing
+orders or sessions. Admin can add/edit products, set prices, hide/restore products, and mark orders
+Processing, Shipped or Delivered. Hidden products are rejected at checkout, including direct requests
+and existing carts. Price/name edits preserve paid order lines and ledger records; offer prices stay separate.
 Checkout supports multiple products and quantities 1-99. An order can use one promotion, with
 quantity 1 for that offer item. Products, prices, eligibility, available credit, and all totals
 are resolved by the server. Order lines and ledger entries commit in one transaction.
@@ -136,6 +143,7 @@ are resolved by the server. Order lines and ledger entries commit in one transac
 | Method | Path | Purpose |
 | --- | --- | --- |
 | GET | /health | Readiness |
+| POST | /api/auth/signup | Create a customer with demo credit and a signed-in session |
 | POST | /api/auth/login | Sign in with email and password |
 | POST | /api/auth/logout | End the session |
 | GET | /api/auth/me | Current user and demo credit |
@@ -149,6 +157,10 @@ are resolved by the server. Order lines and ledger entries commit in one transac
 | POST | /api/cart/checkout | Purchase the server-side cart and clear it atomically |
 | GET | /api/orders | Own orders |
 | GET | /api/orders/:id | Own receipt, items, and ledger; admins can inspect any order |
+| GET | /api/admin | Admin-only statistics, products, orders, and customers |
+| POST | /api/admin/products | Admin-only product creation |
+| POST / PATCH | /api/admin/products/:id | Admin-only product details, price_cents and active flag |
+| POST / PATCH | /api/admin/orders/:id/status | Admin-only fulfilment status update |
 
 API authentication uses the same HTTP-only session cookie as the browser.
 Prices, customer identity, and totals come from server data, not client-supplied amounts.

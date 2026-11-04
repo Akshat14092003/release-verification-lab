@@ -17,6 +17,18 @@ the leap. Other native dialogs hide/pause it. Shop controls remain clickable whe
 
 ## Shopping flow
 
+Create an account from Sign in → Create account. Registration signs in a new customer with
+$1,000 demo credit, retaining the guest cart and checkout destination. Use fictional details;
+resetting the demo, sandbox expiry or restarting the interactive server removes these accounts.
+The two public role shortcuts are Customer and Admin. Store Owner has been removed; older
+owner accounts migrate to customers while retaining their data.
+
+Admin now manages the catalogue (add/edit, prices and availability), fulfilment (Processing,
+Shipped, Delivered), and a customer overview with credit/order counts. Hiding an item prevents
+checkout through the UI, an existing cart, or a direct request. Paid receipts and ledger entries
+retain their original prices/names. Admin edits affect the current visitor's sandbox, while
+automated checks always run on isolated test data.
+
 1. Browse the collection or filter/search it. Each product arrow opens that product's detail page.
 2. Choose a quantity and **Add to cart**, or use a card's quick-add button. A toast and cart badge confirm the change.
 3. Open **Cart** to update quantities, remove lines, and review the server-priced total.
@@ -46,7 +58,7 @@ Switch it off in QA playground to see the same stored purchase display correctly
 - The panel starts closed on each page. Close it with its close button, Escape, or an outside click.
   On mobile it expands inside the navigation drawer in matching rows. Reproduction steps are
   disclosed under How to try it. Its expected-results
-  summary updates for the chosen combination; Login + Weekday offers predicts 37 passes/10 failures.
+  summary updates for the chosen combination; Login + Weekday offers predicts 43 passes/10 failures.
 - **Day** in QA playground opens a small selector on the same page; choose a UTC day and apply it.
 - Reset and all-off actions are inside that selector. Reset asks for confirmation before clearing purchases, cart, and sign-in; cancelling preserves data. It affects only the current visitor.
 - **Run checks** opens a same-page dialog for current switches, correct build, or all four bugs.

@@ -30,22 +30,22 @@ export function offerAvailability(db, offer, userId, now, { bugs = {}, enforcePu
   return { available: true, reason: "One purchase per customer. Saturday and Sunday, UTC." };
 }
 
-export function listProducts(db, search = "") {
+export function listProducts(db, search = "", { includeInactive = false } = {}) {
   return db.prepare(
-    "SELECT * FROM products WHERE instr(lower(name || ' ' || category), lower(?)) > 0 ORDER BY id"
-  ).all(search);
+    "SELECT * FROM products WHERE (active=1 OR ?=1) AND instr(lower(name || ' ' || category), lower(?)) > 0 ORDER BY id"
+  ).all(includeInactive ? 1 : 0, search);
 }
 
-export function getProduct(db, value) {
+export function getProduct(db, value, { includeInactive = false } = {}) {
   const product = db.prepare("SELECT * FROM products WHERE id=?").get(positiveId(value));
-  if (!product) throw new ShopError("Product not found.", 404);
+  if (!product || (!product.active && !includeInactive)) throw new ShopError("Product not found.", 404);
   return product;
 }
 
 export function listOffers(db, userId, now, { bugs = {} } = {}) {
   return db.prepare(
     "SELECT o.*, p.name AS product_name, p.description, p.artwork, p.price_cents AS regular_price_cents " +
-    "FROM offers o JOIN products p ON p.id = o.product_id ORDER BY o.id"
+    "FROM offers o JOIN products p ON p.id = o.product_id WHERE p.active=1 ORDER BY o.id"
   ).all().map(offer => ({ ...offer, ...offerAvailability(db, offer, userId, now, { bugs }) }));
 }
 
@@ -57,6 +57,7 @@ function quoteItem(db, userId, item, now, options) {
   if (quantity > 99) throw new ShopError("Quantity must be between 1 and 99.");
   const product = db.prepare("SELECT * FROM products WHERE id = ?").get(productId);
   if (!product) throw new ShopError("Product not found.", 404);
+  if (!product.active) throw new ShopError("This product is no longer available. Remove it from your cart to continue.", 409);
   let offer = null;
   if (offerValue !== undefined && offerValue !== null && offerValue !== "") {
     offer = db.prepare("SELECT * FROM offers WHERE id = ?").get(positiveId(offerValue, "Offer"));

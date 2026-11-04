@@ -1,12 +1,12 @@
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync, readFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { createHash, scryptSync, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 
 export const DEMO_PASSWORD = "DemoShop!2026";
 export const DEMO_ACCOUNTS = [
   { id: 1, email: "customer@example.test", name: "Alex Morgan", role: "customer" },
-  { id: 2, email: "owner@example.test", name: "Jamie Parker", role: "store-owner" },
+  { id: 2, email: "jamie@example.test", name: "Jamie Parker", role: "customer" },
   { id: 3, email: "admin@example.test", name: "Taylor Reed", role: "admin" }
 ];
 
@@ -17,7 +17,38 @@ function passwordHash(password, email) {
 }
 
 export function verifyPassword(password, user) {
-  return timingSafeEqual(passwordHash(password, user.email), Buffer.from(user.password_hash, "hex"));
+  const [kind, salt, hash] = user.password_hash.split("$");
+  const expected = Buffer.from(kind === "scrypt" ? hash : user.password_hash, "hex");
+  const actual = kind === "scrypt" ? scryptSync(password, salt, 64) : passwordHash(password, user.email);
+  return expected.length === actual.length && timingSafeEqual(actual, expected);
+}
+
+export function hashPassword(password) {
+  const salt = randomBytes(16).toString("hex");
+  return "scrypt$" + salt + "$" + scryptSync(password, salt, 64).toString("hex");
+}
+
+function migrateDatabase(db) {
+  if (!db.prepare("PRAGMA table_info(products)").all().some(column => column.name === "active")) {
+    db.exec("ALTER TABLE products ADD COLUMN active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1))");
+  }
+  if (!db.prepare("PRAGMA table_info(orders)").all().some(column => column.name === "status")) {
+    db.exec("ALTER TABLE orders ADD COLUMN status TEXT NOT NULL DEFAULT 'processing' CHECK (status IN ('processing', 'shipped', 'delivered'))");
+  }
+  const users = db.prepare("SELECT sql FROM sqlite_master WHERE name='users'").get();
+  if (!users.sql.includes("store-owner")) return;
+  // Preserve IDs, passwords, purchases and sessions while removing the obsolete role.
+  db.exec("PRAGMA foreign_keys = OFF; BEGIN IMMEDIATE");
+  try {
+    db.exec("CREATE TABLE users_next (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, name TEXT NOT NULL," +
+      " role TEXT NOT NULL CHECK (role IN ('customer', 'admin')), password_hash TEXT NOT NULL," +
+      " opening_balance_cents INTEGER NOT NULL CHECK (opening_balance_cents >= 0));" +
+      "INSERT INTO users_next SELECT id,email,name,CASE WHEN role='store-owner' THEN 'customer' ELSE role END,password_hash,opening_balance_cents FROM users;" +
+      "DROP TABLE users; ALTER TABLE users_next RENAME TO users;");
+    if (db.prepare("PRAGMA foreign_key_check").all().length) throw new Error("Account migration found an invalid reference.");
+    db.exec("COMMIT");
+  } catch (error) { db.exec("ROLLBACK"); throw error; }
+  finally { db.exec("PRAGMA foreign_keys = ON"); }
 }
 
 export function openDatabase(path) {
@@ -25,6 +56,7 @@ export function openDatabase(path) {
   const db = new DatabaseSync(path);
   db.exec("PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;");
   db.exec(readFileSync(new URL("./schema.sql", import.meta.url), "utf8"));
+  migrateDatabase(db);
   return db;
 }
 

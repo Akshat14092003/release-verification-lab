@@ -66,7 +66,7 @@ export function labDialogs() {
     '<button type="button" id="cancel-run" class="button secondary" hidden>Stop run</button></div>' +
     '<p id="runner-message" class="lab-message" role="status" aria-live="polite"></p>' +
     '<div id="run-progress" hidden><div class="lab-progress-header"><strong id="run-status">Starting?</strong><span id="run-elapsed">0s</span></div>' +
-    '<div id="test-progress" class="test-progress" role="progressbar" aria-label="Tests completed" aria-valuemin="0" aria-valuemax="47" aria-valuenow="0"><span id="test-progress-fill"></span></div><p id="run-counts"></p>' +
+    '<div id="test-progress" class="test-progress" role="progressbar" aria-label="Tests completed" aria-valuemin="0" aria-valuemax="' + BASELINE_CHECKS + '" aria-valuenow="0"><span id="test-progress-fill"></span></div><p id="run-counts"></p>' +
     '<p id="run-snapshot" class="lab-footnote"></p><ul id="run-detections" class="run-detections" aria-label="Detection of enabled bugs" hidden></ul>' +
     '<p id="current-check" class="current-check" role="status" aria-live="polite"></p>' +
     '<ol id="run-checks" class="run-checks" aria-label="Test case results"></ol></div>' +

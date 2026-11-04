@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('customer', 'store-owner', 'admin')),
+  role TEXT NOT NULL CHECK (role IN ('customer', 'admin')),
   password_hash TEXT NOT NULL,
   opening_balance_cents INTEGER NOT NULL CHECK (opening_balance_cents >= 0)
 );
@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS products (
   category TEXT NOT NULL,
   description TEXT NOT NULL,
   price_cents INTEGER NOT NULL CHECK (price_cents > 0),
-  artwork TEXT NOT NULL
+  artwork TEXT NOT NULL,
+  active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1))
 );
 
 CREATE TABLE IF NOT EXISTS offers (
@@ -30,7 +31,8 @@ CREATE TABLE IF NOT EXISTS orders (
   user_id INTEGER NOT NULL REFERENCES users(id),
   offer_id INTEGER REFERENCES offers(id),
   total_cents INTEGER NOT NULL CHECK (total_cents > 0),
-  created_at TEXT NOT NULL
+  created_at TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'processing' CHECK (status IN ('processing', 'shipped', 'delivered'))
 );
 
 CREATE TABLE IF NOT EXISTS order_items (

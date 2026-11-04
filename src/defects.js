@@ -1,6 +1,6 @@
 const key = (project, title) => project + "::" + title;
 
-export const BASELINE_CHECKS = 47;
+export const BASELINE_CHECKS = 53;
 export const DEFECTS = [
   {
     id: "auth", flag: "BUG_AUTH_BYPASS", label: "Accept invalid logins",

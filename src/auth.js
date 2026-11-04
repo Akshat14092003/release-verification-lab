@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { verifyPassword } from "./database.js";
+import { hashPassword, verifyPassword } from "./database.js";
 import { ShopError } from "./shop.js";
 
 const COOKIE = "fieldwork_session";
@@ -35,6 +35,10 @@ export function login(db, email, password, now, response, bugs = {}) {
   if (!user || (!bugs.BUG_AUTH_BYPASS && !verifyPassword(password, user))) {
     throw new ShopError("Email or password is incorrect.", 401);
   }
+  return startSession(db, user, now, response);
+}
+
+function startSession(db, user, now, response) {
   db.prepare("DELETE FROM sessions WHERE expires_at <= ?").run(now.getTime());
   const token = randomBytes(32).toString("hex");
   db.prepare("INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)").run(
@@ -42,6 +46,32 @@ export function login(db, email, password, now, response, bugs = {}) {
   );
   response.cookie(COOKIE, token, { httpOnly: true, sameSite: "lax", secure: Boolean(response.req?.secure), path: "/", maxAge: SESSION_SECONDS * 1000 });
   return { id: user.id, email: user.email, name: user.name, role: user.role };
+}
+
+export function signup(db, input, now, response) {
+  const { name, email, password } = input || {};
+  if (typeof name !== "string" || !name.trim() || name.trim().length > 80) {
+    throw new ShopError("Enter a display name between 1 and 80 characters.");
+  }
+  if (typeof email !== "string" || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    throw new ShopError("Enter a valid email address.");
+  }
+  if (typeof password !== "string" || password.length < 8 || password.length > 256) {
+    throw new ShopError("Use a password between 8 and 256 characters.");
+  }
+  const address = email.trim().toLowerCase();
+  const passwordHash = hashPassword(password);
+  db.exec("BEGIN IMMEDIATE");
+  try {
+    if (db.prepare("SELECT id FROM users WHERE email=?").get(address)) {
+      throw new ShopError("This email already has an account. Sign in instead.", 409);
+    }
+    const result = db.prepare("INSERT INTO users (email,name,role,password_hash,opening_balance_cents) VALUES (?,?,'customer',?,100000)")
+      .run(address, name.trim(), passwordHash);
+    const user = startSession(db, { id: Number(result.lastInsertRowid), email: address, name: name.trim(), role: "customer" }, now, response);
+    db.exec("COMMIT");
+    return user;
+  } catch (error) { db.exec("ROLLBACK"); throw error; }
 }
 
 export function logout(db, cookieHeader, response) {

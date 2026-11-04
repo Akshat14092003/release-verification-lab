@@ -1,5 +1,17 @@
 # Current verification evidence
 
+The local signup/admin revision now has **53 release checks** (26 API, 16 browser,
+3 database, 8 security), with 8 separate unit guards. Published results below describe
+the earlier 47-check revision. The new revision has not been published or CI-verified yet.
+
+Local validation on 2026-11-04: **53/53** with two workers (1.9 minutes), red **41 passing
+controls and exactly 12 intended failures** (186.0 seconds), and **8/8 unit guards**.
+The real one-worker runner completed **53 passes**, streamed progress, preserved cart/credit,
+served its owner-only report and verified cancellation. The signup/login/admin screens passed
+18 width/theme combinations (320, 390, 1440px; light/dark), with no horizontal overflow or
+page errors. Signup fit the tested 844/900px viewport heights without internal form scrolling.
+An additional malformed-admin-form recovery check passed after the full-suite run.
+
 ## Published release
 
 The [main run for ed0605f](https://github.com/Akshat14092003/release-verification-lab/actions/runs/41453518469)

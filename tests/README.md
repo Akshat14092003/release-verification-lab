@@ -5,9 +5,9 @@ The baseline checks correct behaviour across API, browser, database, and securit
 The four defect-detection Node unit checks in `unit/defect-detection.test.js` guard the visitor's bug-caught feedback:
 exact detector identities, enabled flags, assertion-only failures, provisional counts, and final
 verification. Run `node --test tests/unit/defect-detection.test.js` from the project root. These
-are separate from the 47 Playwright release checks and do not change the expected red counts.
+are separate from the 53 Playwright release checks and do not change the expected red counts.
 
-Three additional runner lifecycle guards cover cancellation, startup errors, timeout, ownership, and the active-process lock. `npm run test:unit` runs all seven. `npm run test:runner` exercises the actual Playwright subprocess separately from the 47 release checks, preventing recursive test launches. CI runs that integration in the deployment container under a 1 GB memory limit.
+Three additional runner lifecycle guards cover cancellation, startup errors, timeout, ownership, and the active-process lock. A database migration guard verifies legacy owner data is preserved and the removed role is rejected. `npm run test:unit` runs all eight. `npm run test:runner` exercises the actual Playwright subprocess separately from the 53 release checks, preventing recursive test launches. CI runs that integration in the deployment container under a 1 GB memory limit.
 
 ## Run
 
@@ -29,9 +29,9 @@ No manually started app or shared demo database is required.
 
 ## Layers
 
-- api/: authentication, catalogue search, authoritative price/identity, offer cap, account ownership,
+- api/: signup, customer-only registration, validation, admin product/order permissions, authentication, catalogue search, authoritative price/identity, offer cap, account ownership,
   role access, and UTC opening/closing boundaries.
-- e2e/: login/logout, error presentation, purchase/receipt, offers, stale checkout at expiry,
+- e2e/: signup from checkout, admin price/status editing, login/logout, error presentation, purchase/receipt, offers, stale checkout at expiry,
   mobile layout/sign-out, and administrator navigation.
 - db/: a multi-item order created through checkout from an empty database and a new single-item purchase reconciled against independent SQL,
   remaining credit, and absence of writes after a rejected purchase.
@@ -66,7 +66,7 @@ Reports:
 - Retries are disabled so the first failure stays visible.
 
 Reports are ignored by Git. The earlier version's hosted reports are published on Pages.
-The local interactive revision has 47 tests; see ../docs/INTERACTIVE-DEMO.md.
+The local signup/admin revision has 53 tests; see ../docs/INTERACTIVE-DEMO.md. Published 47-check evidence remains historical.
 Five storefront-control browser checks cover inline switches, visitor isolation/reset, themes,
 mobile layout, contextual hints, sidebar persistence, reduced motion, and run errors. Cart API
 checks cover quantity merging, validation, rollback, guest sign-in continuity, and cookie isolation.

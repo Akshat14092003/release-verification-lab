@@ -7,9 +7,9 @@ Published release: [47-check successful run](https://github.com/Akshat14092003/r
 
 | Job | Configuration | Required outcome |
 | --- | --- | --- |
-| green | All flags 0, Node 22.17.1, Ubuntu 24.04 | All 47 tests pass |
-| red | Depends on green; all flags 1 | Exactly 12 known failures, 35 passing controls |
-| live-runner | Docker, 1 GB RAM, 1 worker | Real 47-pass run, streamed progress, owner-only report, preserved cart/credit, cancellation |
+| green | All flags 0, Node 22.17.1, Ubuntu 24.04 | All 53 tests pass |
+| red | Depends on green; all flags 1 | Exactly 12 known failures, 41 passing controls |
+| live-runner | Docker, 1 GB RAM, 1 worker | Real 53-pass run, streamed progress, owner-only report, preserved cart/credit, cancellation |
 | publish | Depends on green, red, and live-runner; push to main only | Deploys the evidence site to GitHub Pages |
 
 The underlying red Playwright run exits 1 and contains real red assertions.

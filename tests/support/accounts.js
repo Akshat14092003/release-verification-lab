@@ -2,6 +2,6 @@
 export const PASSWORD = "DemoShop!2026";
 export const accounts = {
   customer: { email: "customer@example.test", role: "customer" },
-  owner: { email: "owner@example.test", role: "store-owner" },
+  other: { email: "jamie@example.test", role: "customer" },
   admin: { email: "admin@example.test", role: "admin" }
 };

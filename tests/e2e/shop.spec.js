@@ -116,9 +116,53 @@ test("an administrator can inspect the store overview", async ({ page }) => {
   await new ProductsPage(page).navigate("Admin");
   await expect(page.getByRole("heading", { name: "All orders", exact: true })).toBeVisible();
   await expect(page.getByRole("row").filter({ hasText: "#FW-1001" })).toContainText("Alex Morgan");
+  const product = page.locator("details.admin-product").filter({ has: page.locator("summary", { hasText: "Everyday journal" }) });
+  await product.locator("summary").click();
+  await product.getByLabel("Price ($)", { exact: true }).fill("29.50");
+  await product.getByRole("button", { name: "Save product", exact: true }).click();
+  await expect(page.locator(".alert[role='status']")).toContainText("Product saved");
+  await page.getByLabel("Status for order FW-1001", { exact: true }).selectOption("shipped");
+  await page.getByRole("button", { name: "Update order FW-1001", exact: true }).click();
+  await expect(page.getByLabel("Status for order FW-1001", { exact: true })).toHaveValue("shipped");
+  await page.goto("/products/1");
+  await expect(page.locator(".product-detail")).toContainText("$29.50");
+  await page.goto("/orders/1001");
+  await expect(page.getByTestId("order-status")).toHaveText("Shipped");
+  await expect(page.getByTestId("ledger-total")).toHaveText("$73.00");
+  await page.goto("/admin");
   await page.setViewportSize({ width: 320, height: 568 });
   // The media-query listener moves navigation into its drawer after resize.
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
+});
+
+test("a visitor signs up from checkout, keeps their cart and signs in again", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/products/2");
+  await page.getByRole("button", { name: "Add to cart", exact: true }).click();
+  await page.goto("/cart");
+  await page.getByRole("link", { name: "Proceed to checkout", exact: true }).click();
+  await page.getByRole("link", { name: "Create account", exact: true }).click();
+  await page.getByLabel("Display name", { exact: true }).fill("Riley Tester");
+  await page.getByLabel("Email address", { exact: true }).fill("riley@example.test");
+  await page.locator("#password").fill("FreshDemo!2026");
+  await page.getByLabel("Confirm password", { exact: true }).fill("Different!2026");
+  await page.getByRole("button", { name: "Create account", exact: true }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Passwords do not match" })).toBeVisible();
+  await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("Riley Tester");
+  await page.locator("#password").fill("FreshDemo!2026");
+  await page.getByLabel("Confirm password", { exact: true }).fill("FreshDemo!2026");
+  await page.getByRole("button", { name: "Create account", exact: true }).click();
+  await expect(page).toHaveURL(/\/checkout$/);
+  await expect(page.locator(".role-badge")).toHaveText("Customer");
+  await expect(page.getByTestId("checkout-total")).toHaveText("$45.00");
+  await page.getByRole("button", { name: "Place demo order", exact: true }).click();
+  await expect(page.getByTestId("order-total")).toHaveText("$45.00");
+  await new ProductsPage(page).signOut();
+  await expect(page.getByRole("button", { name: "Store Owner", exact: true })).toHaveCount(0);
+  await new LoginPage(page).submit("riley@example.test", "FreshDemo!2026");
+  await expect(page).toHaveURL(/\/products$/);
+  await page.goto("/orders");
+  await expect(page.getByRole("row").filter({ hasText: "$45.00" })).toHaveCount(1);
 });
 
 test("checkout supports quantities on a mobile screen", async ({ page }) => {

@@ -3,7 +3,8 @@ import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 import { projectRoot, readBugFlags } from "./config.js";
 import { balanceCents, openDatabase, seedDatabase } from "./database.js";
-import { findSession, login, logout } from "./auth.js";
+import { findSession, login, logout, signup } from "./auth.js";
+import { listCustomers, saveProduct, updateOrderStatus } from "./admin.js";
 import { getOrder, getProduct, listOffers, listOrders, listProducts, placeOrder, quoteOrder, ShopError } from "./shop.js";
 import { addCartItem, cartRequestItems, getCart, removeCartItem, updateCartItem } from "./cart.js";
 import * as view from "./views.js";
@@ -70,6 +71,22 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   };
   app.post("/login", signIn);
   app.post("/api/auth/login", signIn);
+  app.get("/signup", (req, res) => req.user ? res.redirect(nextPage(req.query.next))
+    : res.send(view.loginPage("", "", bugs, labControls, nextPage(req.query.next), { signup: true })));
+  app.post(["/signup", "/api/auth/signup"], (req, res, next) => {
+    try {
+      if (!isApi(req) && req.body?.password !== req.body?.password_confirmation) throw new ShopError("Passwords do not match. Enter them again.");
+      const user = signup(db, req.body, now(), res);
+      return isApi(req) ? res.status(201).json({ user, balance_cents: balanceCents(db, user.id) }) : res.redirect(303, nextPage(req.body?.next));
+    } catch (error) {
+      if (!isApi(req) && error instanceof ShopError) {
+        const email = typeof req.body?.email === "string" ? req.body.email.slice(0, 254) : "";
+        const name = typeof req.body?.name === "string" ? req.body.name.slice(0, 80) : "";
+        return res.status(error.status).send(view.loginPage(error.message, email, bugs, labControls, nextPage(req.body?.next), { signup: true, name }));
+      }
+      next(error);
+    }
+  });
   const signOut = (req, res) => {
     logout(db, req.get("cookie"), res);
     return isApi(req) ? res.status(204).end() : res.redirect(303, "/login");
@@ -159,15 +176,52 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   app.get("/api/orders/:id", authenticated, (req, res) => {
     res.json({ order: getOrder(db, req.user, req.params.id) });
   });
-  app.get("/admin", authenticated, administrator, (req, res) => {
+  const adminData = req => {
     const stats = {
       products: db.prepare("SELECT COUNT(*) AS count FROM products").get().count,
       users: db.prepare("SELECT COUNT(*) AS count FROM users").get().count,
       orders: db.prepare("SELECT COUNT(*) AS count FROM orders").get().count,
       sales_cents: db.prepare("SELECT COALESCE(-SUM(amount_cents), 0) AS total FROM ledger").get().total
     };
-    return page(req, res, "Admin", "admin", view.adminPage(stats, listOrders(db, req.user, { all: true })));
-  });
+    return { stats, orders: listOrders(db, req.user, { all: true }), products: listProducts(db, "", { includeInactive: true }), customers: listCustomers(db) };
+  };
+  const renderAdmin = (req, res, options = {}, status = 200) => page(req, res, "Admin", "admin", view.adminPage(adminData(req), options), status);
+  app.get("/admin", authenticated, administrator, (req, res) => renderAdmin(req, res, {
+    message: req.query.saved === "product" ? "Product saved. The catalogue and checkout now use these settings. Existing receipts keep their original prices."
+      : req.query.saved === "order" ? "Order status updated. The customer can see it in their order history." : ""
+  }));
+  app.get("/api/admin", authenticated, administrator, (req, res) => res.json(adminData(req)));
+  const productAction = (req, res, next) => {
+    try {
+      let input = req.body;
+      if (!isApi(req)) {
+        const price = String(req.body?.price || "");
+        const [whole, fraction = ""] = price.split(".");
+        input = { ...req.body, active: req.body?.active === "1", price_cents: /^\d{1,4}(\.\d{1,2})?$/.test(price)
+          ? Number(whole) * 100 + Number(fraction.padEnd(2, "0")) : NaN };
+      }
+      const product = saveProduct(db, input, req.params.id ?? null);
+      return isApi(req) ? res.status(req.params.id ? 200 : 201).json({ product }) : res.redirect(303, "/admin?saved=product#manage-products");
+    } catch (error) {
+      if (!isApi(req) && error instanceof ShopError) return renderAdmin(req, res, {
+        error: error.message, draft: req.body, editingId: req.params.id ?? "new"
+      }, error.status);
+      next(error);
+    }
+  };
+  app.post(["/admin/products", "/api/admin/products", "/admin/products/:id", "/api/admin/products/:id"], authenticated, administrator, productAction);
+  app.patch("/api/admin/products/:id", authenticated, administrator, productAction);
+  const orderAction = (req, res, next) => {
+    try {
+      const order = updateOrderStatus(db, req.params.id, req.body?.status);
+      return isApi(req) ? res.json({ order }) : res.redirect(303, "/admin?saved=order#manage-orders");
+    } catch (error) {
+      if (!isApi(req) && error instanceof ShopError) return renderAdmin(req, res, { error: error.message }, error.status);
+      next(error);
+    }
+  };
+  app.post(["/admin/orders/:id/status", "/api/admin/orders/:id/status"], authenticated, administrator, orderAction);
+  app.patch("/api/admin/orders/:id/status", authenticated, administrator, orderAction);
 
   app.use((req, res, next) => next(new ShopError("Page not found.", 404)));
   app.use((error, req, res, next) => {

@@ -72,6 +72,13 @@
       action = total !== ledger ? () => window.Fieldwork.openTests() : lines > 1 ? () => {
         const input = document.querySelector('[name="BUG_TOTAL_MISMATCH"]'); input.checked = true; input.dispatchEvent(new Event("change"));
       } : () => location.assign("/products");
+    } else if (path === "/admin") {
+      title = "Your shop, your controls."; copy = "Edit catalogue details and availability, update fulfilment, or review your customers. These changes stay in this demo sandbox.";
+      label = "Manage products"; action = () => highlight("#manage-products");
+    } else if (path === "/signup") {
+      step = 4; title = "A fresh account, a fresh start.";
+      copy = "Use fictional details to create a customer account with $1,000 demo credit. Your cart comes with you. Resetting this sandbox clears the account.";
+      label = "Fill details"; action = () => highlight('#name');
     } else if (path === "/login") {
       step = 4; title = state?.bugs.BUG_AUTH_BYPASS ? "Try a password that should fail." : "Use a fictional demo account.";
       copy = state?.bugs.BUG_AUTH_BYPASS ? "Accept invalid logins is on in QA playground. Fill an incorrect password, then sign in and see whether it is rejected." : "Choose Customer to fill in the demo details. Your cart will be here after you sign in.";
@@ -93,7 +100,7 @@
         label = "Browse collection"; action = () => location.assign("/products");
       }
     }
-    $("guide-step").textContent = "SHOPPING GUIDE · " + step + " OF 5";
+    $("guide-step").textContent = path === "/admin" ? "ADMIN GUIDE" : "SHOPPING GUIDE · " + step + " OF 5";
     $("guide-title").textContent = title; $("guide-copy").textContent = copy;
     $("guide-action").textContent = label; $("guide-progress-fill").style.width = step * 20 + "%";
   }

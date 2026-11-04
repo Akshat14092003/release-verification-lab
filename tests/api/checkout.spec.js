@@ -35,7 +35,7 @@ test("a direct second purchase of the same offer is refused @limit", async ({ re
 });
 
 test("another account cannot read the customer's order", async ({ request }, testInfo) => {
-  await signIn(request, testInfo, "owner");
+  await signIn(request, testInfo, "other");
   await checkResponse(await request.get("/api/orders/1001"), 404, testInfo, "cross-account-receipt");
   const history = await checkResponse(await request.get("/api/orders"), 200, testInfo, "own-history");
   expect(history.orders).toEqual([]);
@@ -97,7 +97,7 @@ test("insufficient combined credit rejects the entire basket", async ({ request,
   expect(me.balance_cents).toBe(92700);
 });
 
-for (const role of ["customer", "owner", "admin"]) {
+for (const role of ["customer", "admin"]) {
   test("admin overview permission for " + role, async ({ request }, testInfo) => {
     await signIn(request, testInfo, role);
     const status = role === "admin" ? 200 : 403;

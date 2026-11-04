@@ -97,6 +97,16 @@ No replay button. Dismissal restores focus.
 Reduced motion keeps it still, skips the leap and fades the fix over150ms; other
 native dialogs pause/hide it. No sound, flashes, automatic jumpscare, or changes to real bug flags.
 
+### Customer signup and admin management
+Only Customer and Admin roles are visible. Signup reuses the sign-in glass layout and theme;
+keep the four labelled fields, submit action and sign-in link visible at normal mobile heights.
+Its contextual guide uses a compact row to preserve room for the form. Explain sandbox lifetime
+beside the form. Public signup always creates a customer and retains the guest cart.
+Admin uses the existing workspace: overview tiles, native product-edit details, labelled forms,
+order-status controls and the customer table. Keep inputs at least44px, grid columns flexible,
+and tables contained in their scroll wrapper. Availability uses For sale/Hidden text; saved order
+prices remain historical. Admin guidance describes management rather than the shopping journey.
+
 ### Mobile navigation
 At widths up to 850px, keep the brand, guest Sign in action and menu trigger in the 64px sticky topbar.
 A native modal side drawer contains navigation, cart, theme, role, credit, profile and QA

@@ -2,7 +2,7 @@ import { test as base, expect, request as apiRequest } from "@playwright/test";
 import { once } from "node:events";
 import { createDemoApp } from "../../src/demo.js";
 import { readBugFlags } from "../../src/config.js";
-import { DEFECTS } from "../../src/defects.js";
+import { BASELINE_CHECKS, DEFECTS } from "../../src/defects.js";
 
 const test = base.extend({
   demo: async ({}, use, testInfo) => {
@@ -42,7 +42,7 @@ test("website switches and demo day change a new visitor's actual shop", async (
   await page.getByRole("switch", { name: /Show the wrong receipt total/ }).check();
   await expect(page.locator("#lab-message")).toContainText("Settings applied");
   await expect(page.locator("#bug-count")).toHaveText("1 bug on");
-  await expect(page.locator("#bug-expectation")).toContainText("1 failed check and 46 passing checks");
+  await expect(page.locator("#bug-expectation")).toContainText("1 failed check and " + (BASELINE_CHECKS - 1) + " passing checks");
   await page.locator(".lab-day summary").click();
   await page.getByLabel("Demo day (UTC)").selectOption("monday");
   let releaseRefresh;
@@ -62,7 +62,7 @@ test("website switches and demo day change a new visitor's actual shop", async (
   releaseRefresh();
   await expect(page.locator("#clock-label")).toHaveText("Monday");
   await page.unroute("**/products");
-  await page.getByRole("link", { name: "Sign in", exact: true }).click();
+  await page.getByRole("link", { name: "Sign in / Sign up", exact: true }).click();
   await page.getByRole("button", { name: "Customer", exact: true }).click();
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/products$/);
@@ -119,7 +119,7 @@ test("visitor switches, purchases and reset are isolated", async ({ page, demo }
     await page.getByRole("button", { name: "Reset my purchases" }).click();
     await page.getByRole("button", { name: "Reset purchases", exact: true }).click();
     await expect(page).toHaveURL(/\/products$/);
-    await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Sign in / Sign up", exact: true })).toBeVisible();
     expect((await page.request.get("/api/auth/me")).status()).toBe(401);
     await page.request.post("/api/auth/login", { data: credentials });
     expect((await (await page.request.get("/api/orders")).json()).orders).toEqual([]);
@@ -141,7 +141,7 @@ test("light and dark mode persist across the lab and shop", async ({ page }) => 
   expect(await page.locator('.sidebar').evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(lightSidebar);
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  await page.getByRole("link", { name: "Sign in", exact: true }).click();
+  await page.getByRole("link", { name: "Sign in / Sign up", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await expect(page.locator('.login-card')).toBeVisible();
   expect(await page.locator('.login-card').evaluate(element => getComputedStyle(element).backdropFilter)).toContain('blur');
@@ -191,8 +191,8 @@ test("mobile visitor guide and run errors remain usable", async ({ page }) => {
   // Layout-only fixture; this test instance deliberately never starts nested Playwright runs.
   let fixtureRun = {
     id: "layout", status: "completed", phase: "finished", mode: "baseline", bugs: readBugFlags({}),
-    startedAt: new Date().toISOString(), finishedAt: new Date().toISOString(), total: 47,
-    completed: 47, passed: 47, failed: 0, skipped: 0, checks: [], activeTests: [], logs: [],
+    startedAt: new Date().toISOString(), finishedAt: new Date().toISOString(), total: BASELINE_CHECKS,
+    completed: BASELINE_CHECKS, passed: BASELINE_CHECKS, failed: 0, skipped: 0, checks: [], activeTests: [], logs: [],
     expectedFailures: 0, matched: true, reportUrl: "/lab-reports/layout/index.html"
   };
   await page.route("**/api/lab/runs", route => route.fulfill({ json: fixtureRun }));
@@ -287,7 +287,7 @@ test("mobile visitor guide and run errors remain usable", async ({ page }) => {
   await expect(page.locator("#bug-caught-copy")).toContainText("not a verified result");
   await expect(page.locator("#catch-popup")).toBeHidden();
   await page.getByRole("button", { name: "Run details", exact: true }).click();
-  fixtureRun = { ...fixtureRun, id: "verified-layout", completed: 47, passed: 42, failed: 5, matched: true,
+  fixtureRun = { ...fixtureRun, id: "verified-layout", completed: BASELINE_CHECKS, passed: BASELINE_CHECKS - 5, failed: 5, matched: true,
     detections: [{ ...fixtureRun.detections[0], observed: 5, state: "verified" }] };
   fixtureRuns.set(fixtureRun.id, fixtureRun);
   await page.clock.install();

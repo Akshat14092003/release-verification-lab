@@ -6,6 +6,7 @@ import { join, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import { request } from "@playwright/test";
 import { createDemoApp } from "../src/demo.js";
+import { BASELINE_CHECKS } from "../src/defects.js";
 
 const directory = resolve("test-results/live-smoke", randomUUID());
 mkdirSync(directory, { recursive: true });
@@ -31,14 +32,14 @@ try {
   const deadline = Date.now() + 330_000;
   do {
     result = await (await owner.get("/api/lab/runs/" + run.id)).json();
-    sawProgress ||= result.completed > 0 && result.completed < 47;
+    sawProgress ||= result.completed > 0 && result.completed < BASELINE_CHECKS;
     if (result.status !== "running") break;
     await sleep(1000);
   } while (Date.now() < deadline);
   evidence.run = { id: run.id, status: result.status, passed: result.passed, failed: result.failed,
     matched: result.matched, reportUrl: result.reportUrl, error: result.error, sawProgress };
   assert.equal(result.status, "completed", JSON.stringify(result));
-  assert.equal(result.matched, true); assert.equal(result.passed, 47); assert.equal(result.failed, 0);
+  assert.equal(result.matched, true); assert.equal(result.passed, BASELINE_CHECKS); assert.equal(result.failed, 0);
   assert.equal(sawProgress, true);
   assert.equal((await owner.get(result.reportUrl)).status(), 200);
   assert.equal((await other.get(result.reportUrl)).status(), 404);
@@ -54,7 +55,7 @@ try {
   const cancelled = await stopped.json();
   assert.equal(cancelled.status, "cancelled"); assert.equal(cancelled.matched, null); assert.equal(cancelled.reportUrl, null);
   evidence.cancelled = true; evidence.ownerOnly = true; evidence.cartAndCreditPreserved = true; evidence.complete = true;
-  console.log("Verified real runner: 47 passes, streamed progress, owner-only report, preserved cart/credit, cancellation.");
+  console.log("Verified real runner: " + BASELINE_CHECKS + " passes, streamed progress, owner-only report, preserved cart/credit, cancellation.");
 } finally {
   writeFileSync(join(directory, "summary.json"), JSON.stringify(evidence, null, 2) + "\n");
   await owner.dispose(); await other.dispose();
