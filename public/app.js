@@ -55,6 +55,7 @@
     const parsed = new DOMParser().parseFromString(await response.text(), "text/html");
     const next = parsed.getElementById("main-content");
     const current = document.getElementById("main-content");
+    if (next && current && (next.dataset.storeId !== current.dataset.storeId || next.dataset.accountId !== current.dataset.accountId)) { location.reload(); return false; }
     if (background && !canRefreshStore()) return false;
     if (next && current) {
       const quantities = [...current.querySelectorAll('input[id][name="quantity"]')].filter(input => input.value !== input.defaultValue).map(input => [input.id, input.value]);
@@ -64,6 +65,7 @@
         if (input) input.value = value;
       }
       current.dataset.storeRevision = next.dataset.storeRevision;
+      current.dataset.storeId = next.dataset.storeId;
       document.dispatchEvent(new Event("fieldwork:content"));
       return true;
     }
@@ -122,7 +124,8 @@
         detail.querySelector("[data-product-summary]").textContent = money(product.price_cents) + " · " + (product.active ? "For sale" : "Hidden");
       }
       button.textContent = "Saved ✓"; feedback.setAttribute("role", "status");
-      feedback.textContent = id === "new" ? product.name + " added. You can add another product." : "Saved. Catalogue settings are up to date.";
+      feedback.textContent = (id === "new" ? product.name + " added. You can add another product." : "Saved. Catalogue settings are up to date.") +
+        (document.getElementById("main-content").dataset.sharedShop === "true" ? " Changes appear in every buyer browser automatically." : document.querySelector("[data-buyer-window]") ? " Connected buyers see this change. Other browsers need a buyer link from above." : "");
       document.dispatchEvent(new Event("fieldwork:content"));
     } catch (error) {
       button.textContent = label; feedback.setAttribute("role", "alert"); feedback.textContent = error.message;
@@ -350,7 +353,10 @@
         const response = await fetch("/api/store/state", { cache: "no-store" });
         if (response.ok) {
           const state = await response.json();
-          if (Number.isSafeInteger(state.revision) && state.revision !== Number(document.getElementById("main-content")?.dataset.storeRevision) && canRefreshStore()) {
+          const current = document.getElementById("main-content");
+          if (state.storeId && state.storeId !== current?.dataset.storeId) {
+            location.reload();
+          } else if (Number.isSafeInteger(state.revision) && state.revision !== Number(current?.dataset.storeRevision) && canRefreshStore()) {
             await refresh({ background: true });
           }
         }

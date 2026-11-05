@@ -9,10 +9,12 @@ import { getOrder, getProduct, listOffers, listOrders, listProducts, placeOrder,
 import { addCartItem, cartRequestItems, getCart, removeCartItem, updateCartItem } from "./cart.js";
 import * as view from "./views.js";
 
-export function createApp({ databasePath, now = () => new Date(), bugs = readBugFlags({}), includeSampleOrder = false, labControls = false, trustProxy = false }) {
+export function createApp({ databasePath, now = () => new Date(), bugs = readBugFlags({}), includeSampleOrder = false, labControls = false, trustProxy = false, sharedShop = false }) {
   const db = openDatabase(databasePath);
   seedDatabase(db, { includeSampleOrder });
   const app = express();
+  // Public reference only; joining a shop still requires a private buyer grant.
+  const storeId = randomBytes(4).toString("hex").toUpperCase();
   let storeRevision = 0;
   app.disable("x-powered-by");
   app.set("trust proxy", trustProxy ? 1 : false);
@@ -50,7 +52,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
 
   const isApi = req => req.path.startsWith("/api/");
   const page = (req, res, title, active, body, status = 200) => res.status(status).send(view.shell({
-    title, active, user: req.user, balance: req.user?.role === "customer" ? balanceCents(db, req.user.id) : null, now: now(), body, bugs, labControls, revision: storeRevision,
+    title, active, user: req.user, balance: req.user?.role === "customer" ? balanceCents(db, req.user.id) : null, now: now(), body, bugs, labControls, revision: storeRevision, storeId, sharedShop,
     cart: req.user?.role === "admin" ? { count: 0 } : getCart(db, req.cartKey)
   }));
   const authenticated = (req, res, next) => {
@@ -76,7 +78,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   });
 
   app.get("/health", (req, res) => res.json({ status: "ok", application: "release-verification-lab" }));
-  app.get("/api/store/state", (req, res) => res.json({ revision: storeRevision }));
+  app.get("/api/store/state", (req, res) => res.json({ revision: storeRevision, storeId }));
   app.get("/", (req, res) => req.user?.role === "admin" ? res.redirect("/admin") : res.send(view.landingPage(req.user)));
   const nextPage = value => ["/checkout", "/cart", "/products"].includes(value) ? value : "/products";
   const adminNextPage = value => {
@@ -88,7 +90,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
     } catch { return "/admin"; }
   };
   app.get("/login", (req, res) => req.user?.role === "customer" ? res.redirect(nextPage(req.query.next))
-    : res.send(view.loginPage("", "", bugs, labControls, nextPage(req.query.next))));
+    : res.send(view.loginPage("", "", bugs, labControls, nextPage(req.query.next), { sharedShop })));
   app.get("/admin/login", (req, res) => req.user?.role === "admin" ? res.redirect(adminNextPage(req.query.next))
     : res.send(view.adminLoginPage("", "", adminNextPage(req.query.next))));
 
@@ -125,7 +127,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
         if (adminLogin) return res.status(error.status).send(view.adminLoginPage(
           error.status === 401 ? "Enter a valid administrator email and password." : error.message, email, adminNextPage(req.body?.next)
         ));
-        return res.status(error.status).send(view.loginPage(error.message, email, bugs, labControls, nextPage(req.body?.next)));
+        return res.status(error.status).send(view.loginPage(error.message, email, bugs, labControls, nextPage(req.body?.next), { sharedShop }));
       }
       next(error);
     }
@@ -134,7 +136,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   app.post("/admin/login", signIn);
   app.post("/api/auth/login", signIn);
   app.get("/signup", (req, res) => req.user?.role === "customer" ? res.redirect(nextPage(req.query.next))
-    : res.send(view.loginPage("", "", bugs, labControls, nextPage(req.query.next), { signup: true })));
+    : res.send(view.loginPage("", "", bugs, labControls, nextPage(req.query.next), { signup: true, sharedShop })));
   app.post(["/signup", "/api/auth/signup"], (req, res, next) => {
     try {
       if (!isApi(req) && req.body?.password !== req.body?.password_confirmation) throw new ShopError("Passwords do not match. Enter them again.");
@@ -145,7 +147,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
       if (!isApi(req) && error instanceof ShopError) {
         const email = typeof req.body?.email === "string" ? req.body.email.slice(0, 254) : "";
         const name = typeof req.body?.name === "string" ? req.body.name.slice(0, 80) : "";
-        return res.status(error.status).send(view.loginPage(error.message, email, bugs, labControls, nextPage(req.body?.next), { signup: true, name }));
+        return res.status(error.status).send(view.loginPage(error.message, email, bugs, labControls, nextPage(req.body?.next), { signup: true, name, sharedShop }));
       }
       next(error);
     }
@@ -270,7 +272,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
       orders: ["Orders", "orders", view.adminOrdersPage], customers: ["Customers", "customers", view.adminCustomersPage]
     };
     const [title, active, render] = sections[section];
-    return page(req, res, title, active, render(adminData(req), { ...options, buyerWindow: labControls }), status);
+    return page(req, res, title, active, render(adminData(req), { ...options, buyerWindow: labControls && !sharedShop, sharedShop }), status);
   };
   app.get("/admin", authenticated, administrator, (req, res) => renderAdmin(req, res));
   app.get("/admin/products", authenticated, administrator, (req, res) => renderAdmin(req, res, "products", {
@@ -328,7 +330,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
       : "Something went wrong. Please try again.";
     if (status === 500) console.error(error);
     if (isApi(req)) return res.status(status).json({ error: message });
-    if (!req.cartKey) return res.status(status).send(view.loginPage(message, "", bugs, labControls));
+    if (!req.cartKey) return res.status(status).send(view.loginPage(message, "", bugs, labControls, "/products", { sharedShop }));
     return page(req, res, "Something went wrong", "", view.errorPage(status, message, { admin: req.user?.role === "admin" }), status);
   });
 

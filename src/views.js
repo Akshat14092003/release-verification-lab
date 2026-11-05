@@ -60,7 +60,7 @@ function bugBanners(bugs = {}) {
     '<span>Intentional defect demonstration. Synthetic data only.</span></section>';
 }
 
-export function shell({ title, active, user, balance, now, body, bugs = {}, labControls = false, cart = { count: 0 }, revision = 0 }) {
+export function shell({ title, active, user, balance, now, body, bugs = {}, labControls = false, cart = { count: 0 }, revision = 0, storeId = "", sharedShop = false }) {
   const admin = user?.role === "admin";
   const home = admin ? "/admin" : "/";
   const navigation = (admin ? [["admin", "Overview", "/admin"], ["products", "Products", "/admin/products"], ["orders", "Orders", "/admin/orders"], ["customers", "Customers", "/admin/customers"]]
@@ -84,7 +84,7 @@ export function shell({ title, active, user, balance, now, body, bugs = {}, labC
     '<svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16m7-11-3 3 3 3"/></svg></button>' +
     '<p class="nav-label">' + (admin ? 'STORE MANAGEMENT' : 'YOUR WORKSPACE') + '</p><nav id="main-navigation" aria-label="Main navigation">' + navigation + '</nav>' +
     '<div class="sidebar-footer"><div class="demo-note"><span class="status-dot"></span><span>' + (admin ? 'Store administration' : 'Demo storefront') + '</span></div>' +
-    '<p>' + (admin ? 'Catalogue, orders and customers.' : 'A small shop. A little inspiration.') + '</p>' + accountAction + '</div></aside>' +
+    '<p>' + (admin ? 'Catalogue, orders and customers.' : 'A small shop. A little inspiration.') + (labControls ? '<br/><span data-shop-reference>Shop ' + e(storeId) + '</span>' : '') + '</p>' + accountAction + '</div></aside>' +
     '<div class="workspace"><header class="topbar"><a class="brand mobile-brand" href="' + home + '" aria-label="Fieldwork home">' + logo() + '</a>' +
     '<div class="breadcrumb"><a href="' + home + '">' + (admin ? 'Management' : 'Fieldwork') + '</a><span>/</span><strong>' + e(title) + '</strong></div>' +
     (labControls ? labToolbar() : '') +
@@ -95,11 +95,11 @@ export function shell({ title, active, user, balance, now, body, bugs = {}, labC
     (balance === null ? '&mdash;' : money(balance)) + '</strong></div>') + profile + '</div>' +
     '<button type="button" class="mobile-menu-toggle icon-button" data-mobile-menu aria-label="Open menu" aria-expanded="false" aria-controls="mobile-navigation">' +
     '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></header>' +
-    (labControls ? labTools({ admin, toolbar: false }) : '') + '<main id="main-content" class="main" data-store-revision="' + revision + '">' + bugBanners(bugs) + body + '</main>' +
+    (labControls ? labTools({ admin, toolbar: false, sharedShop }) : '') + '<main id="main-content" class="main" data-store-revision="' + revision + '" data-store-id="' + e(storeId) + '" data-account-id="' + e(user?.id) + '" data-shared-shop="' + sharedShop + '">' + bugBanners(bugs) + body + '</main>' +
     '<footer class="page-footer"><span>Fieldwork &copy; 2026</span><span>' + (admin ? 'Demo management only' : 'Demo purchases only') + ' &middot; ' +
     e(now.toISOString().slice(0, 10)) + ' UTC</span></footer></div></div>' +
     '<dialog id="mobile-navigation" class="mobile-navigation" aria-label="Navigation and account"><button type="button" class="icon-button mobile-menu-close" data-mobile-close aria-label="Close menu">&times;</button></dialog>' +
-    (labControls ? labDialogs() : ''), admin ? "admin-body" : "", labControls);
+    (labControls ? labDialogs({ sharedShop }) : ''), admin ? "admin-body" : "", labControls);
 }
 export function loginPage(error = "", email = "", bugs = {}, labControls = false, next = "/products", options = {}) {
   const registering = options.signup === true;
@@ -107,7 +107,7 @@ export function loginPage(error = "", email = "", bugs = {}, labControls = false
   const accounts = [["customer", "Customer"], ["jamie", "Jamie"]];
   const nextQuery = "?next=" + encodeURIComponent(next);
   return document(registering ? "Create account" : "Sign in",
-    '<div class="login-tools"><a class="lab-return" href="/products">Back to shop</a>' + themeButton() + '</div>' + (labControls ? labTools() : '') +
+    '<div class="login-tools"><a class="lab-return" href="/products">Back to shop</a>' + themeButton() + '</div>' + (labControls ? labTools(options) : '') +
     '<main id="main-content" class="login-layout"><section class="login-story"><a class="brand" href="/login">' + logo() + '</a>' +
     '<div class="story-copy"><span class="eyebrow light">A LITTLE MORE INTENTIONAL</span><h1>Good things.<br/>For your everyday.</h1>' +
     '<p>A considered collection for work, home, and the moments in between.</p><div class="story-art story-photo">' +
@@ -122,10 +122,10 @@ export function loginPage(error = "", email = "", bugs = {}, labControls = false
     (registering ? '<label for="password-confirmation">Confirm password</label><input id="password-confirmation" name="password_confirmation" type="password" autocomplete="new-password" required minlength="8" maxlength="256"/>' : '') +
     '<button class="button primary full" type="submit">' + (registering ? 'Create account' : 'Sign in') + ' ' + icon("arrow") + '</button></form>' +
     '<p class="auth-switch">' + (registering ? 'Already have an account? <a href="/login' + nextQuery + '">Sign in</a>' : 'New here? <a href="/signup' + nextQuery + '">Create account</a>') + '</p>' +
-    (registering ? '<p class="signup-note">Use fictional details. In the interactive demo, reset or sandbox expiry clears this account.</p>' :
+    (registering ? '<p class="signup-note">Use fictional details. Resetting the demo shop clears this account.</p>' :
     '<div class="demo-accounts"><span class="eyebrow">TRY A DEMO ACCOUNT</span><p>Choose an account to fill in its sign-in details.</p><div class="role-options">' +
     accounts.map(([key, name]) => '<button type="button" class="role-choice" data-demo-role="' + key + '">' + name + '</button>').join("") +
-    '</div><p class="login-disclaimer">Fictional accounts and purchases. No payment information needed.</p></div>') + '</div></section></main>' + (labControls ? labDialogs() : ''), "login-body" + (registering ? " signup-body" : ""), labControls);
+    '</div><p class="login-disclaimer">Fictional accounts and purchases. No payment information needed.</p></div>') + '</div></section></main>' + (labControls ? labDialogs(options) : ''), "login-body" + (registering ? " signup-body" : ""), labControls);
 }
 export function adminLoginPage(error = "", email = "", next = "/admin") {
   return document("Admin sign in", '<a class="skip-link" href="#main-content">Skip to content</a><header class="admin-login-header"><a class="brand" href="/">' + logo() + '</a>' + themeButton() + '</header>' +
@@ -396,7 +396,7 @@ export function adminProductEntry(product, options = {}) {
 function adminNotice(options) {
   return options.error ? '<div class="alert error" role="alert">' + e(options.error) + '</div>' : options.message ? '<div class="alert" role="status">' + e(options.message) + '</div>' : '';
 }
-export function adminPage({ stats, orders, products, customers }) {
+export function adminPage({ stats, orders, products, customers }, options = {}) {
   const processing = orders.filter(order => order.status === "processing").length;
   const active = products.filter(product => product.active).length;
   const task = (href, name, copy, iconName) => '<a class="admin-task" href="' + href + '"><span class="bento-icon">' + icon(iconName) + '</span><span><strong>' + e(name) + '</strong><span>' + e(copy) + '</span></span>' + icon("arrow") + '</a>';
@@ -413,11 +413,12 @@ export function adminPage({ stats, orders, products, customers }) {
     task("/admin/customers", "View customers", "Inspect demo credit and purchase history", "customers") + '</section>' +
     '<section class="panel table-panel"><div class="panel-heading"><h2>Recent orders</h2><a class="subtle-link" href="/admin/orders">All orders ' + icon("arrow") + '</a></div>' +
     orderTable(orders.slice(0, 5), true, { editable: false }) + '</section>' +
-    '<p class="admin-sandbox-note">This is your isolated demo shop. Open a linked buyer window from Products to test admin changes alongside a customer. QA playground checks use separate test data.</p>';
+    '<p class="admin-sandbox-note">' + (options.sharedShop ? 'This shop is shared across browsers. Catalogue changes reach every buyer; orders and customers appear here.' : 'This is your isolated demo shop. Open a linked buyer window from Products to test admin changes alongside a customer.') + ' QA playground checks use separate test data.</p>';
 }
 export function adminProductsPage({ products }, options = {}) {
   return heading("Products", "Edit prices and availability, or add a product to the catalogue.") + adminNotice(options) +
-    (options.buyerWindow ? '<section class="admin-buyer-tools" aria-label="Test the buyer experience"><div><h2>Try changes as a buyer</h2><p>Open this same demo shop as a customer. Product changes update automatically; your admin stays signed in.</p></div>' +
+    (options.sharedShop ? '<p class="admin-sandbox-note">Shared shop: saved changes appear in every buyer browser automatically. Regular and Incognito windows use the same catalogue.</p>' : '') +
+    (options.buyerWindow ? '<section class="admin-buyer-tools" aria-label="Test the buyer experience"><div><h2>Try changes as a buyer</h2><p>Separate browsers start separate shops. Use a buyer link to connect them, then check the Shop references in both sidebars match. Saved changes appear automatically.</p></div>' +
       '<div class="admin-buyer-actions"><button type="button" class="button secondary" data-buyer-window>Open buyer window</button>' +
       '<button type="button" class="subtle-button" data-copy-buyer-link>Copy link for another browser</button></div>' +
       '<p class="muted" data-buyer-link-message role="status" hidden></p><input class="buyer-link" data-buyer-link aria-label="Buyer connection link" readonly hidden/></section>' : '') +

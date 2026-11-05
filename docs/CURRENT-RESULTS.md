@@ -1,9 +1,14 @@
 # Current verification evidence
 
-The current local revision has **59 release checks** (31 API, 17 browser, 3 database,
-8 security). On 2026-11-05, green passed **59/59 in 74.9 seconds** with two workers;
-strict red matched **47 passing controls / exactly 12 intended failures in 94.7 seconds**.
-Unit guards passed **8/8** and syntax checks covered 47 JavaScript files.
+The current local revision has **60 release checks** (31 API, 18 browser, 3 database,
+8 security). On 2026-11-05, green passed **60/60 in 115.7 seconds** with two workers.
+Strict red matched **48 passing controls / exactly 12 intended failures in 138.2 seconds**.
+Unit guards passed **9/9** and syntax checks covered 48 JavaScript files.
+The shared-store browser case saves a price in admin and observes it in a separate buyer
+browser without a link, checks checkout/admin order visibility and separate carts/permissions,
+and confirms shared-reset cancellation. Unit coverage verifies persistence across restart,
+visitor expiry, reset invalidation and loopback/default-isolation configuration.
+Multi-context lab cases run in file order to bound browser load; retries remain zero.
 The new browser case opens a linked buyer window, checks automatic price updates without
 navigation, preserves quantity selection, joins another browser with a one-use link, proves
 unrelated-shop isolation and verifies independent admin/customer logout. Additional real-UI
@@ -13,6 +18,12 @@ Six buyer-control layouts cover 320/390/1440px in both themes without document o
 Admin credential/role rejection, safe return destinations and failure without session creation
 are covered in the existing admin API case, including with intentional customer defects enabled.
 These are local results; no hosted CI or publication was performed for this revision.
+The linked-browser case also checks an existing Incognito tab recovers when a second tab
+joins another shop with the same revision counter. Both windows display matching public Shop
+references; subsequent same-shop price changes still update without navigation.
+
+The preceding 59-check revision passed59/59 in79.7s and strict red47 controls/exact12 failures
+in93.6s, with8 unit guards. It added the original explicit buyer-link workflow.
 
 The preceding 58-check QA/header/admin-portal revision passed 58/58 in 70.0 seconds and
 red 46 controls/exactly 12 intended failures in 82.1 seconds. Its fourteen width/theme checks

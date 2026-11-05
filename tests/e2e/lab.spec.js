@@ -5,9 +5,10 @@ import { readBugFlags } from "../../src/config.js";
 import { BASELINE_CHECKS, DEFECTS } from "../../src/defects.js";
 
 const test = base.extend({
-  demo: async ({}, use, testInfo) => {
+  sharedShop: [false, { option: true }],
+  demo: async ({ sharedShop }, use, testInfo) => {
     // No nested test launches: the real button-to-report flow is verified separately.
-    const runtime = createDemoApp({ directory: testInfo.outputPath("demo"), allowRuns: false });
+    const runtime = createDemoApp({ directory: testInfo.outputPath("demo"), allowRuns: false, sharedShop });
     const server = runtime.app.listen(0, "127.0.0.1");
     await once(server, "listening");
     try { await use("http://127.0.0.1:" + server.address().port); }
@@ -21,6 +22,56 @@ const test = base.extend({
     await page.route("**/*", route => new URL(route.request().url()).origin === demo ? route.continue() : route.abort());
     await use(page);
   }
+});
+
+// These flows open multiple browser contexts; run this file in order to bound browser load.
+test.describe.configure({ mode: "default" });
+
+test.describe("shared local storefront", () => {
+  test.use({ sharedShop: true });
+  test("admin changes reach another browser without links while carts and roles stay separate", async ({ page, browser, demo }) => {
+    const context = await browser.newContext({ baseURL: demo });
+    const guest = await apiRequest.newContext({ baseURL: demo });
+    await context.route("**/*", route => new URL(route.request().url()).origin === demo ? route.continue() : route.abort());
+    try {
+      const buyer = await context.newPage();
+      await buyer.goto("/products");
+      await page.goto("/admin/login");
+      await page.getByRole("button", { name: "Use demo admin", exact: true }).click();
+      await page.getByRole("button", { name: "Sign in", exact: true }).click();
+      await page.getByRole("link", { name: "Products", exact: true }).click();
+      await expect(page.locator("[data-copy-buyer-link]")).toHaveCount(0);
+      const editor = page.locator('[data-admin-product-id="1"]');
+      await editor.locator("summary").click();
+      await editor.getByLabel("Price ($)", { exact: true }).fill("50");
+      await editor.getByRole("button", { name: "Save product", exact: true }).click();
+      await expect(editor.locator("[data-admin-feedback]")).toContainText("every buyer browser");
+      await buyer.bringToFront();
+      await expect(buyer.locator(".product-card").first()).toContainText("$50.00");
+      expect(await buyer.locator("[data-shop-reference]").textContent()).toBe(await page.locator("[data-shop-reference]").textContent());
+      expect((await buyer.request.get("/api/admin")).status()).toBe(401);
+      await buyer.getByRole("button", { name: "Add Everyday journal to cart", exact: true }).click();
+      await expect(buyer.locator("#cart-toast-text")).toContainText("Everyday journal added");
+      expect((await page.request.get("/api/cart")).status()).toBe(403);
+      expect((await (await guest.get("/api/cart")).json()).cart.count).toBe(0);
+      await buyer.goto("/login");
+      await buyer.getByRole("button", { name: "Customer", exact: true }).click();
+      await buyer.getByRole("button", { name: "Sign in", exact: true }).click();
+      const response = await buyer.request.post("/api/cart/checkout", { data: {} });
+      expect(response.status()).toBe(201);
+      const order = (await response.json()).order;
+      expect(order.total_cents).toBe(5000);
+      const orders = (await (await page.request.get("/api/admin")).json()).orders;
+      expect(orders.some(row => row.id === order.id)).toBe(true);
+      expect((await buyer.request.get("/api/admin")).status()).toBe(403);
+      await buyer.getByRole("button", { name: "QA playground", exact: true }).click();
+      await buyer.locator(".lab-day summary").click();
+      await buyer.getByRole("button", { name: "Reset shared shop", exact: true }).click();
+      await expect(buyer.getByRole("dialog", { name: "Reset the shared shop?" })).toContainText("every browser");
+      await buyer.getByRole("button", { name: "Keep shopping", exact: true }).click();
+      expect((await (await page.request.get("/api/admin")).json()).orders).toHaveLength(1);
+    } finally { await context.close(); await guest.dispose(); }
+  });
 });
 
 test("website switches and demo day change a new visitor's actual shop", async ({ page }) => {
@@ -127,9 +178,11 @@ test("visitor switches, purchases and reset are isolated", async ({ page, demo }
   } finally { await other.dispose(); }
 });
 
-test("linked buyer windows share admin changes while unrelated shops and role sessions stay isolated", async ({ page, demo }) => {
+test("linked buyer windows share admin changes while unrelated shops and role sessions stay isolated", async ({ page, demo, browser }) => {
   await page.context().route("**/*", route => new URL(route.request().url()).origin === demo ? route.continue() : route.abort());
-  const other = await apiRequest.newContext({ baseURL: demo });
+  const otherContext = await browser.newContext({ baseURL: demo });
+  await otherContext.route("**/*", route => new URL(route.request().url()).origin === demo ? route.continue() : route.abort());
+  const other = otherContext.request;
   try {
     expect((await other.post("/api/lab/buyer-window", { data: {} })).status()).toBe(403);
     await page.goto("/admin/login");
@@ -164,21 +217,40 @@ test("linked buyer windows share admin changes while unrelated shops and role se
     await expect(buyer.getByRole("spinbutton")).toHaveValue("3");
     await other.post("/api/auth/login", { data: { email: "customer@example.test", password: "DemoShop!2026" } });
     expect((await (await other.get("/api/products")).json()).products.find(product => product.id === 1).price_cents).toBe(2800);
+    // Both shops reach revision 2; a counter alone cannot detect a cookie scope switch.
+    for (let i = 0; i < 2; i++) expect((await other.post("/api/orders", { data: { product_id: 2 } })).status()).toBe(201);
+    const oldBuyerTab = await otherContext.newPage();
+    await oldBuyerTab.goto("/products");
+    const originalState = await (await other.get("/api/store/state")).json();
+    const adminState = await (await page.request.get("/api/store/state")).json();
+    expect(originalState.revision).toBe(adminState.revision);
+    expect(originalState.storeId).not.toBe(adminState.storeId);
+    await expect(oldBuyerTab.locator(".product-card").first()).toContainText("$28.00");
     await page.getByRole("button", { name: "Copy link for another browser", exact: true }).click();
     const connection = page.getByLabel("Buyer connection link", { exact: true });
     await expect(connection).toHaveValue(/\/buyer\/[a-f0-9-]+$/);
     const link = await connection.inputValue();
-    expect((await other.get(link)).status()).toBe(200);
+    const joinedTab = await otherContext.newPage();
+    await joinedTab.goto(link);
+    await expect(joinedTab.locator(".product-card").first()).toContainText("$33.00");
+    await joinedTab.close();
+    await oldBuyerTab.bringToFront();
+    await expect(oldBuyerTab.locator("#main-content")).toHaveAttribute("data-store-id", adminState.storeId);
+    await expect(oldBuyerTab.locator(".product-card").first()).toContainText("$33.00");
+    await expect(oldBuyerTab.locator("[data-shop-reference]")).toHaveText("Shop " + adminState.storeId);
+    await expect(page.locator("[data-shop-reference]")).toHaveText("Shop " + adminState.storeId);
+    await oldBuyerTab.close();
     expect((await (await other.get("/api/products")).json()).products.find(product => product.id === 1).price_cents).toBe(3300);
     expect((await other.get("/api/admin")).status()).toBe(403);
     expect((await other.get(link)).status()).toBe(410);
     await buyer.getByRole("button", { name: "Sign out", exact: true }).click();
     await expect(buyer).toHaveURL(/\/login$/);
+    await buyer.close();
     expect((await page.request.get("/api/admin")).status()).toBe(200);
     await page.getByRole("button", { name: "Sign out", exact: true }).click();
     await expect(page).toHaveURL(/\/admin\/login$/);
     expect((await page.request.get("/api/admin")).status()).toBe(401);
-  } finally { await other.dispose(); }
+  } finally { await otherContext.close(); }
 });
 
 test("light and dark mode persist across the lab and shop", async ({ page }) => {

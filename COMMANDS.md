@@ -35,8 +35,9 @@ Keep using **http://127.0.0.1:3000** and refresh the browser after edits. CSS, i
 scripts are served directly from disk. Server-code changes restart Node automatically.
 VS Code's Go Live extension serves static files and cannot run this Express/SQLite app.
 Switch from an already running `npm start` to this mode once; do not start a second server on port 3000.
-Automatic server restarts clear the interactive demo's temporary sessions and run lookup;
-ordinary CSS/browser-script refreshes preserve them.
+Local development uses a shared persistent shop at `.data/demo/shop.sqlite`. Admin changes
+reach all buyer browsers, including Incognito, without connection links. Restarts preserve
+catalogue, accounts, sessions, purchases and carts; bug switches/day and report lookup reset.
 
 ## Browser controls: no terminal flags required
 
@@ -44,7 +45,7 @@ ordinary CSS/browser-script refreshes preserve them.
 | --- | --- |
 | Enable or disable a bug | Open QA playground, read the bug card, and use its switch; it applies immediately |
 | Try a weekend rule on Monday | In QA playground, open Day, choose Monday, then Apply day |
-| Reset purchases and balance | Reset my purchases; sign in again for $1,000 and zero orders |
+| Reset purchases and balance | Reset shared shop; confirmation covers every browser, restores catalogue and clears all accounts/purchases/carts; seeded customers return to $1,000 |
 | Run tests against your chosen bugs | Run checks ? My current bug switches ? Run tests |
 | Run the correct build | Run checks ? Correct build ? Run tests |
 | See all defect detectors | Run checks ? All four bugs on ? Run tests |
@@ -55,11 +56,25 @@ ordinary CSS/browser-script refreshes preserve them.
 | Send a repeat offer request | Enable Purchase cap, open Offers, and use Send direct repeat purchase after completing one offer checkout |
 | Change the theme | Use the sun/moon button; preference persists and the theme animates |
 
-Each visitor gets an isolated in-memory SQLite shop and settings. Changing a switch takes effect
-immediately; refresh an already-open shop page. Test runs snapshot the chosen switches and use
-separate data/clocks, so they do not spend your demo balance. Correct build: **47 passes**.
-All bugs on: **35 controls pass and 12 intended checks fail**. A complete matched failure pattern
+Local browsers share the same catalogue, orders, accounts, bug switches and demo day.
+Test runs snapshot the chosen switches and use separate data/clocks, so they do not spend
+your demo balance. Correct build: **60 passes**.
+All bugs on: **48 controls pass and 12 intended checks fail**. A complete matched failure pattern
 verifies detection; it does not mean the defective application passed.
+
+For optional independent browser sandboxes (with buyer connection links):
+
+```powershell
+$env:LAB_SHARED_SHOP = "0"
+npm.cmd run dev
+```
+
+Remove that override before starting to return to the shared local shop:
+
+```powershell
+Remove-Item Env:LAB_SHARED_SHOP -ErrorAction SilentlyContinue
+npm.cmd run dev
+```
 
 The current GitHub Pages URL still contains saved reports. The interactive website requires a
 Node/Chromium host; see [hosting notes](docs/INTERACTIVE-DEMO.md).
@@ -68,7 +83,7 @@ Node/Chromium host; see [hosting notes](docs/INTERACTIVE-DEMO.md).
 
 The commands below work with the original persistent `.data/lab.sqlite` shop. Run it with
 **npm.cmd run start:shop**. Its database/credit/reset commands do **not** change the browser lab's
-isolated visitor shops. Use the website reset button for those.
+shared or isolated browser shops. Use the website reset button for those.
 
 ### Install, start, stop
 

@@ -19,14 +19,15 @@ the leap. Other native dialogs hide/pause it. Shop controls remain clickable whe
 
 Create an account from Sign in → Create account. Registration signs in a new customer with
 $1,000 demo credit, retaining the guest cart and checkout destination. Use fictional details;
-resetting the demo, sandbox expiry or restarting the interactive server removes these accounts.
+resetting the demo removes these accounts. Local shared accounts survive server restarts;
+optional isolated sandboxes expire after inactivity or a restart.
 The two public role shortcuts are Customer and Admin. Store Owner has been removed; older
 owner accounts migrate to customers while retaining their data.
 
 Admin now manages the catalogue (add/edit, prices and availability), fulfilment (Processing,
 Shipped, Delivered), and a customer overview with credit/order counts. Hiding an item prevents
 checkout through the UI, an existing cart, or a direct request. Paid receipts and ledger entries
-retain their original prices/names. Admin edits affect the current visitor's sandbox, while
+retain their original prices/names. Local admin edits reach every buyer browser, while
 automated checks always run on isolated test data.
 
 Open `/admin` or `/admin/login` for the dedicated admin sign-in page. Choose Use demo admin
@@ -41,10 +42,16 @@ is shown. Customer receipts open at `/admin/orders/:id`. Server-side guards reje
 APIs and purchase forms, including the direct-repeat helper. Use the Customer shortcut or signup
 for manual purchasing tests. QA controls and automated verification remain available to admin.
 
-To compare admin changes with a buyer, open **Admin → Products → Open buyer window**. It opens
+Local startup uses one persistent shop across browsers. Open **Admin → Products** in one browser
+and `/products` in another; saving a change updates the buyer automatically. No connection link
+is required. Logins and carts stay separate. Data is stored in `.data/demo/shop.sqlite`.
+
+For optional isolated mode (`LAB_SHARED_SHOP=0`), open **Admin → Products → Open buyer window**. It opens
 the same demo shop as Customer while leaving the admin signed in. For another browser/profile,
 choose **Copy link for another browser** and paste that one-use link within five minutes.
 Opening the normal shop URL in an unrelated profile creates a separate shop instead.
+The **Shop** references at the bottom of both sidebars must match. Connecting in a second
+tab also updates existing tabs in that browser, even when both shops had the same revision.
 Connected views refresh after price, name, category, photo, availability, product creation and
 fulfilment changes. Pending edits and quantity selections are protected. Admin logout preserves
 the buyer's session and cart; buyer logout preserves admin. Reset affects the connected shop and
@@ -151,10 +158,14 @@ failures**, displayed 47 real result cards, and automatically opened the rendere
 Report preparation, fixed dialog heading, sticky header, profile logout, mobile layouts,
 preserved cart, report-owner access, and zero browser errors were checked locally.
 
-- Each visitor gets an unguessable HttpOnly/SameSite cookie and an isolated in-memory SQLite shop;
-  an admin can explicitly connect buyer windows to that same shop using a short-lived link.
-- New shops start with $1,000 per account, zero purchases, and an empty cart. Reset clears cart and login too.
-- Shops expire after two hours of inactivity or server restart; other visitors cannot change them.
+- Local loopback startup shares one persistent SQLite shop across browsers. Admin catalogue
+  edits, buyer orders and customer accounts use that store. Carts and credentials stay separate.
+- Optional isolated mode gives each visitor an in-memory shop. Non-loopback hosts default to
+  isolation; `LAB_SHARED_SHOP=0` explicitly selects it. Buyer links connect those isolated shops.
+- New shops start with $1,000 per customer, zero purchases and empty carts. **Reset shared shop**
+  restores the catalogue and clears all carts, orders, registered accounts and sessions across browsers.
+- Shared data survives inactivity/restarts; isolated shops expire after two hours or a restart.
+  Bug switches, demo day and report lookup remain temporary. Reset preserves switches and day.
 - Tests copy the chosen flags at start and use separate disposable data/clocks. They preserve the visitor's cart and purchases.
 - Reports and run status are restricted to their owning visitor.
 - `src/test-runner.js` launches fixed Playwright CLI arguments, never user-supplied commands.
@@ -164,11 +175,11 @@ preserved cart, report-owner access, and zero browser errors were checked locall
 - A real reporter end event switches the UI to report preparation. CLI exit validates the saved report;
   inherited Windows output pipes do not delay completion. The centered dialog keeps its heading fixed
   while its body scrolls. Individual check cards show actual titles/statuses with ticks, crosses, and spinners.
-- The current suite has **59 checks**: 31 API, 17 browser, 3 database, 8 security. All bugs yield 47 passing controls and 12 intended failures.
+- The current suite has **60 checks**: 31 API, 18 browser, 3 database, 8 security. All bugs yield 48 passing controls and 12 intended failures.
 - Nested test launches are disabled in visitor-interface fixtures; the real button/report flow is exercised separately.
 
 The original persistent shop remains available through `npm run start:shop`. Its `.data/lab.sqlite`
-seed and top-up commands are separate from the isolated browser storefront.
+seed and top-up commands are separate from the browser storefront's `.data/demo/shop.sqlite`.
 
 ## Local use
 

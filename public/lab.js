@@ -270,6 +270,10 @@
     window.Fieldwork.labState = state;
     document.dispatchEvent(new CustomEvent("fieldwork:settings", { detail: state }));
   }
+  document.addEventListener("fieldwork:content", () => {
+    if (document.getElementById("main-content")?.dataset.sharedShop !== "true" || saving || settings.contains(document.activeElement)) return;
+    api("/api/lab/state").then(state => { if (!saving) updateSettings(state); }).catch(() => {});
+  });
   async function save() {
     if (saving) return saving;
     const button = settings.querySelector('button[type="submit"]');

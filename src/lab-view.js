@@ -18,12 +18,12 @@ export function labToolbar() {
     '<span id="test-launch-label">Run checks</span></button></div></section>';
 }
 
-export function labTools({ admin = false, toolbar = true } = {}) {
+export function labTools({ admin = false, toolbar = true, sharedShop = false } = {}) {
   return (toolbar ? labToolbar() : '') +
     '<form id="lab-settings" class="qa-playground" aria-labelledby="playground-heading" hidden data-total-checks="' + BASELINE_CHECKS + '">' +
     '<button type="button" id="close-playground" class="icon-button" aria-label="Close QA playground">&times;</button>' +
     '<div class="playground-heading"><div><span class="eyebrow">EXPLORE THE QA PLAYGROUND</span><h2 id="playground-heading" tabindex="-1">Choose what goes wrong.</h2>' +
-    '<p>These switches introduce intentional bugs in your own demo shop. Turn one on, try its steps, then run the checks to see the evidence.</p></div></div>' +
+    '<p>These switches introduce intentional bugs in ' + (sharedShop ? 'the shared local shop. All browser windows use the same bugs and demo day.' : 'your own demo shop.') + ' Turn one on, try its steps, then run the checks to see the evidence.</p></div></div>' +
     '<div class="inline-switches">' + DEFECTS.map(defect => '<article class="bug-card"><label class="inline-switch" title="' + defect.description +
       '"><strong>' + help[defect.id][0] + '</strong><input type="checkbox" role="switch" aria-label="' + defect.label + '" name="' + defect.flag +
       '" aria-describedby="bug-help-' + defect.id + '" data-failure-count="' + defect.failures.length +
@@ -37,7 +37,7 @@ export function labTools({ admin = false, toolbar = true } = {}) {
     '<option value="monday">Monday ? offer closed</option><option value="real">Today ? real clock</option></select>' +
     '<p id="clock-value" class="summary-note"></p><button type="submit" class="button primary">Apply day</button>' +
     '<button type="button" class="button secondary" id="all-off">Switch all bugs off</button>' +
-    '<button type="button" class="button secondary" id="reset-shop">' + (admin ? 'Reset demo shop' : 'Reset my purchases') + '</button></div></details>' +
+    '<button type="button" class="button secondary" id="reset-shop">' + (sharedShop ? 'Reset shared shop' : admin ? 'Reset demo shop' : 'Reset my purchases') + '</button></div></details>' +
     '</div></form>' +
     '<div id="lab-message" class="lab-message" role="status" aria-live="polite"></div>' +
     '<aside id="guide-coach" class="context-guide" aria-label="Shopping guide" hidden>' +
@@ -50,9 +50,9 @@ export function labTools({ admin = false, toolbar = true } = {}) {
     '<pre id="repeat-result" class="lab-log" hidden></pre></div>';
 }
 
-export function labDialogs() {
+export function labDialogs({ sharedShop = false } = {}) {
   return '<dialog id="reset-dialog" class="reset-dialog" aria-labelledby="reset-heading" aria-describedby="reset-description">' +
-    '<h2 id="reset-heading">Reset your demo shop?</h2><p id="reset-description">This clears carts, purchases and registered accounts, and signs out demo accounts in your shop. Seeded customers return to $1,000 credit. This cannot be undone. Your bug switches and demo day stay the same.</p>' +
+    '<h2 id="reset-heading">Reset ' + (sharedShop ? 'the shared shop' : 'your demo shop') + '?</h2><p id="reset-description">' + (sharedShop ? 'This affects every browser: it restores the catalogue, clears all carts, purchases and registered accounts, and signs everyone out.' : 'This clears carts, purchases and registered accounts, and signs out demo accounts in your shop.') + ' Seeded customers return to $1,000 credit. This cannot be undone. Your bug switches and demo day stay the same.</p>' +
     '<p id="reset-error" role="alert"></p><form method="dialog" class="reset-actions"><button class="button secondary" value="cancel" autofocus>Keep shopping</button>' +
     '<button type="button" id="confirm-reset" class="button danger">Reset purchases</button></form></dialog>' +
     '<dialog id="test-drawer" class="verification-drawer" aria-labelledby="run-heading">' +

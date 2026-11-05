@@ -39,7 +39,7 @@ On mobile it lives in the navigation drawer. Each bug explains what it changes, 
 steps under How to try it. Active bugs show a red state and count. Contextual hints follow the visitor through products,
 cart, checkout, and receipts. **Run checks** opens live progress and reports over the same page.
 The sidebar collapses, the sun/moon theme control animates, and the storefront has gentle motion with
-reduced-motion support. Each visitor gets an isolated SQLite sandbox. No separate guide page is needed.
+reduced-motion support. Local browsers share one SQLite shop; test runs use isolated data. No separate guide page is needed.
 
 All PowerShell commands, account details, reset options, and step-by-step manual reproductions:
 [COMMANDS.md](COMMANDS.md).
@@ -57,18 +57,23 @@ Use npm run dev for automatic server restarts.
 These are deliberately public, fictional local-demo credentials.
 Visitors can also create a customer account at `/signup`, starting with $1,000 demo credit.
 Signup uses a random salt and scrypt password hash and retains the guest cart. Only customer
-accounts can be created publicly. The interactive lab keeps each visitor's accounts and admin
-changes inside their own sandbox; reset, expiry or server restart clears that sandbox.
+accounts can be created publicly. Local startup shares catalogue, customer accounts and orders
+across browsers. Admin changes reach buyers automatically, including Incognito, without links.
+Sessions and carts remain separate. Data persists in `.data/demo/shop.sqlite` across restarts.
 The app simulates purchases using demo credit; there is no payment gateway.
 
 ### Repeatable data
 
-In the browser lab, use **Reset my purchases**. A confirmation explains that this clears your cart, purchases, and sign-in; Keep shopping cancels without changes. Confirming resets only your isolated shop and gives each
-demo account $1,000. Visitor shops expire after two hours of inactivity or a server restart.
+In the local browser lab, use **Reset shared shop**. Its confirmation explains that it restores
+the catalogue, clears all carts, orders and registered accounts, and signs everyone out across
+browsers. Seeded customers return to $1,000. **Keep shopping** cancels without changes.
 Test runs have separate disposable data and do not modify your purchases.
 
+Loopback hosts share the shop by default. Set `LAB_SHARED_SHOP=0` for independent visitor
+sandboxes; non-loopback hosts default to that isolated mode. Only isolated mode needs buyer links.
+
 The following terminal commands apply to the original persistent shop, started with `npm run start:shop`.
-That mode keeps `.data/lab.sqlite`; it is separate from the browser lab's in-memory visitor shops.
+That mode keeps `.data/lab.sqlite`; it is separate from the browser lab's `.data/demo/shop.sqlite`.
 
 Startup initializes an empty database automatically. The seed command preserves existing orders by default.
 
@@ -212,8 +217,8 @@ The runner starts isolated app instances automatically. Each test owns a SQLite 
 On first browser execution, the runner installs its pinned Chromium revision if missing.
 Browser checks block optional external CDN/fonts and exercise the local CSS fallback.
 
-Current local coverage: 31 direct API checks, 17 Playwright browser journeys, 3 SQL/database checks,
-and 8 focused security probes (59 total). Published historical results are labelled separately below.
+Current local coverage: 31 direct API checks, 18 Playwright browser journeys, 3 SQL/database checks,
+and 8 focused security probes (60 total). Published historical results are labelled separately below.
 Database reconciliation compares actual rendered amounts with independent read-only SQL sums.
 Screenshots and traces are retained on failure; HTTP responses and SQL evidence are attached to reports.
 Retries are disabled. Security probes cover SQL-like login/search/identifier input and reflected/stored XSS contexts.

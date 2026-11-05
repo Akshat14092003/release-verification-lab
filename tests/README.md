@@ -66,12 +66,17 @@ Reports:
 - Retries are disabled so the first failure stays visible.
 
 Reports are ignored by Git. The earlier version's hosted reports are published on Pages.
-The local revision has 59 tests; see ../docs/INTERACTIVE-DEMO.md. Published 47-check evidence remains historical.
-Six storefront-control browser checks cover inline switches, visitor isolation/reset, linked buyer windows, themes,
+The local revision has 60 tests; see ../docs/INTERACTIVE-DEMO.md. Published 47-check evidence remains historical.
+Seven storefront-control browser checks cover shared local shops, inline switches, visitor isolation/reset, linked buyer windows, themes,
 mobile layout, contextual hints, sidebar persistence, reduced motion, and run errors. Cart API
 checks cover quantity merging, validation, rollback, guest sign-in continuity, and cookie isolation.
 The linked-window case proves live catalogue updates without navigation, retained quantities,
 explicit joining from a second browser, one-use links, unrelated-shop isolation and independent role logout.
+The shared-store case instead uses unrelated browser contexts without links: a saved price reaches
+the buyer, checkout uses it, admin sees that order, and credentials/carts remain separate.
+Unit coverage checks restart persistence, visitor expiry, shared reset and local hosting defaults.
+The multi-context lab file runs in order to bound browser load; the suite still uses two workers,
+with no retries or relaxed timeouts.
 Nested launches are disabled in these fixtures; the real same-page run-to-report flow is verified
 separately with the actual runner.
 

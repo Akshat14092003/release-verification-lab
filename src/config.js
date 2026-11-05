@@ -27,8 +27,11 @@ export function loadConfig(env = process.env) {
   const fixedNow = env.LAB_NOW ? new Date(env.LAB_NOW) : null;
   const testWorkers = Number(env.LAB_TEST_WORKERS || 2);
   if (![1, 2].includes(testWorkers)) throw new Error("LAB_TEST_WORKERS must be 1 or 2.");
+  if (env.LAB_SHARED_SHOP !== undefined && !["0", "1"].includes(env.LAB_SHARED_SHOP)) throw new Error("LAB_SHARED_SHOP must be 0 or 1.");
+  const host = env.HOST || "127.0.0.1";
   return {
-    host: env.HOST || "127.0.0.1",
+    host,
+    sharedShop: env.LAB_SHARED_SHOP === "1" || (env.LAB_SHARED_SHOP !== "0" && ["127.0.0.1", "localhost", "::1"].includes(host)),
     bugs: readBugFlags(env),
     port,
     trustProxy: env.TRUST_PROXY === "1",

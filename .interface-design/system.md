@@ -113,7 +113,7 @@ native dialogs pause/hide it. No sound, flashes, automatic jumpscare, or changes
 ### Customer signup and admin management
 Only Customer and Admin roles are visible. Signup reuses the sign-in glass layout and theme;
 keep the four labelled fields, submit action and sign-in link visible at normal mobile heights.
-Its contextual guide uses a compact row to preserve room for the form. Explain sandbox lifetime
+Its contextual guide uses a compact row to preserve room for the form. Explain demo reset scope
 beside the form. Public signup always creates a customer and retains the guest cart.
 Admin signs in to management and sees Overview/Products/Orders/Customers navigation and customer
 receipts. Keep cart/checkout/offers/personal orders and personal credit out of every admin shell,
@@ -151,11 +151,17 @@ original placeholders. Tight desktop widths reduce gaps while retaining every co
 admin-only credentials and no customer signup, shopping controls or QA toolbar. Customer login
 keeps its glass/photo layout. Anonymous management requests preserve safe admin destinations;
 admin sign-out returns to its own sign-in page. Customer bug toggles never bypass admin passwords.
-Admin Products provides Open buyer window and Copy link for another browser for side-by-side
+Local loopback startup uses one persistent shop: admin edits appear across browser profiles
+without links. Show a compact shared-shop explanation; shared reset confirms its effect on all
+browsers. Cart/session credentials remain separate; tests always use disposable data.
+In optional isolated mode, Admin Products provides Open buyer window and Copy link for another browser for side-by-side
 checks against the same shop. Links are short-lived, one-use customer grants. Admin/customer
 sessions stay separate; unrelated visitors remain isolated. Visible pages observe store changes
 every two seconds and on focus, pausing replacement during dialogs, form edits and pending actions.
 Preserve selected quantities across refreshes; never overwrite an open catalogue editor.
+Display the public Shop reference in the sidebar so connected windows can be compared.
+Compare shop identity before revision counters; a scope change reloads the whole page to
+replace navigation/account state too. The public reference does not authorize joining a shop.
 
 ### Bug-caught celebration (keep the fun)
 Red (`--danger`) is the lab's signal colour. The catch popup keeps its bounce-in, target spin, ring

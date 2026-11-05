@@ -16,8 +16,15 @@ const CLOCKS = {
 };
 const COOKIE = "lab_visitor";
 
-export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), allowRuns = true, maxVisitors = 50, sessionMs = 2 * 60 * 60 * 1000, trustProxy = false, testWorkers = 2 } = {}) {
+export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), allowRuns = true, maxVisitors = 50, sessionMs = 2 * 60 * 60 * 1000, trustProxy = false, testWorkers = 2, sharedShop = false } = {}) {
   const app = express();
+  let sharedStore;
+  const createStore = () => {
+    const store = { bugs: readBugFlags({}), clock: "saturday" };
+    store.now = () => store.clock === "real" ? new Date() : new Date(CLOCKS[store.clock]);
+    store.runtime = createApp({ databasePath: sharedShop ? join(directory, "shop.sqlite") : ":memory:", now: store.now, bugs: store.bugs, labControls: true, trustProxy, sharedShop });
+    return store;
+  };
   const visitors = new Map();
   const buyerLinks = new Map();
   const runner = allowRuns ? createTestRunner({ directory: join(directory, "runs"), workers: testWorkers }) : null;
@@ -55,7 +62,7 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
     const time = Date.now();
     for (const [id, visitor] of visitors) {
       if (time - visitor.lastUsed > sessionMs) {
-        visitor.runtime.close();
+        if (!sharedShop) visitor.runtime.close();
         visitors.delete(id);
       }
     }
@@ -64,9 +71,9 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
     if (!visitor) {
       if (visitors.size >= maxVisitors) return res.status(503).send("The demo is busy. Please try again later.");
       const id = randomUUID();
-      visitor = { id, bugs: readBugFlags({}), clock: "saturday", lastUsed: time, lastRun: null };
-      visitor.now = () => visitor.clock === "real" ? new Date() : new Date(CLOCKS[visitor.clock]);
-      visitor.runtime = createApp({ databasePath: ":memory:", now: visitor.now, bugs: visitor.bugs, labControls: true, trustProxy });
+      const store = sharedShop ? (sharedStore ||= createStore()) : createStore();
+      visitor = { id, runtime: store.runtime, now: store.now, bugs: store.bugs, lastUsed: time, lastRun: null,
+        get clock() { return store.clock; }, set clock(value) { store.clock = value; } };
       visitors.set(id, visitor);
     }
     visitor.lastUsed = time;
@@ -76,7 +83,7 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
   });
   const snapshot = visitor => ({
     bugs: visitor.bugs, clock: visitor.clock, now: visitor.now().toISOString(),
-    lastRun: visitor.lastRun, runsAvailable: allowRuns
+    lastRun: visitor.lastRun, runsAvailable: allowRuns, sharedShop
   });
   const jsonOnly = (req, res, next) => {
     if (!req.is("application/json")) throw new ShopError("Send settings as JSON.", 415);
@@ -85,6 +92,7 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
   app.get("/lab", (req, res) => res.redirect("/products"));
   app.get("/api/lab/state", (req, res) => res.json(snapshot(req.visitor)));
   app.post("/api/lab/buyer-window", jsonOnly, (req, res) => {
+    if (sharedShop) throw new ShopError("This shop is already shared. Open /products in the buyer browser and sign in.", 409);
     const visitor = req.visitor;
     if (!findSession(visitor.runtime.db, req.get("cookie"), visitor.now(), { role: "admin" })) {
       throw new ShopError("Sign in as an administrator to connect a buyer window.", 403);
@@ -106,6 +114,7 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
     }
     Object.assign(req.visitor.bugs, bugs);
     req.visitor.clock = clock;
+    req.visitor.runtime.touchStore();
     res.json(snapshot(req.visitor));
   });
   app.post("/api/lab/reset", jsonOnly, (req, res) => {
@@ -114,7 +123,7 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
     for (const [token, grant] of buyerLinks) if (grant.visitorId === req.visitor.id) buyerLinks.delete(token);
     res.clearCookie("fieldwork_session", { path: "/" });
     res.clearCookie("fieldwork_admin_session", { path: "/" });
-    res.json({ ...snapshot(req.visitor), message: "Your shop is reset: $1,000 per customer, no purchases. Sign in again." });
+    res.json({ ...snapshot(req.visitor), message: (sharedShop ? "The shared shop" : "Your shop") + " is reset: $1,000 per customer, no purchases. Sign in again." });
   });
   app.post("/api/lab/repeat-offer", jsonOnly, async (req, res, next) => {
     // The shop API still enforces the rule. This is only a visible client for the same request
@@ -155,7 +164,8 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
     app,
     close() {
       runner?.close();
-      for (const visitor of visitors.values()) visitor.runtime.close();
+      if (sharedShop) sharedStore?.runtime.close();
+      else for (const visitor of visitors.values()) visitor.runtime.close();
       visitors.clear();
       buyerLinks.clear();
     }
