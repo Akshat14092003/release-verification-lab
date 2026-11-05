@@ -45,7 +45,6 @@ Use npm run dev for automatic server restarts.
 | Role | Email | Password |
 | --- | --- | --- |
 | Customer | customer@example.test | DemoShop!2026 |
-| Store Owner | owner@example.test | DemoShop!2026 |
 | Admin | admin@example.test | DemoShop!2026 |
 
 These are deliberately public, fictional local-demo credentials.
