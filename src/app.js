@@ -13,6 +13,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   const db = openDatabase(databasePath);
   seedDatabase(db, { includeSampleOrder });
   const app = express();
+  let storeRevision = 0;
   app.disable("x-powered-by");
   app.set("trust proxy", trustProxy ? 1 : false);
   app.use(express.urlencoded({ extended: false, limit: "16kb" }));
@@ -37,7 +38,9 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
         return res.status(403).json({ error: "Cross-origin request rejected." });
       }
     }
-    req.user = findSession(db, req.get("cookie"), now());
+    const management = /^\/(?:admin(?:\/|$)|api\/admin(?:\/|$))/i.test(req.path);
+    req.user = (management ? findSession(db, req.get("cookie"), now(), { role: "admin" }) : null)
+      || findSession(db, req.get("cookie"), now());
     const cookie = String(req.get("cookie") || "").split(";").map(part => part.trim()).find(part => part.startsWith("fieldwork_cart="));
     const value = cookie?.slice("fieldwork_cart=".length);
     req.cartKey = /^[a-f0-9]{32}$/.test(value || "") ? value : randomBytes(16).toString("hex");
@@ -47,12 +50,16 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
 
   const isApi = req => req.path.startsWith("/api/");
   const page = (req, res, title, active, body, status = 200) => res.status(status).send(view.shell({
-    title, active, user: req.user, balance: req.user?.role === "customer" ? balanceCents(db, req.user.id) : null, now: now(), body, bugs, labControls,
+    title, active, user: req.user, balance: req.user?.role === "customer" ? balanceCents(db, req.user.id) : null, now: now(), body, bugs, labControls, revision: storeRevision,
     cart: req.user?.role === "admin" ? { count: 0 } : getCart(db, req.cartKey)
   }));
   const authenticated = (req, res, next) => {
     if (req.user) return next();
     if (isApi(req)) return res.status(401).json({ error: "Sign in to continue." });
+    if (/^\/admin(?:\/|$)/i.test(req.path)) {
+      const destination = adminNextPage(req.originalUrl);
+      return res.redirect("/admin/login" + (destination === "/admin" ? "" : "?next=" + encodeURIComponent(destination)));
+    }
     return res.redirect("/login" + (req.path === "/checkout" ? "?next=/checkout" : ""));
   };
   const administrator = (req, res, next) => {
@@ -69,10 +76,21 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   });
 
   app.get("/health", (req, res) => res.json({ status: "ok", application: "release-verification-lab" }));
+  app.get("/api/store/state", (req, res) => res.json({ revision: storeRevision }));
   app.get("/", (req, res) => req.user?.role === "admin" ? res.redirect("/admin") : res.send(view.landingPage(req.user)));
   const nextPage = value => ["/checkout", "/cart", "/products"].includes(value) ? value : "/products";
-  app.get("/login", (req, res) => req.user ? res.redirect(req.user.role === "admin" ? "/admin" : nextPage(req.query.next))
+  const adminNextPage = value => {
+    if (typeof value !== "string" || value.length > 2048) return "/admin";
+    try {
+      const destination = new URL(value, "http://fieldwork.local");
+      return destination.origin === "http://fieldwork.local" && /^\/admin(?:\/products|\/customers|\/orders(?:\/[1-9]\d*)?)?$/.test(destination.pathname)
+        ? destination.pathname + destination.search : "/admin";
+    } catch { return "/admin"; }
+  };
+  app.get("/login", (req, res) => req.user?.role === "customer" ? res.redirect(nextPage(req.query.next))
     : res.send(view.loginPage("", "", bugs, labControls, nextPage(req.query.next))));
+  app.get("/admin/login", (req, res) => req.user?.role === "admin" ? res.redirect(adminNextPage(req.query.next))
+    : res.send(view.adminLoginPage("", "", adminNextPage(req.query.next))));
 
   // In-memory per-(ip,email) sign-in throttle to blunt password guessing.
   const loginAttempts = new Map();
@@ -92,28 +110,36 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   };
   const signIn = (req, res, next) => {
     const key = loginKey(req);
+    const adminLogin = /^\/admin\/login\/?$/i.test(req.path);
     try {
       guardLogin(key);
-      const user = login(db, req.body?.email, req.body?.password, now(), res, bugs);
+      const user = login(db, req.body?.email, req.body?.password, now(), res, adminLogin ? {} : bugs, {
+        role: adminLogin ? "admin" : isApi(req) ? undefined : "customer"
+      });
       loginAttempts.delete(key);
-      return isApi(req) ? res.json({ user }) : res.redirect(303, user.role === "admin" ? "/admin" : nextPage(req.body?.next));
+      return isApi(req) ? res.json({ user }) : res.redirect(303, adminLogin ? adminNextPage(req.body?.next) : nextPage(req.body?.next));
     } catch (error) {
       if (error instanceof ShopError && error.status === 401) recordLoginFailure(key);
       if (!isApi(req) && error instanceof ShopError) {
         const email = typeof req.body?.email === "string" ? req.body.email.slice(0, 254) : "";
+        if (adminLogin) return res.status(error.status).send(view.adminLoginPage(
+          error.status === 401 ? "Enter a valid administrator email and password." : error.message, email, adminNextPage(req.body?.next)
+        ));
         return res.status(error.status).send(view.loginPage(error.message, email, bugs, labControls, nextPage(req.body?.next)));
       }
       next(error);
     }
   };
   app.post("/login", signIn);
+  app.post("/admin/login", signIn);
   app.post("/api/auth/login", signIn);
-  app.get("/signup", (req, res) => req.user ? res.redirect(req.user.role === "admin" ? "/admin" : nextPage(req.query.next))
+  app.get("/signup", (req, res) => req.user?.role === "customer" ? res.redirect(nextPage(req.query.next))
     : res.send(view.loginPage("", "", bugs, labControls, nextPage(req.query.next), { signup: true })));
   app.post(["/signup", "/api/auth/signup"], (req, res, next) => {
     try {
       if (!isApi(req) && req.body?.password !== req.body?.password_confirmation) throw new ShopError("Passwords do not match. Enter them again.");
       const user = signup(db, req.body, now(), res);
+      storeRevision++;
       return isApi(req) ? res.status(201).json({ user, balance_cents: balanceCents(db, user.id) }) : res.redirect(303, nextPage(req.body?.next));
     } catch (error) {
       if (!isApi(req) && error instanceof ShopError) {
@@ -125,10 +151,13 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
     }
   });
   const signOut = (req, res) => {
-    logout(db, req.get("cookie"), res);
-    return isApi(req) ? res.status(204).end() : res.redirect(303, "/login");
+    const admin = /^\/admin\/logout\/?$/i.test(req.path) || req.user?.role === "admin";
+    const destination = admin ? "/admin/login" : "/login";
+    logout(db, req.get("cookie"), res, isApi(req) ? {} : { role: admin ? "admin" : "customer" });
+    return isApi(req) ? res.status(204).end() : res.redirect(303, destination);
   };
   app.post("/logout", signOut);
+  app.post("/admin/logout", signOut);
   app.post("/api/auth/logout", signOut);
   app.get("/api/auth/me", authenticated, (req, res) => {
     res.json({ user: req.user, ...(req.user.role === "customer" ? { balance_cents: balanceCents(db, req.user.id) } : {}) });
@@ -191,6 +220,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   const checkout = (req, res, next) => {
     try {
       const order = placeOrder(db, req.user.id, requestItems(req), now(), bugs);
+      storeRevision++;
       return isApi(req) ? res.status(201).json({ order }) : res.redirect(303, "/orders/" + order.id);
     } catch (error) {
       next(error);
@@ -199,6 +229,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   const checkoutCart = (req, res) => {
     const items = cartRequestItems(getCart(db, req.cartKey));
     const order = placeOrder(db, req.user.id, items, now(), bugs, req.cartKey);
+    storeRevision++;
     return isApi(req) ? res.status(201).json({ order }) : res.redirect(303, "/orders/" + order.id);
   };
   app.post(["/checkout", "/api/cart/checkout"], authenticated, checkoutCart);
@@ -239,7 +270,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
       orders: ["Orders", "orders", view.adminOrdersPage], customers: ["Customers", "customers", view.adminCustomersPage]
     };
     const [title, active, render] = sections[section];
-    return page(req, res, title, active, render(adminData(req), options), status);
+    return page(req, res, title, active, render(adminData(req), { ...options, buyerWindow: labControls }), status);
   };
   app.get("/admin", authenticated, administrator, (req, res) => renderAdmin(req, res));
   app.get("/admin/products", authenticated, administrator, (req, res) => renderAdmin(req, res, "products", {
@@ -261,7 +292,8 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
           ? Number(whole) * 100 + Number(fraction.padEnd(2, "0")) : NaN };
       }
       const product = saveProduct(db, input, req.params.id ?? null);
-      return isApi(req) ? res.status(req.params.id ? 200 : 201).json({ product, html: view.adminProductEntry(product) }) : res.redirect(303, "/admin/products?saved=product");
+      storeRevision++;
+      return isApi(req) ? res.status(req.params.id ? 200 : 201).json({ product, html: view.adminProductEntry(product), revision: storeRevision }) : res.redirect(303, "/admin/products?saved=product");
     } catch (error) {
       if (!isApi(req) && error instanceof ShopError) return renderAdmin(req, res, "products", {
         error: error.message, draft: req.body, editingId: req.params.id ?? "new"
@@ -275,6 +307,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
     try {
       const filters = isApi(req) ? {} : orderFilters(req.body?.filter_status, req.body?.filter_customer);
       const order = updateOrderStatus(db, req.params.id, req.body?.status);
+      storeRevision++;
       return isApi(req) ? res.json({ order }) : res.redirect(303, "/admin/orders?" + new URLSearchParams({ saved: "order", ...filters }));
     } catch (error) {
       if (!isApi(req) && error instanceof ShopError) return renderAdmin(req, res, "orders", { error: error.message }, error.status);
@@ -299,5 +332,5 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
     return page(req, res, "Something went wrong", "", view.errorPage(status, message, { admin: req.user?.role === "admin" }), status);
   });
 
-  return { app, db, close: () => db.close() };
+  return { app, db, touchStore: () => { storeRevision++; }, close: () => db.close() };
 }

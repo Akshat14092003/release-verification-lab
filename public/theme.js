@@ -4,6 +4,18 @@
   const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   document.documentElement.dataset.theme = ["light", "dark"].includes(saved) ? saved : preferred;
   try { document.documentElement.dataset.sidebar = localStorage.getItem("fieldwork-sidebar") || "expanded"; } catch { /* Default layout. */ }
+  function updatePhotos(root = document) {
+    const media = document.documentElement.dataset.theme === "dark" ? "all" : "not all";
+    if (root.matches?.("source[data-dark-photo]")) root.media = media;
+    root.querySelectorAll("source[data-dark-photo]").forEach(source => { source.media = media; });
+  }
+  // Apply saved overrides as pictures arrive, including inline cart/product updates.
+  // Without JavaScript, native picture sources follow the system colour scheme.
+  new MutationObserver(records => {
+    for (const record of records) for (const node of record.addedNodes) {
+      if (node.nodeType === 1) updatePhotos(node);
+    }
+  }).observe(document.documentElement, { childList: true, subtree: true });
   function updateButtons() {
     const dark = document.documentElement.dataset.theme === "dark";
     document.querySelectorAll("[data-theme-toggle]").forEach(button => {
@@ -13,6 +25,7 @@
     });
   }
   document.addEventListener("DOMContentLoaded", () => {
+    updatePhotos();
     updateButtons();
     document.querySelectorAll("[data-theme-toggle]").forEach(button => button.addEventListener("click", () => {
       const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
@@ -23,6 +36,7 @@
       try { localStorage.setItem("lab-theme", next); } catch { /* Keep the session preference. */ }
       const apply = () => {
         document.documentElement.dataset.theme = next;
+        updatePhotos();
         updateButtons();
         document.dispatchEvent(new CustomEvent("fieldwork:theme", { detail: { theme: next } }));
       };

@@ -96,3 +96,16 @@ product pages, offers, cart, checkout, the collection hero and desktop login sto
 - Original files remain unchanged in Downloads; local working copies are gitignored.
 
 The images are synthetic catalogue artwork, supplied by the user from Gemini, for a fictional shop.
+
+## Dark variants - 2026-11-05
+
+The user supplied matching `journal-dark.jpg`, `headphones-dark.jpg`, `mug-dark.jpg`,
+`lamp-dark.jpg` and `collection-hero-dark.jpg`, preserving product colours against navy
+backgrounds. The 31,873,071-byte source bundle becomes 15 responsive WebP files totalling
+459,788 bytes, using the same width variants as the light set.
+
+Native `picture` sources select these assets for dark mode. The theme control and saved
+preference override the system setting, including images inserted by inline cart updates.
+Without JavaScript, source media follows the system colour scheme. Light assets stay intact;
+photos are not inverted or tinted. The collection variant appears on Home and desktop login.
+Original downloads and visible artwork marks are preserved.

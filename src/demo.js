@@ -3,7 +3,9 @@ import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import { createApp } from "./app.js";
 import { BUG_FLAGS, projectRoot, readBugFlags } from "./config.js";
-import { seedDatabase } from "./database.js";
+import { DEMO_PASSWORD, seedDatabase } from "./database.js";
+import { findSession, login } from "./auth.js";
+import * as view from "./views.js";
 import { ShopError } from "./shop.js";
 import { createTestRunner } from "./test-runner.js";
 
@@ -17,6 +19,7 @@ const COOKIE = "lab_visitor";
 export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), allowRuns = true, maxVisitors = 50, sessionMs = 2 * 60 * 60 * 1000, trustProxy = false, testWorkers = 2 } = {}) {
   const app = express();
   const visitors = new Map();
+  const buyerLinks = new Map();
   const runner = allowRuns ? createTestRunner({ directory: join(directory, "runs"), workers: testWorkers }) : null;
   app.disable("x-powered-by");
   app.set("trust proxy", trustProxy ? 1 : false);
@@ -33,6 +36,21 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
     next();
   });
   app.get("/health", (req, res) => res.json({ status: "ok", application: "release-verification-lab", mode: "interactive" }));
+  app.get("/buyer/:token", (req, res) => {
+    res.set("Referrer-Policy", "no-referrer");
+    const grant = buyerLinks.get(req.params.token);
+    buyerLinks.delete(req.params.token);
+    const visitor = grant && visitors.get(grant.visitorId);
+    if (!visitor || grant.expiresAt <= Date.now() || Date.now() - visitor.lastUsed > sessionMs) {
+      return res.status(410).send(view.document("Buyer link expired", '<main class="admin-login-main"><section class="login-card"><h1>Buyer link expired</h1><p>Create a fresh link from Admin Products. Buyer links work once and expire after five minutes.</p><a class="text-link" href="/admin/products">Open admin products</a></section></main>'));
+    }
+    const previous = String(req.get("cookie") || "").split(";").map(part => part.trim()).find(part => part.startsWith(COOKIE + "="));
+    if (previous?.slice(COOKIE.length + 1) !== visitor.id) res.clearCookie("fieldwork_cart", { path: "/" });
+    visitor.lastUsed = Date.now();
+    res.cookie(COOKIE, visitor.id, { httpOnly: true, sameSite: "lax", secure: req.secure, path: "/", maxAge: sessionMs });
+    login(visitor.runtime.db, "customer@example.test", DEMO_PASSWORD, visitor.now(), res, {}, { role: "customer" });
+    return res.redirect(303, "/products?connected=1");
+  });
   app.use((req, res, next) => {
     const time = Date.now();
     for (const [id, visitor] of visitors) {
@@ -66,6 +84,18 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
   };
   app.get("/lab", (req, res) => res.redirect("/products"));
   app.get("/api/lab/state", (req, res) => res.json(snapshot(req.visitor)));
+  app.post("/api/lab/buyer-window", jsonOnly, (req, res) => {
+    const visitor = req.visitor;
+    if (!findSession(visitor.runtime.db, req.get("cookie"), visitor.now(), { role: "admin" })) {
+      throw new ShopError("Sign in as an administrator to connect a buyer window.", 403);
+    }
+    for (const [token, grant] of buyerLinks) if (grant.expiresAt <= Date.now() || !visitors.has(grant.visitorId)) buyerLinks.delete(token);
+    const existing = [...buyerLinks].filter(([, grant]) => grant.visitorId === visitor.id);
+    for (const [token] of existing.slice(0, Math.max(0, existing.length - 4))) buyerLinks.delete(token);
+    const token = randomUUID();
+    buyerLinks.set(token, { visitorId: visitor.id, expiresAt: Date.now() + 5 * 60 * 1000 });
+    res.status(201).json({ url: "/buyer/" + token });
+  });
   app.post("/api/lab/settings", jsonOnly, (req, res) => {
     const { bugs, clock } = req.body || {};
     if (!bugs || Array.isArray(bugs) || typeof bugs !== "object" ||
@@ -80,7 +110,10 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
   });
   app.post("/api/lab/reset", jsonOnly, (req, res) => {
     seedDatabase(req.visitor.runtime.db, { reset: true, includeSampleOrder: false });
+    req.visitor.runtime.touchStore();
+    for (const [token, grant] of buyerLinks) if (grant.visitorId === req.visitor.id) buyerLinks.delete(token);
     res.clearCookie("fieldwork_session", { path: "/" });
+    res.clearCookie("fieldwork_admin_session", { path: "/" });
     res.json({ ...snapshot(req.visitor), message: "Your shop is reset: $1,000 per customer, no purchases. Sign in again." });
   });
   app.post("/api/lab/repeat-offer", jsonOnly, async (req, res, next) => {
@@ -124,6 +157,7 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
       runner?.close();
       for (const visitor of visitors.values()) visitor.runtime.close();
       visitors.clear();
+      buyerLinks.clear();
     }
   };
 }

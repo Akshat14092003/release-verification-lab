@@ -19,6 +19,36 @@ test("admin management rejects anonymous and customer mutations on every route",
     expect((await request.post("/admin/products/1", { form: { name: "Tampered" }, maxRedirects: 0 })).status()).toBe(role ? 403 : 302);
     expect((await request.post("/admin/orders/1001/status", { form: { status: "shipped" }, maxRedirects: 0 })).status()).toBe(role ? 403 : 302);
   }
+  await request.post("/api/auth/logout");
+  const entrance = await request.get("/admin", { maxRedirects: 0 });
+  expect(entrance.headers().location).toBe("/admin/login");
+  const loginPage = await (await request.get("/admin/login")).text();
+  expect(loginPage).toContain('action="/admin/login"');
+  expect(loginPage).toContain("Admin sign in");
+  expect(loginPage).not.toContain('href="/signup');
+  expect(loginPage).not.toContain('data-demo-role="customer"');
+  const sessions = lab.sql.prepare("SELECT COUNT(*) AS count FROM sessions").get().count;
+  for (const [path, email, password] of [
+    ["/admin/login", "customer@example.test", "DemoShop!2026"],
+    ["/ADMIN/LOGIN/", "customer@example.test", "DemoShop!2026"],
+    ["/admin/login", "admin@example.test", "wrong-password"],
+    ["/login", "admin@example.test", "DemoShop!2026"],
+    ["/api/auth/login", "admin@example.test", "wrong-password"]
+  ]) {
+    expect((await request.post(path, { form: { email, password }, maxRedirects: 0 })).status()).toBe(401);
+    expect((await request.get("/api/auth/me")).status()).toBe(401);
+  }
+  expect(lab.sql.prepare("SELECT COUNT(*) AS count FROM sessions").get().count).toBe(sessions);
+  const credentials = { email: "admin@example.test", password: "DemoShop!2026" };
+  const accepted = await request.post("/admin/login", { form: { ...credentials, next: "https://example.test/admin" }, maxRedirects: 0 });
+  expect(accepted.status()).toBe(303); expect(accepted.headers().location).toBe("/admin");
+  expect((await (await request.get("/api/auth/me")).json()).user.role).toBe("admin");
+  expect((await request.get("/admin/login?next=/admin/products", { maxRedirects: 0 })).headers().location).toBe("/admin/products");
+  expect((await request.post("/logout", { maxRedirects: 0 })).headers().location).toBe("/admin/login");
+  const deepLink = await request.get("/admin/orders?status=processing", { maxRedirects: 0 });
+  expect(deepLink.headers().location).toBe("/admin/login?next=%2Fadmin%2Forders%3Fstatus%3Dprocessing");
+  const returned = await request.post("/admin/login", { form: { ...credentials, next: "/admin/orders?status=processing" }, maxRedirects: 0 });
+  expect(returned.headers().location).toBe("/admin/orders?status=processing");
   expect(lab.sql.prepare("SELECT name FROM products WHERE id=1").get().name).toBe("Everyday journal");
   expect(lab.sql.prepare("SELECT status FROM orders WHERE id=1001").get().status).toBe("processing");
 });

@@ -29,11 +29,26 @@ checkout through the UI, an existing cart, or a direct request. Paid receipts an
 retain their original prices/names. Admin edits affect the current visitor's sandbox, while
 automated checks always run on isolated test data.
 
-Admin accounts sign in directly to the management dashboard. Their sidebar/profile contains
+Open `/admin` or `/admin/login` for the dedicated admin sign-in page. Choose Use demo admin
+to fill the credentials, then sign in. Customer credentials are rejected here; the customer
+login/signup remains separate. Admin sign-out returns to this portal. Safe management links
+return to their requested section after sign-in, and admin passwords are always verified even
+when the intentional customer login bug is enabled.
+
+Admin accounts sign in to the management dashboard. Their sidebar/profile contains
 management actions instead of cart, offers, checkout or personal purchases; no personal credit
 is shown. Customer receipts open at `/admin/orders/:id`. Server-side guards reject admin shopping
 APIs and purchase forms, including the direct-repeat helper. Use the Customer shortcut or signup
 for manual purchasing tests. QA controls and automated verification remain available to admin.
+
+To compare admin changes with a buyer, open **Admin → Products → Open buyer window**. It opens
+the same demo shop as Customer while leaving the admin signed in. For another browser/profile,
+choose **Copy link for another browser** and paste that one-use link within five minutes.
+Opening the normal shop URL in an unrelated profile creates a separate shop instead.
+Connected views refresh after price, name, category, photo, availability, product creation and
+fulfilment changes. Pending edits and quantity selections are protected. Admin logout preserves
+the buyer's session and cart; buyer logout preserves admin. Reset affects the connected shop and
+revokes unused buyer links. Links grant a demo customer session, never administrator access.
 
 Admin Home is the management overview, including when visiting `/`. Its sidebar is Overview,
 Products, Orders and Customers. Overview shows actual ledger sales, paid/processing order counts,
@@ -136,7 +151,8 @@ failures**, displayed 47 real result cards, and automatically opened the rendere
 Report preparation, fixed dialog heading, sticky header, profile logout, mobile layouts,
 preserved cart, report-owner access, and zero browser errors were checked locally.
 
-- Each visitor gets an unguessable HttpOnly/SameSite cookie and an isolated in-memory SQLite shop.
+- Each visitor gets an unguessable HttpOnly/SameSite cookie and an isolated in-memory SQLite shop;
+  an admin can explicitly connect buyer windows to that same shop using a short-lived link.
 - New shops start with $1,000 per account, zero purchases, and an empty cart. Reset clears cart and login too.
 - Shops expire after two hours of inactivity or server restart; other visitors cannot change them.
 - Tests copy the chosen flags at start and use separate disposable data/clocks. They preserve the visitor's cart and purchases.
@@ -148,7 +164,7 @@ preserved cart, report-owner access, and zero browser errors were checked locall
 - A real reporter end event switches the UI to report preparation. CLI exit validates the saved report;
   inherited Windows output pipes do not delay completion. The centered dialog keeps its heading fixed
   while its body scrolls. Individual check cards show actual titles/statuses with ticks, crosses, and spinners.
-- The current suite has **47 checks**: 21 API, 15 browser, 3 database, 8 security. All bugs yield 35 passing controls and 12 intended failures.
+- The current suite has **59 checks**: 31 API, 17 browser, 3 database, 8 security. All bugs yield 47 passing controls and 12 intended failures.
 - Nested test launches are disabled in visitor-interface fixtures; the real button/report flow is exercised separately.
 
 The original persistent shop remains available through `npm run start:shop`. Its `.data/lab.sqlite`

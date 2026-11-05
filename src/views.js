@@ -60,7 +60,7 @@ function bugBanners(bugs = {}) {
     '<span>Intentional defect demonstration. Synthetic data only.</span></section>';
 }
 
-export function shell({ title, active, user, balance, now, body, bugs = {}, labControls = false, cart = { count: 0 } }) {
+export function shell({ title, active, user, balance, now, body, bugs = {}, labControls = false, cart = { count: 0 }, revision = 0 }) {
   const admin = user?.role === "admin";
   const home = admin ? "/admin" : "/";
   const navigation = (admin ? [["admin", "Overview", "/admin"], ["products", "Products", "/admin/products"], ["orders", "Orders", "/admin/orders"], ["customers", "Customers", "/admin/customers"]]
@@ -69,14 +69,14 @@ export function shell({ title, active, user, balance, now, body, bugs = {}, labC
       (key === active ? ' aria-current="page"' : "") + '>' + icon(key === "cart" ? "checkout" : key) + '<span class="nav-text">' + label + '</span>' +
       (key === "cart" ? '<span class="nav-count" data-cart-count aria-hidden="true">' + cart.count + '</span>' : "") + '</a>').join("");
   const accountAction = user
-    ? '<form method="post" action="/logout"><button class="signout" type="submit" aria-label="Sign out">' + icon("logout") + '<span>Sign out</span></button></form>'
+    ? '<form method="post" action="' + (admin ? '/admin/logout' : '/logout') + '"><button class="signout" type="submit" aria-label="Sign out">' + icon("logout") + '<span>Sign out</span></button></form>'
     : '';
   const profile = '<details class="profile-menu"><summary class="avatar" role="button" aria-label="Open profile menu" title="' + e(user?.name || "Browsing as a guest") + '">' +
     '<span class="profile-initials">' + e(user ? user.name.split(" ").map(part => part[0]).join("") : "?") + '</span>' +
     '<span class="menu-control-label">' + e(user?.name || "Guest account") + '</span></summary><div class="profile-panel">' +
     '<strong>' + e(user?.name || "Welcome to Fieldwork") + '</strong><span>' + e(user ? roleName(user.role) : "Browsing as a guest") + '</span>' +
     (admin ? '<a href="/admin">' + icon("admin") + 'Store management</a>' : '<a href="/cart">' + icon("checkout") + 'View cart</a>') + (user ? (admin ? '' : '<a href="/orders">' + icon("orders") + 'My orders</a>') +
-    '<form method="post" action="/logout"><button type="submit">' + icon("logout") + 'Log out</button></form>' :
+    '<form method="post" action="' + (admin ? '/admin/logout' : '/logout') + '"><button type="submit">' + icon("logout") + 'Log out</button></form>' :
     '<a href="/login">' + icon("logout") + 'Sign in / Sign up</a>') + '</div></details>';
   return document(title,
     '<div class="app-shell"><aside class="sidebar"><a class="brand" href="' + home + '" aria-label="Fieldwork home">' + logo() + '</a>' +
@@ -87,6 +87,7 @@ export function shell({ title, active, user, balance, now, body, bugs = {}, labC
     '<p>' + (admin ? 'Catalogue, orders and customers.' : 'A small shop. A little inspiration.') + '</p>' + accountAction + '</div></aside>' +
     '<div class="workspace"><header class="topbar"><a class="brand mobile-brand" href="' + home + '" aria-label="Fieldwork home">' + logo() + '</a>' +
     '<div class="breadcrumb"><a href="' + home + '">' + (admin ? 'Management' : 'Fieldwork') + '</a><span>/</span><strong>' + e(title) + '</strong></div>' +
+    (labControls ? labToolbar() : '') +
     (!user ? '<a class="button header-sign-in" href="/login">Sign in / Sign up</a>' : '') +
     '<div class="account-bar" data-account="' + (user ? 'member' : 'guest') + '"><p class="menu-section-label">ACCOUNT</p>' +
     (admin ? '' : '<a class="header-cart" href="/cart" aria-label="Open cart">' + icon("checkout") + '<span data-cart-count>' + cart.count + '</span></a>') + themeButton() +
@@ -94,7 +95,7 @@ export function shell({ title, active, user, balance, now, body, bugs = {}, labC
     (balance === null ? '&mdash;' : money(balance)) + '</strong></div>') + profile + '</div>' +
     '<button type="button" class="mobile-menu-toggle icon-button" data-mobile-menu aria-label="Open menu" aria-expanded="false" aria-controls="mobile-navigation">' +
     '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></header>' +
-    (labControls ? labTools({ admin }) : '') + '<main id="main-content" class="main">' + bugBanners(bugs) + body + '</main>' +
+    (labControls ? labTools({ admin, toolbar: false }) : '') + '<main id="main-content" class="main" data-store-revision="' + revision + '">' + bugBanners(bugs) + body + '</main>' +
     '<footer class="page-footer"><span>Fieldwork &copy; 2026</span><span>' + (admin ? 'Demo management only' : 'Demo purchases only') + ' &middot; ' +
     e(now.toISOString().slice(0, 10)) + ' UTC</span></footer></div></div>' +
     '<dialog id="mobile-navigation" class="mobile-navigation" aria-label="Navigation and account"><button type="button" class="icon-button mobile-menu-close" data-mobile-close aria-label="Close menu">&times;</button></dialog>' +
@@ -126,6 +127,21 @@ export function loginPage(error = "", email = "", bugs = {}, labControls = false
     accounts.map(([key, name]) => '<button type="button" class="role-choice" data-demo-role="' + key + '">' + name + '</button>').join("") +
     '</div><p class="login-disclaimer">Fictional accounts and purchases. No payment information needed.</p></div>') + '</div></section></main>' + (labControls ? labDialogs() : ''), "login-body" + (registering ? " signup-body" : ""), labControls);
 }
+export function adminLoginPage(error = "", email = "", next = "/admin") {
+  return document("Admin sign in", '<a class="skip-link" href="#main-content">Skip to content</a><header class="admin-login-header"><a class="brand" href="/">' + logo() + '</a>' + themeButton() + '</header>' +
+    '<main id="main-content" class="admin-login-main" tabindex="-1"><section class="login-card admin-login-card" aria-labelledby="admin-login-heading">' +
+    '<span class="admin-login-mark" aria-hidden="true">' + icon("admin") + '</span><p class="admin-login-label">Store administration</p>' +
+    '<h1 id="admin-login-heading">Admin sign in</h1><p class="muted">Manage products, orders and customer records. Use an administrator account to continue.</p>' +
+    (error ? '<div class="alert error" id="auth-error" role="alert">' + e(error) + '</div>' : '') +
+    '<form method="post" action="/admin/login" class="login-form"' + (error ? ' aria-describedby="auth-error"' : '') + '>' +
+    '<input type="hidden" name="next" value="' + e(next) + '"/>' +
+    '<label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="username" required maxlength="254" value="' + e(email) + '" placeholder="admin@example.test"/>' +
+    '<label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="256"/>' +
+    '<button class="button primary full" type="submit">Sign in ' + icon("arrow") + '</button></form>' +
+    '<div class="admin-login-demo"><button type="button" class="button secondary" data-demo-role="admin">Use demo admin</button>' +
+    '<p class="muted">Explore management with the demo administrator account.</p></div>' +
+    '<a class="text-link" href="/products">Return to shop ' + icon("arrow") + '</a></section></main>', "admin-login-body admin-body");
+}
 export function artwork(name, { size = "card", eager = false } = {}) {
   const photos = {
     journal: "Sage linen Everyday journal with a wooden pencil",
@@ -135,15 +151,19 @@ export function artwork(name, { size = "card", eager = false } = {}) {
   };
   const key = Object.hasOwn(photos, name) ? name : "journal";
   const sizes = size === "thumb" ? "100px" : size === "detail" ? "(max-width: 850px) 90vw, 540px" : "(max-width: 560px) 44vw, (max-width: 1200px) 35vw, 280px";
-  return '<img class="product-art" src="/images/' + key + '-640.webp" srcset="' +
+  return '<picture class="themed-photo"><source data-dark-photo media="(prefers-color-scheme: dark)" srcset="' +
+    [320, 640, 1280].map(width => '/images/' + key + '-dark-' + width + '.webp ' + width + 'w').join(', ') + '" sizes="' + sizes + '"/>' +
+    '<img class="product-art" src="/images/' + key + '-640.webp" srcset="' +
     [320, 640, 1280].map(width => '/images/' + key + '-' + width + '.webp ' + width + 'w').join(', ') +
     '" sizes="' + sizes + '" width="1280" height="1280" alt="' + photos[key] +
-    '" loading="' + (eager ? 'eager' : 'lazy') + '" decoding="async"' + (eager ? ' fetchpriority="high"' : '') + '/>';
+    '" loading="' + (eager ? 'eager' : 'lazy') + '" decoding="async"' + (eager ? ' fetchpriority="high"' : '') + '/></picture>';
 }
 function collectionPhoto(sizes) {
-  return '<img class="collection-photo" src="/images/collection-hero-1280.webp" ' +
+  return '<picture class="themed-photo"><source data-dark-photo media="(prefers-color-scheme: dark)" ' +
+    'srcset="/images/collection-hero-dark-640.webp 640w, /images/collection-hero-dark-1280.webp 1280w, /images/collection-hero-dark-1920.webp 1920w" sizes="' + sizes + '"/>' +
+    '<img class="collection-photo" src="/images/collection-hero-1280.webp" ' +
     'srcset="/images/collection-hero-640.webp 640w, /images/collection-hero-1280.webp 1280w, /images/collection-hero-1920.webp 1920w" ' +
-    'sizes="' + sizes + '" width="1920" height="1288" alt="Fieldwork journal, headphones, mug and desk lamp on a sunlit stone desk" loading="eager" fetchpriority="high" decoding="async"/>';
+    'sizes="' + sizes + '" width="1920" height="1288" alt="Fieldwork journal, headphones, mug and desk lamp on a studio tabletop" loading="eager" fetchpriority="high" decoding="async"/></picture>';
 }
 function heading(title, description, extra = "") {
   return '<div class="page-heading"><div><h1>' + e(title) +
@@ -364,9 +384,9 @@ function adminProductForm(product = {}, { draft = {}, editingId } = {}) {
   return '<form method="post" action="/admin/products' + (product.id ? '/' + product.id : '') + '" class="admin-product-form" data-admin-product="' + key + '">' +
     '<label for="product-name-' + key + '">Name<input id="product-name-' + key + '" name="name" required maxlength="100" value="' + e(values.name || '') + '"/></label>' +
     '<label for="product-price-' + key + '">Price ($)<input id="product-price-' + key + '" name="price" type="number" min="0.01" max="9999.99" step="0.01" required value="' + e(price || '') + '"/></label>' +
-    '<label for="product-category-' + key + '">Category<select id="product-category-' + key + '" name="category">' + options(CATEGORIES, values.category) + '</select></label>' +
-    '<label for="product-artwork-' + key + '">Photo<select id="product-artwork-' + key + '" name="artwork">' + options(ARTWORK, values.artwork) + '</select></label>' +
-    '<label class="admin-description" for="product-description-' + key + '">Description<textarea id="product-description-' + key + '" name="description" required maxlength="300" rows="2">' + e(values.description || '') + '</textarea></label>' +
+    '<div class="admin-field"><label for="product-category-' + key + '">Category</label><select id="product-category-' + key + '" name="category">' + options(CATEGORIES, values.category) + '</select></div>' +
+    '<div class="admin-field"><label for="product-artwork-' + key + '">Photo</label><select id="product-artwork-' + key + '" name="artwork">' + options(ARTWORK, values.artwork) + '</select></div>' +
+    '<div class="admin-field admin-description"><label for="product-description-' + key + '">Description</label><textarea id="product-description-' + key + '" name="description" required maxlength="300" rows="2">' + e(values.description || '') + '</textarea></div>' +
     '<label class="admin-availability"><input type="checkbox" name="active" value="1"' + ((values.active ?? !product.id) ? ' checked' : '') + '/>Available for sale</label>' +
     '<button class="button primary" type="submit">' + (product.id ? 'Save product' : 'Add product') + '</button><p class="admin-save-feedback" data-admin-feedback role="status" aria-live="polite" hidden></p></form>';
 }
@@ -393,10 +413,14 @@ export function adminPage({ stats, orders, products, customers }) {
     task("/admin/customers", "View customers", "Inspect demo credit and purchase history", "customers") + '</section>' +
     '<section class="panel table-panel"><div class="panel-heading"><h2>Recent orders</h2><a class="subtle-link" href="/admin/orders">All orders ' + icon("arrow") + '</a></div>' +
     orderTable(orders.slice(0, 5), true, { editable: false }) + '</section>' +
-    '<p class="admin-sandbox-note">This is your isolated demo shop. To try a purchase, sign out and use a customer account. QA playground checks use separate test data.</p>';
+    '<p class="admin-sandbox-note">This is your isolated demo shop. Open a linked buyer window from Products to test admin changes alongside a customer. QA playground checks use separate test data.</p>';
 }
 export function adminProductsPage({ products }, options = {}) {
   return heading("Products", "Edit prices and availability, or add a product to the catalogue.") + adminNotice(options) +
+    (options.buyerWindow ? '<section class="admin-buyer-tools" aria-label="Test the buyer experience"><div><h2>Try changes as a buyer</h2><p>Open this same demo shop as a customer. Product changes update automatically; your admin stays signed in.</p></div>' +
+      '<div class="admin-buyer-actions"><button type="button" class="button secondary" data-buyer-window>Open buyer window</button>' +
+      '<button type="button" class="subtle-button" data-copy-buyer-link>Copy link for another browser</button></div>' +
+      '<p class="muted" data-buyer-link-message role="status" hidden></p><input class="buyer-link" data-buyer-link aria-label="Buyer connection link" readonly hidden/></section>' : '') +
     '<section class="panel admin-catalogue" id="manage-products"><div class="panel-heading"><h2>Manage products</h2><span class="pill neutral">' + products.length + ' products</span></div>' +
     '<p class="muted">Hidden products cannot be purchased. Price changes affect future purchases; saved receipts keep their original amounts. Offer prices are separate.</p>' +
     '<details class="admin-product"' + (options.editingId === 'new' ? ' open' : '') + '><summary>Add a product</summary>' + adminProductForm({}, options) + '</details>' +
@@ -426,6 +450,6 @@ export function errorPage(status, message, { admin = false } = {}) {
   return '<div class="empty-state"><span class="eyebrow">' + status + '</span><h1>' + e(message) +
     '</h1><a class="button secondary" href="' + (admin ? '/admin' : '/products') + '">' + (admin ? 'Return to management' : 'Return to products') + '</a></div>';
 }
-import { labDialogs, labTools } from "./lab-view.js";
+import { labDialogs, labToolbar, labTools } from "./lab-view.js";
 import { ARTWORK, CATEGORIES, ORDER_STATUSES } from "./admin.js";
 import { BASELINE_CHECKS } from "./defects.js";

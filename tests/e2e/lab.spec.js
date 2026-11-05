@@ -127,6 +127,60 @@ test("visitor switches, purchases and reset are isolated", async ({ page, demo }
   } finally { await other.dispose(); }
 });
 
+test("linked buyer windows share admin changes while unrelated shops and role sessions stay isolated", async ({ page, demo }) => {
+  await page.context().route("**/*", route => new URL(route.request().url()).origin === demo ? route.continue() : route.abort());
+  const other = await apiRequest.newContext({ baseURL: demo });
+  try {
+    expect((await other.post("/api/lab/buyer-window", { data: {} })).status()).toBe(403);
+    await page.goto("/admin/login");
+    await page.getByRole("button", { name: "Use demo admin", exact: true }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await expect(page).toHaveURL(/\/admin$/);
+    await page.getByRole("link", { name: "Products", exact: true }).click();
+    const popup = page.waitForEvent("popup");
+    await page.getByRole("button", { name: "Open buyer window", exact: true }).click();
+    const buyer = await popup;
+    await expect(buyer).toHaveURL(/\/products(?:\?connected=1)?$/);
+    await buyer.waitForLoadState("domcontentloaded");
+    await expect(buyer.locator(".role-badge")).toHaveText("Customer");
+    expect((await page.request.get("/api/admin")).status()).toBe(200);
+    await buyer.evaluate(() => { window.linkedBuyerStayed = true; });
+    const editor = page.locator('[data-admin-product-id="1"]');
+    await editor.locator("summary").click();
+    await editor.getByLabel("Price ($)", { exact: true }).fill("32.50");
+    await editor.getByRole("button", { name: "Save product", exact: true }).click();
+    await expect(editor.locator("[data-admin-feedback]")).toContainText("Saved.");
+    await buyer.bringToFront();
+    await expect(buyer.locator(".product-card").filter({ has: buyer.getByRole("heading", { name: "Everyday journal", exact: true }) })).toContainText("$32.50");
+    expect(await buyer.evaluate(() => window.linkedBuyerStayed)).toBe(true);
+    await buyer.goto("/products/1");
+    await buyer.getByRole("spinbutton").fill("3");
+    await buyer.getByRole("spinbutton").press("Tab");
+    await editor.getByLabel("Price ($)", { exact: true }).fill("33.00");
+    await editor.getByRole("button", { name: "Save product", exact: true }).click();
+    await expect(editor.locator("[data-admin-feedback]")).toContainText("Saved.");
+    await buyer.bringToFront();
+    await expect(buyer.locator(".detail-price")).toHaveText("$33.00");
+    await expect(buyer.getByRole("spinbutton")).toHaveValue("3");
+    await other.post("/api/auth/login", { data: { email: "customer@example.test", password: "DemoShop!2026" } });
+    expect((await (await other.get("/api/products")).json()).products.find(product => product.id === 1).price_cents).toBe(2800);
+    await page.getByRole("button", { name: "Copy link for another browser", exact: true }).click();
+    const connection = page.getByLabel("Buyer connection link", { exact: true });
+    await expect(connection).toHaveValue(/\/buyer\/[a-f0-9-]+$/);
+    const link = await connection.inputValue();
+    expect((await other.get(link)).status()).toBe(200);
+    expect((await (await other.get("/api/products")).json()).products.find(product => product.id === 1).price_cents).toBe(3300);
+    expect((await other.get("/api/admin")).status()).toBe(403);
+    expect((await other.get(link)).status()).toBe(410);
+    await buyer.getByRole("button", { name: "Sign out", exact: true }).click();
+    await expect(buyer).toHaveURL(/\/login$/);
+    expect((await page.request.get("/api/admin")).status()).toBe(200);
+    await page.getByRole("button", { name: "Sign out", exact: true }).click();
+    await expect(page).toHaveURL(/\/admin\/login$/);
+    expect((await page.request.get("/api/admin")).status()).toBe(401);
+  } finally { await other.dispose(); }
+});
+
 test("light and dark mode persist across the lab and shop", async ({ page }) => {
   await page.goto("/lab");
   await page.evaluate(() => {
@@ -145,6 +199,7 @@ test("light and dark mode persist across the lab and shop", async ({ page }) => 
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await expect(page.locator('.login-card')).toBeVisible();
   expect(await page.locator('.login-card').evaluate(element => getComputedStyle(element).backdropFilter)).toContain('blur');
+  await expect.poll(() => page.locator('.collection-photo').evaluate(image => image.currentSrc)).toMatch(/collection-hero-dark-\d+\.webp$/);
   await expect(page.locator("#lab-settings")).toBeHidden();
   const loginFit = await page.locator(".login-card").evaluate(card => {
     const bounds = card.getBoundingClientRect();
@@ -158,6 +213,7 @@ test("light and dark mode persist across the lab and shop", async ({ page }) => 
   await page.getByRole("button", { name: "Customer", exact: true }).click();
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/products$/);
+  await expect.poll(() => page.locator('.product-art').first().evaluate(image => image.currentSrc)).toMatch(/journal-dark-\d+\.webp$/);
   // Hold the transition update to reproduce navigation before its callback runs.
   await page.evaluate(() => {
     document.startViewTransition = () => ({ finished: new Promise(() => {}) });
@@ -166,6 +222,7 @@ test("light and dark mode persist across the lab and shop", async ({ page }) => 
   expect(await page.evaluate(() => localStorage.getItem("lab-theme"))).toBe("light");
   await page.goto("/lab");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await expect.poll(() => page.locator('.product-art').first().evaluate(image => image.currentSrc)).toMatch(/journal-\d+\.webp$/);
 });
 
 test("mobile visitor guide and run errors remain usable", async ({ page }) => {

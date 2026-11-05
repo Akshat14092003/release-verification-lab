@@ -128,6 +128,7 @@ A server-side clock can also be injected into createApp for the later isolated t
 - /cart: review, update quantities, remove items, and proceed to checkout.
 - /checkout: final server-priced review of the current cart before purchase.
 - /orders and /orders/:id: personal orders, receipt, and transaction records.
+- /admin/login: dedicated administrator sign-in, separate from customer login and signup.
 - /admin: management overview with ledger sales, paid/processing order counts, customers and recent orders.
 - /admin/products: add/edit products, prices and availability.
 - /admin/orders: filter by customer/status, review receipts and update fulfilment.
@@ -137,9 +138,20 @@ Roles are Customer and Admin. Existing store-owner accounts migrate to customers
 orders or sessions. Admin can add/edit products, set prices, hide/restore products, and mark orders
 Processing, Shipped or Delivered. Hidden products are rejected at checkout, including direct requests
 and existing carts. Price/name edits preserve paid order lines and ledger records; offer prices stay separate.
-Admin signs in directly to `/admin`, with management navigation and customer receipt review at
+Admin signs in through `/admin/login` to `/admin`, with management navigation and customer receipt review at
 `/admin/orders/:id`. Home, logos and breadcrumbs return admin to management; `/` redirects admin
 to `/admin`. Overview, Products, Orders and Customers are separate management pages.
+Anonymous management visits open the admin sign-in page and preserve safe management destinations.
+The customer HTML sign-in accepts customer accounts; the admin form accepts verified administrators
+and has no customer signup or shopping shortcuts. Admin sign-out returns to `/admin/login`.
+The intentional customer authentication bypass never skips administrator password verification.
+For side-by-side testing, open **Admin → Products → Open buyer window**. This signs a customer
+into the same demo shop while keeping the admin signed in. Use **Copy link for another browser**
+to connect a separate browser profile; the link works once and expires after five minutes.
+Unrelated browser profiles still have separate shops until explicitly connected.
+Saved product changes and fulfilment updates appear in connected views automatically.
+Unsaved forms and selected quantities are preserved. Existing paid receipts keep their prices;
+weekend offer prices are separate from the product's regular catalogue price.
 Cart, offers, checkout, personal order history and personal demo credit belong
 to customers. Admin cannot purchase through browser forms, cart APIs, direct order requests or
 the QA repeat-offer helper. Requests for shopping pages redirect admin to the dashboard; shopping
@@ -172,7 +184,9 @@ are resolved by the server. Order lines and ledger entries commit in one transac
 | POST / PATCH | /api/admin/products/:id | Admin-only product details, price_cents and active flag |
 | POST / PATCH | /api/admin/orders/:id/status | Admin-only fulfilment status update |
 
-API authentication uses the same HTTP-only session cookie as the browser.
+API authentication uses the browser's HTTP-only sessions. Admin and customer use separate
+cookies so linked views can run together; management routes select the admin session.
+Signing out of either web view leaves the other role signed in. General API logout clears both.
 Prices, customer identity, and totals come from server data, not client-supplied amounts.
 All stored amounts use integer cents. Checkout and ledger insertion commit together.
 The purchase endpoint accepts either the original single-product body or
@@ -198,7 +212,8 @@ The runner starts isolated app instances automatically. Each test owns a SQLite 
 On first browser execution, the runner installs its pinned Chromium revision if missing.
 Browser checks block optional external CDN/fonts and exercise the local CSS fallback.
 
-Coverage: 21 direct API checks, 15 Playwright browser journeys, 3 SQL/database checks, and 8 focused security probes.
+Current local coverage: 31 direct API checks, 17 Playwright browser journeys, 3 SQL/database checks,
+and 8 focused security probes (59 total). Published historical results are labelled separately below.
 Database reconciliation compares actual rendered amounts with independent read-only SQL sums.
 Screenshots and traces are retained on failure; HTTP responses and SQL evidence are attached to reports.
 Retries are disabled. Security probes cover SQL-like login/search/identifier input and reflected/stored XSS contexts.

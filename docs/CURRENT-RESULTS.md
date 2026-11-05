@@ -1,6 +1,24 @@
 # Current verification evidence
 
-The current local admin-workspace revision has **54 release checks** (27 API, 16 browser,
+The current local revision has **59 release checks** (31 API, 17 browser, 3 database,
+8 security). On 2026-11-05, green passed **59/59 in 74.9 seconds** with two workers;
+strict red matched **47 passing controls / exactly 12 intended failures in 94.7 seconds**.
+Unit guards passed **8/8** and syntax checks covered 47 JavaScript files.
+The new browser case opens a linked buyer window, checks automatic price updates without
+navigation, preserves quantity selection, joins another browser with a one-use link, proves
+unrelated-shop isolation and verifies independent admin/customer logout. Additional real-UI
+audits at 390/1440px cover all catalogue fields, hide/restore, checkout pricing, paid history,
+fulfilment, balances, creation, retained buyer cart and reset invalidation of unused links.
+Six buyer-control layouts cover 320/390/1440px in both themes without document overflow.
+Admin credential/role rejection, safe return destinations and failure without session creation
+are covered in the existing admin API case, including with intentional customer defects enabled.
+These are local results; no hosted CI or publication was performed for this revision.
+
+The preceding 58-check QA/header/admin-portal revision passed 58/58 in 70.0 seconds and
+red 46 controls/exactly 12 intended failures in 82.1 seconds. Its fourteen width/theme checks
+covered delayed-JS header geometry, mobile navigation, offers and the admin portal.
+
+The preceding admin-workspace revision had **54 release checks** (27 API, 16 browser,
 3 database, 8 security). Local checks on 2026-11-04 passed **54/54** with two workers (74.5 seconds),
 red verification matched **42 passing controls / 12 intended failures** (82.1 seconds),
 and unit guards passed **8/8**. Ten admin width/theme combinations passed (320/390/850/1024/1440px,

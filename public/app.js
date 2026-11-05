@@ -43,13 +43,31 @@
     });
     document.dispatchEvent(new CustomEvent("fieldwork:cart", { detail: { cart, added } }));
   }
-  async function refresh() {
+  function canRefreshStore() {
+    const main = document.getElementById("main-content");
+    return main && !document.querySelector("dialog[open]") && !main.querySelector('[data-admin-dirty],[data-store-dirty],.admin-product[open],[aria-busy="true"],.is-pending')
+      && !(main.contains(document.activeElement) && document.activeElement.matches("input,textarea,select"));
+  }
+  async function refresh({ background = false } = {}) {
+    if (background && !canRefreshStore()) return false;
     const response = await fetch(location.href, { cache: "no-store" });
     if (new URL(response.url).pathname !== location.pathname) { location.assign(response.url); return; }
     const parsed = new DOMParser().parseFromString(await response.text(), "text/html");
     const next = parsed.getElementById("main-content");
     const current = document.getElementById("main-content");
-    if (next && current) { current.replaceChildren(...next.childNodes); document.dispatchEvent(new Event("fieldwork:content")); }
+    if (background && !canRefreshStore()) return false;
+    if (next && current) {
+      const quantities = [...current.querySelectorAll('input[id][name="quantity"]')].filter(input => input.value !== input.defaultValue).map(input => [input.id, input.value]);
+      current.replaceChildren(...next.childNodes);
+      for (const [id, value] of quantities) {
+        const input = document.getElementById(id);
+        if (input) input.value = value;
+      }
+      current.dataset.storeRevision = next.dataset.storeRevision;
+      document.dispatchEvent(new Event("fieldwork:content"));
+      return true;
+    }
+    return false;
   }
   window.Fieldwork = { toast, syncCart, refresh };
   async function updateCartPage(cart) {
@@ -89,6 +107,8 @@
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Product could not be saved. Try again.");
       const product = result.product;
+      if (Number.isSafeInteger(result.revision)) document.getElementById("main-content").dataset.storeRevision = result.revision;
+      delete form.dataset.adminDirty;
       if (id === "new") {
         document.getElementById("manage-products").insertAdjacentHTML("beforeend", result.html);
         form.reset();
@@ -113,7 +133,10 @@
     }
   }
   document.addEventListener("input", event => {
+    const pending = event.target.closest(".admin-filters,.search-box,.order-status-form");
+    if (pending) pending.dataset.storeDirty = "true";
     const form = event.target.closest("[data-admin-product]");
+    if (form) form.dataset.adminDirty = "true";
     if (!form || form.getAttribute("aria-busy") === "true") return;
     form.querySelector("[data-admin-feedback]").hidden = true;
     form.querySelector('button[type="submit"]').textContent = form.dataset.adminProduct === "new" ? "Add product" : "Save product";
@@ -129,8 +152,6 @@
   const mobileToggle = document.querySelector("[data-mobile-menu]");
   const mobileViewport = window.matchMedia("(max-width: 850px)");
   const sidebar = document.querySelector(".app-shell>.sidebar");
-  const labToolbar = document.querySelector(".shop-lab");
-  const accountBar = document.querySelector(".account-bar");
   const mobileParts = sidebar ? [sidebar, document.querySelector(".account-bar"), document.querySelector(".shop-lab"),
     document.getElementById("lab-settings"), document.getElementById("lab-message")].filter(Boolean).map(element => {
     const placeholder = document.createComment("Desktop navigation position");
@@ -148,7 +169,6 @@
       mobileParts.slice(1).forEach(({ element }) => sidebar.insertBefore(element, sidebar.querySelector(".sidebar-footer")));
     } else {
       mobileParts.forEach(({ element, placeholder }) => placeholder.after(element));
-      if (labToolbar && accountBar) accountBar.before(labToolbar);
     }
   }
   mobileMenu?.addEventListener("close", () => {
@@ -293,6 +313,57 @@
       if (button) { button.disabled = true; button.setAttribute("aria-busy", "true"); }
     }
   });
+  document.addEventListener("click", async event => {
+    const button = event.target.closest("[data-buyer-window],[data-copy-buyer-link]");
+    if (!button || button.disabled) return;
+    const panel = button.closest(".admin-buyer-tools"), message = panel.querySelector("[data-buyer-link-message]"), input = panel.querySelector("[data-buyer-link]");
+    const buyerWindow = button.hasAttribute("data-buyer-window") ? window.open("about:blank", "_blank") : null;
+    if (buyerWindow) buyerWindow.opener = null;
+    button.disabled = true; message.hidden = true; input.hidden = true;
+    try {
+      const response = await fetch("/api/lab/buyer-window", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not connect a buyer window. Try again.");
+      const url = new URL(result.url, location.origin).href;
+      input.value = url;
+      if (buyerWindow) {
+        buyerWindow.location.href = url;
+        message.textContent = "Buyer window connected to this shop. Save a change to see it there.";
+      } else {
+        input.hidden = false;
+        try { await navigator.clipboard.writeText(url); message.textContent = "Link copied. Open it in the other browser within five minutes; it works once."; }
+        catch { input.focus(); input.select(); message.textContent = "Copy this link into the other browser within five minutes. It works once."; }
+      }
+      message.setAttribute("role", "status");
+    } catch (error) {
+      buyerWindow?.close(); message.textContent = error.message; message.setAttribute("role", "alert");
+    } finally { button.disabled = false; message.hidden = false; }
+  });
   if (!document.body.classList.contains("admin-body")) fetch("/api/cart", { cache: "no-store" }).then(r => r.json()).then(data => syncCart(data.cart)).catch(() => {});
+  if (document.getElementById("main-content")?.hasAttribute("data-store-revision")) {
+    let storeTimer, checkingStore = false;
+    const checkStore = async () => {
+      clearTimeout(storeTimer);
+      if (checkingStore || document.hidden) return;
+      checkingStore = true;
+      try {
+        const response = await fetch("/api/store/state", { cache: "no-store" });
+        if (response.ok) {
+          const state = await response.json();
+          if (Number.isSafeInteger(state.revision) && state.revision !== Number(document.getElementById("main-content")?.dataset.storeRevision) && canRefreshStore()) {
+            await refresh({ background: true });
+          }
+        }
+      } catch { /* Retry when the connection returns; never interrupt an edit. */ }
+      finally { checkingStore = false; if (!document.hidden) storeTimer = setTimeout(checkStore, 2000); }
+    };
+    storeTimer = setTimeout(checkStore, 2000);
+    window.addEventListener("focus", checkStore);
+    document.addEventListener("visibilitychange", () => document.hidden ? clearTimeout(storeTimer) : checkStore());
+  }
+  if (new URL(location.href).searchParams.get("connected") === "1") {
+    toast("Buyer window connected. Admin changes appear here automatically.");
+    const url = new URL(location.href); url.searchParams.delete("connected"); history.replaceState(null, "", url);
+  }
   try { const text = sessionStorage.getItem("cart-message"); if (text) { sessionStorage.removeItem("cart-message"); toast(text); } } catch { /* Optional toast. */ }
 })();

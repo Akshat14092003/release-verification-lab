@@ -7,7 +7,7 @@ const help = {
   total: ["Show the wrong receipt total", "Shows only the first product line on a multi-product receipt. Checkout and the transaction ledger still record the full amount.", "Buy two different products, then compare the receipt total with Transactions."]
 };
 
-export function labTools({ admin = false } = {}) {
+export function labToolbar() {
   return '<section class="shop-lab" aria-label="Live demo controls">' +
     '<button type="button" id="toggle-playground" class="playground-toggle" aria-expanded="false" aria-controls="lab-settings">' +
     '<span aria-hidden="true">&#9881;</span> QA playground <span class="playground-chevron" aria-hidden="true">&#8964;</span></button>' +
@@ -15,7 +15,11 @@ export function labTools({ admin = false } = {}) {
     '<div class="lab-toolbar-actions"><span id="bug-count" class="pill neutral">All off</span>' +
     '<button type="button" id="guide-toggle" class="lab-guide-button" aria-expanded="true">Guide</button>' +
     '<button type="button" id="open-tests" class="button test-launch"><span class="test-launch-icon" aria-hidden="true">&#9654;</span>' +
-    '<span id="test-launch-label">Run checks</span></button></div></section>' +
+    '<span id="test-launch-label">Run checks</span></button></div></section>';
+}
+
+export function labTools({ admin = false, toolbar = true } = {}) {
+  return (toolbar ? labToolbar() : '') +
     '<form id="lab-settings" class="qa-playground" aria-labelledby="playground-heading" hidden data-total-checks="' + BASELINE_CHECKS + '">' +
     '<button type="button" id="close-playground" class="icon-button" aria-label="Close QA playground">&times;</button>' +
     '<div class="playground-heading"><div><span class="eyebrow">EXPLORE THE QA PLAYGROUND</span><h2 id="playground-heading" tabindex="-1">Choose what goes wrong.</h2>' +

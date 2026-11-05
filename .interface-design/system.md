@@ -73,6 +73,12 @@ and status labels. On small screens, heading actions sit below the description.
 Keep the glass login, but its photo stays still. Home has no orbit dots; its photo caption,
 example-check ticker, scroll reveals and complete beetle interaction remain intentional.
 Trim repeated explanatory disclaimers; retain account-expiry warnings and available credit.
+Product photos and the landing/login collection photo have responsive light/dark WebP
+variants. Native picture sources follow system preference without JavaScript; theme.js
+applies saved/manual theme choices, including pictures inserted by inline cart updates.
+Keep colours natural and image dimensions identical across themes; never invert photos.
+Photo category badges use solid `--surface` with `--ink` text, `--line` border and
+11px semibold type, so contrast stays predictable over either photo variant.
 
 ### Interactive target sizes
 Icon-only controls (theme, cart, avatar, add, quantity steppers, icon buttons) are **≥36×36 CSS px,
@@ -134,6 +140,22 @@ when widening the viewport, including the saved desktop sidebar preference.
 Inside the drawer, use matching 44px rows and shared label/icon alignment for shop,
 account and QA controls. Omit duplicate cart controls and guest placeholder balances.
 Bug details start collapsed on mobile. The guest Sign in action also stays in the desktop header.
+Render the compact QA toolbar inside the desktop header on the server; do not move a full-width
+bar there after first paint. Keep guest sign-in beside the account controls, without competing
+auto margins. Before mobile setup, hide the desktop sidebar/account/QA positions with CSS.
+Mobile initialization moves those controls into the drawer; desktop restoration uses their
+original placeholders. Tight desktop widths reduce gaps while retaining every control.
+
+### Admin sign-in
+`/admin/login` is a dedicated, theme-aware management card with a demo-admin autofill control,
+admin-only credentials and no customer signup, shopping controls or QA toolbar. Customer login
+keeps its glass/photo layout. Anonymous management requests preserve safe admin destinations;
+admin sign-out returns to its own sign-in page. Customer bug toggles never bypass admin passwords.
+Admin Products provides Open buyer window and Copy link for another browser for side-by-side
+checks against the same shop. Links are short-lived, one-use customer grants. Admin/customer
+sessions stay separate; unrelated visitors remain isolated. Visible pages observe store changes
+every two seconds and on focus, pausing replacement during dialogs, form edits and pending actions.
+Preserve selected quantities across refreshes; never overwrite an open catalogue editor.
 
 ### Bug-caught celebration (keep the fun)
 Red (`--danger`) is the lab's signal colour. The catch popup keeps its bounce-in, target spin, ring
