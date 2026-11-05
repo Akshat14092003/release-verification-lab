@@ -111,7 +111,7 @@ export function loginPage(error = "", email = "", bugs = {}, labControls = false
     '<div class="story-copy"><span class="eyebrow light">A LITTLE MORE INTENTIONAL</span><h1>Good things.<br/>For your everyday.</h1>' +
     '<p>A considered collection for work, home, and the moments in between.</p><div class="story-art story-photo">' +
     collectionPhoto("(max-width: 560px) 90vw, 45vw") + '</div></div><p class="story-footer">Thoughtfully simple, from start to checkout.</p></section>' +
-    '<section class="login-form-section"><div class="login-card"><span class="eyebrow">WELCOME TO FIELDWORK</span><h2>' + (registering ? 'Your own little corner.' : 'Make yourself at home.') + '</h2>' +
+    '<section class="login-form-section"><div class="login-card"><h2>' + (registering ? 'Create an account' : 'Sign in to Fieldwork') + '</h2>' +
     '<p class="muted">' + (registering ? 'Create a customer account. Start with $1,000 demo credit.' : 'Sign in to explore the collection.') + '</p>' + bugBanners(bugs) +
     (error ? '<div class="alert error" id="auth-error" role="alert">' + e(error) + '</div>' : "") +
     '<form method="post" action="/' + (registering ? 'signup' : 'login') + '" class="login-form"' + (error ? ' aria-describedby="auth-error"' : '') + '><input type="hidden" name="next" value="' + e(next) + '"/>' +
@@ -145,8 +145,8 @@ function collectionPhoto(sizes) {
     'srcset="/images/collection-hero-640.webp 640w, /images/collection-hero-1280.webp 1280w, /images/collection-hero-1920.webp 1920w" ' +
     'sizes="' + sizes + '" width="1920" height="1288" alt="Fieldwork journal, headphones, mug and desk lamp on a sunlit stone desk" loading="eager" fetchpriority="high" decoding="async"/>';
 }
-function heading(eyebrow, title, description, extra = "") {
-  return '<div class="page-heading"><div><span class="eyebrow">' + e(eyebrow) + '</span><h1>' + e(title) +
+function heading(title, description, extra = "") {
+  return '<div class="page-heading"><div><h1>' + e(title) +
     '</h1><p class="muted">' + e(description) + '</p></div>' + extra + '</div>';
 }
 function addToCartForm(product, { quantity = false, offer = null, label = "Add to cart", quick = false } = {}) {
@@ -215,13 +215,13 @@ export function landingPage(user) {
     '<main id="main-content" class="home-main" tabindex="-1"><section class="store-hero home-hero"><div class="hero-copy"><span class="eyebrow">FIELDWORK / RELEASE VERIFICATION LAB</span>' +
     '<h1>A little shopping.<br/><em>A little bug hunting.</em></h1><p>A working demo shop with a twist. Introduce realistic bugs, run automated checks, and see the evidence for yourself.</p>' + checkTicker() +
     '<div class="hero-actions"><a class="button primary" href="' + destination + '">' + (admin ? 'Open dashboard ' : 'Enter the shop ') + icon("arrow") + '</a><a class="text-link" href="#how-it-works">How it works ' + icon("arrow") + '</a></div>' +
-    '<span class="hero-note">Fictional credit. Real tests. A sandbox of your own.</span></div><div class="hero-scene hero-photo-scene"><div class="hero-photo">' +
+    '</div><div class="hero-scene hero-photo-scene"><div class="hero-photo">' +
     collectionPhoto("(max-width: 850px) 94vw, 48vw") + '<span class="floating-label label-demo"><span class="status-dot"></span> Real shopping. Demo credit.</span></div>' +
-    '<span class="orbit-dot dot-one"></span><span class="orbit-dot dot-two"></span></div></section>' +
+    '</div></section>' +
     '<div class="home-proof"><span data-reveal="slow">4 intentional bugs</span><span data-reveal="slow">' + BASELINE_CHECKS + ' release checks</span><span data-reveal="slow">Browser · API · Database · Security</span></div>' +
     '<section id="how-it-works" class="home-section"><div class="section-intro"><span class="eyebrow">YOUR FIRST BUG HUNT</span><h2>Break it. Catch it.<br/>Make it right.</h2><p>Follow the steps in the shop. Every switch changes actual behavior; every result comes from a real test.</p></div>' +
     '<ol class="home-steps">' + [
-      ["Shop", "Build a cart and checkout with $1,000 in fictional credit. No card details needed."],
+      ["Shop", "Start with $1,000 in demo credit. Add products to your cart and place an order."],
       ["Enable a bug", "Open QA playground and choose a rule to break. Each switch explains what to try."],
       ["Run checks", "Watch actual browser, API, database, and security checks report their results."],
       ["Inspect the evidence", "Open a failed check, read its error and trace, then turn the bug off and verify the fix."]
@@ -233,12 +233,12 @@ export function landingPage(user) {
     ].map(([title, copy]) => '<div data-reveal><h3>' + title + '</h3><p>' + copy + '</p></div>').join("") + '</div></section>' +
     '<section class="home-evidence"><div><span class="eyebrow">SEE HOW IT IS BUILT</span><h2>Every result has a paper trail.</h2><p>Explore the source or browse the latest published CI reports.</p></div>' +
     '<div><a class="button secondary" href="' + repo + '">View source ' + icon("arrow") + '</a><a class="text-link" href="https://akshat14092003.github.io/release-verification-lab/">Browse test reports ' + icon("arrow") + '</a></div></section></main>' +
-    '<footer class="home-footer"><a class="brand" href="/">' + logo() + '</a><p>A synthetic shop. An actual bug hunt.</p></footer>', "landing-body" + (admin ? " admin-body" : ""));
+    '<footer class="home-footer"><a class="brand" href="/">' + logo() + '</a><p>Release Verification Lab</p></footer>', "landing-body" + (admin ? " admin-body" : ""));
 }
 
 export function productsPage(products, query = "", category = "") {
   const categories = ["Stationery", "Audio", "Home", "Lighting"];
-  return '<section id="collection" class="catalogue"><div class="section-toolbar"><div><span class="eyebrow">THE COLLECTION</span><h1>Products</h1><p class="muted">Useful things. Yours to put to the test.</p></div>' +
+  return '<section id="collection" class="catalogue"><div class="section-toolbar"><div><h1>Products</h1><p class="muted">Browse the collection and add products to your cart.</p></div>' +
     '<form action="/products" method="get" class="search-box"><label class="sr-only" for="search">Search products</label>' + icon("search") +
     '<input id="search" name="q" type="search" maxlength="100" value="' + e(query) + '" placeholder="Search the collection"/>' +
     '<button type="submit" class="sr-only">Search</button></form></div><div class="category-filters" aria-label="Product categories">' +
@@ -253,18 +253,18 @@ export function productsPage(products, query = "", category = "") {
 export function productPage(product, related) {
   return '<a class="text-link back-link" href="/products">&larr; Back to the collection</a><section class="product-detail">' +
     '<div class="product-gallery art-' + e(product.artwork) + '" style="view-transition-name:product-' + product.id + '"><span class="product-category">' + e(product.category) + '</span>' + artwork(product.artwork, { size: "detail", eager: true }) +
-    '<span class="gallery-caption">The little things, considered.</span></div><div class="product-info"><span class="eyebrow">' + e(product.category) +
+    '</div><div class="product-info"><span class="eyebrow">' + e(product.category) +
     '</span><h1>' + e(product.name) + '</h1><p class="product-description">' + e(product.description) + '</p><strong class="detail-price">' +
-    money(product.price_cents) + '</strong><p class="detail-price-note">Per item ? paid with demo credit</p>' + addToCartForm(product, { quantity: true }) +
+    money(product.price_cents) + '</strong><p class="detail-price-note">Per item</p>' + addToCartForm(product, { quantity: true }) +
     '<div class="detail-notes"><p>' + icon("check") + ' Add more than one item to build your own order.</p><p>' + icon("admin") +
-    ' No card details or real payments.</p></div><details class="product-details-note"><summary>A little more about this demo</summary>' +
+    ' No card details or real payments.</p></div><details class="product-details-note"><summary>About this demo</summary>' +
     '<p>This product is part of the synthetic Fieldwork catalogue. The server sets its price, records each purchase, and reconciles your order with its ledger.</p></details></div></section>' +
     '<section class="related-products"><div class="section-toolbar"><h2>A few things to go with it</h2><a class="subtle-link" href="/products">All finds ' +
     icon("arrow") + '</a></div>' + productCards(related) + '</section>';
 }
 
 export function cartPage(cart) {
-  const title = heading("YOUR GOOD FINDS", "Your cart.", cart.count ? cart.count + ' item' + (cart.count === 1 ? '' : 's') + ' picked. Ready when you are.' : 'A little room for your next good find.');
+  const title = heading("Cart", cart.count ? cart.count + ' item' + (cart.count === 1 ? '' : 's') + ' in your cart. Review quantities before checkout.' : 'Add products from the collection to get started.');
   if (!cart.items.length) return title + '<div class="empty-state empty-cart">' + icon("checkout") + '<h2>Your cart is waiting.</h2>' +
     '<p>Explore the collection and add something you like.</p><a class="button primary" href="/products">Find your first item ' + icon("arrow") + '</a></div>';
   return title + '<div class="checkout-grid"><section class="panel cart-lines">' + cart.items.map(line =>
@@ -282,13 +282,12 @@ export function cartPage(cart) {
     '" data-cart-form data-cart-update data-cart-method="DELETE" data-cart-api="/api/cart/items/' + line.product.id + '">' +
     '<button type="submit" class="subtle-button" aria-label="Remove ' + e(line.product.name) + '">Remove</button></form></div></div><strong class="cart-line-total">' +
     money(line.total_cents) + '</strong></article>').join("") + '<a class="text-link" href="/products">&larr; Continue exploring</a></section>' +
-    '<aside class="panel order-summary"><h2>Your order, so far.</h2><dl><div><dt>Subtotal</dt><dd data-cart-subtotal>' + money(cart.total_cents) + '</dd></div>' +
+    '<aside class="panel order-summary"><h2>Order summary</h2><dl><div><dt>Subtotal</dt><dd data-cart-subtotal>' + money(cart.total_cents) + '</dd></div>' +
     '<div><dt>Delivery</dt><dd class="green-text">Free</dd></div><div class="summary-total"><dt>Total</dt><dd data-testid="cart-total">' + money(cart.total_cents) +
-    '</dd></div></dl><a class="button primary full" href="/checkout">Proceed to checkout ' + icon("arrow") + '</a>' +
-    '<p class="summary-note">Review before you buy. Demo credit only.</p></aside></div>';
+    '</dd></div></dl><a class="button primary full" href="/checkout">Proceed to checkout ' + icon("arrow") + '</a></aside></div>';
 }
 export function offersPage(offers) {
-  return heading("A LITTLE SOMETHING EXTRA", "The weekend edit.", "Small offers, thoughtfully timed. All offer windows use UTC.") +
+  return heading("Weekend offers", "Offers are available on Saturday and Sunday. All offer windows use UTC.") +
     offers.map(offer => '<article class="offer-card"><div class="offer-art">' + artwork(offer.artwork, { size: "detail", eager: true }) +
       '</div><div class="offer-copy"><span class="pill ' + (offer.available ? "success" : "neutral") + '">' +
       (offer.available ? "Available this weekend" : "Currently unavailable") + '</span><h2>' + e(offer.name) + '</h2><h3>' +
@@ -299,7 +298,7 @@ export function offersPage(offers) {
       : '<button class="button secondary" disabled>Offer unavailable</button>') + '</div></article>').join("");
 }
 export function checkoutPage(quote) {
-  const title = heading("ONE LAST LOOK", "Your checkout.", "Review your cart and confirm your demo purchase.");
+  const title = heading("Checkout", "Review your items and confirm your order.");
   if (!quote) return title + '<div class="empty-state">' + icon("checkout") + '<h2>Your cart is empty.</h2><p>Add something from the collection before checking out.</p>' +
     '<a href="/products" class="button primary">Explore products ' + icon("arrow") + '</a></div>';
   return title + '<div class="checkout-grid"><section class="panel"><div class="panel-heading"><h2>Your items</h2><a href="/cart" class="subtle-link">Edit cart</a></div>' +
@@ -325,7 +324,7 @@ function orderTable(orders, all = false, { editable = true, filters = {} } = {})
     icon("arrow") + '</a></td></tr>').join("") + '</tbody></table></div>';
 }
 export function ordersPage(orders) {
-  return heading("YOUR GOOD FINDS", "Order history.", "Everything you have picked up, all in one place.") +
+  return heading("Order history", "View past purchases and open their receipts.") +
     '<section class="panel table-panel">' + orderTable(orders) + '</section>';
 }
 export function receiptPage(order, bugs = {}, { admin = false, customer } = {}) {
@@ -336,7 +335,7 @@ export function receiptPage(order, bugs = {}, { admin = false, customer } = {}) 
     ? (firstItem?.unit_price_cents || 0) * (firstItem?.quantity || 0)
     : order.total_cents;
   const ledgerTotal = -order.ledger.reduce((sum, entry) => sum + entry.amount_cents, 0);
-  return heading(admin ? "CUSTOMER ORDER REVIEW" : "THANK YOU FOR STOPPING BY", admin ? "Order #FW-" + order.id : "A good choice.", admin ? "Review fulfilment and the recorded payment evidence." : "Your demo order is complete. Here is your receipt.",
+  return heading(admin ? "Order #FW-" + order.id : "Order confirmed", admin ? "Review fulfilment and the recorded payment evidence." : "Your order has been placed. Review the receipt and transaction record below.",
     '<a class="button secondary" href="' + (admin ? '/admin/orders' : '/products') + '">' + (admin ? 'Back to orders ' : 'Back to the collection ') + icon("arrow") + '</a>') +
     (admin && customer ? '<p class="admin-order-customer"><strong>Customer: ' + e(customer.name) + '</strong><span>' + e(customer.email) + '</span></p>' : '') +
     '<section class="panel"><div class="panel-heading"><div><span class="eyebrow">ORDER #FW-' + order.id + '</span><h2>Order details</h2></div>' +
@@ -381,7 +380,7 @@ export function adminPage({ stats, orders, products, customers }) {
   const processing = orders.filter(order => order.status === "processing").length;
   const active = products.filter(product => product.active).length;
   const task = (href, name, copy, iconName) => '<a class="admin-task" href="' + href + '"><span class="bento-icon">' + icon(iconName) + '</span><span><strong>' + e(name) + '</strong><span>' + e(copy) + '</span></span>' + icon("arrow") + '</a>';
-  return heading("STORE MANAGEMENT", "Store overview.", "Track customer purchases, keep the catalogue current, and manage fulfilment.",
+  return heading("Store overview", "Track customer purchases, keep the catalogue current, and manage fulfilment.",
     '<a class="button primary" href="/admin/orders?status=processing">Review processing orders ' + icon("arrow") + '</a>') +
     '<div class="bento admin-metrics">' +
     bentoTile("check", "Recorded sales", money(stats.sales_cents), { foot: "All time · synthetic purchases · ledger total" }) +
@@ -397,7 +396,7 @@ export function adminPage({ stats, orders, products, customers }) {
     '<p class="admin-sandbox-note">This is your isolated demo shop. To try a purchase, sign out and use a customer account. QA playground checks use separate test data.</p>';
 }
 export function adminProductsPage({ products }, options = {}) {
-  return heading("STORE MANAGEMENT", "Products.", "Edit prices and availability, or add a product to the catalogue.") + adminNotice(options) +
+  return heading("Products", "Edit prices and availability, or add a product to the catalogue.") + adminNotice(options) +
     '<section class="panel admin-catalogue" id="manage-products"><div class="panel-heading"><h2>Manage products</h2><span class="pill neutral">' + products.length + ' products</span></div>' +
     '<p class="muted">Hidden products cannot be purchased. Price changes affect future purchases; saved receipts keep their original amounts. Offer prices are separate.</p>' +
     '<details class="admin-product"' + (options.editingId === 'new' ? ' open' : '') + '><summary>Add a product</summary>' + adminProductForm({}, options) + '</details>' +
@@ -407,7 +406,7 @@ export function adminOrdersPage({ orders, customers }, options = {}) {
   const filters = options.filters || {};
   const filtered = orders.filter(order => (!filters.status || order.status === filters.status) && (!filters.customer || String(order.user_id) === filters.customer));
   const option = (value, label, selected) => '<option value="' + e(value) + '"' + (String(value) === selected ? ' selected' : '') + '>' + e(label) + '</option>';
-  return heading("STORE MANAGEMENT", "Orders.", "Review customer receipts and update delivery status. Status changes keep paid amounts unchanged.") + adminNotice(options) +
+  return heading("Orders", "Review customer receipts and update delivery status. Status changes keep paid amounts unchanged.") + adminNotice(options) +
     '<form class="admin-filters" method="get" action="/admin/orders"><div class="admin-filter-field"><label for="admin-order-status">Order status</label><select id="admin-order-status" name="status">' + option("", "All statuses", filters.status) +
     ORDER_STATUSES.map(status => option(status, status[0].toUpperCase() + status.slice(1), filters.status)).join('') + '</select></div>' +
     '<div class="admin-filter-field"><label for="admin-order-customer">Customer</label><select id="admin-order-customer" name="customer">' + option("", "All customers", filters.customer) +
@@ -417,7 +416,7 @@ export function adminOrdersPage({ orders, customers }, options = {}) {
     (!filtered.length && (filters.status || filters.customer) ? '<div class="empty-state"><h2>No orders match these filters</h2><p>Try another status or customer.</p><a class="button secondary" href="/admin/orders">Show all orders</a></div>' : orderTable(filtered, true, { filters })) + '</section>';
 }
 export function adminCustomersPage({ customers }) {
-  return heading("STORE MANAGEMENT", "Customers.", "View customer credit and open their purchase history. Admin accounts are excluded.") +
+  return heading("Customers", "View customer credit and open their purchase history. Admin accounts are excluded.") +
     '<section class="panel table-panel admin-customers" id="manage-customers"><div class="panel-heading"><h2>Customer accounts</h2><span class="pill neutral">Customers: ' + customers.length + '</span></div>' +
     (customers.length ? '<div class="table-scroll"><table><thead><tr><th>Name</th><th>Email</th><th>Orders</th><th class="align-right">Demo credit</th><th><span class="sr-only">Purchase history</span></th></tr></thead><tbody>' +
     customers.map(customer => '<tr><td>' + e(customer.name) + '</td><td>' + e(customer.email) + '</td><td>' + customer.orders + '</td><td class="align-right">' + money(customer.balance_cents) + '</td><td><a class="subtle-link" href="/admin/orders?customer=' + customer.id + '">View orders ' + icon("arrow") + '</a></td></tr>').join('') + '</tbody></table></div>' :

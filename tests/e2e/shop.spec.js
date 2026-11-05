@@ -119,7 +119,7 @@ test("an administrator can inspect the store overview", async ({ page }) => {
   await expect(page.locator(".header-cart,.account-bar .credit")).toHaveCount(0);
   await page.goto("/");
   await expect(page).toHaveURL(/\/admin$/);
-  await expect(page.getByRole("heading", { name: "Store overview.", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Store overview", exact: true })).toBeVisible();
   await expect(page.locator(".home-hero,#manage-products")).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Recent orders", exact: true })).toBeVisible();
   await expect(page.getByRole("row").filter({ hasText: "#FW-1001" })).toContainText("Alex Morgan");
@@ -156,7 +156,7 @@ test("an administrator can inspect the store overview", async ({ page }) => {
   await page.getByRole("button", { name: "Open menu", exact: true }).click();
   await expect(navigation.getByRole("link")).toHaveText(["Overview", "Products", "Orders", "Customers"]);
   await navigation.getByRole("link", { name: "Overview", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Store overview.", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Store overview", exact: true })).toBeVisible();
 });
 
 test("a visitor signs up from checkout, keeps their cart and signs in again", async ({ page }) => {

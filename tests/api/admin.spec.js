@@ -66,7 +66,7 @@ test("administrators cannot use customer shopping routes or create purchases", a
   }
   expect((await (await request.get("/api/auth/me")).json())).not.toHaveProperty("balance_cents");
   const overview = await (await request.get("/admin")).text();
-  expect(overview).toContain("Store overview.");
+  expect(overview).toContain("Store overview");
   expect(overview).not.toContain("Small finds.");
   expect(overview).not.toContain('id="manage-products"');
   for (const [path, text] of [["products", "Manage products"], ["orders", "All orders"], ["customers", "Customer accounts"]]) {

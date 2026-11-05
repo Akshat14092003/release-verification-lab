@@ -66,6 +66,13 @@ One primary per view; everything else is `.secondary` (surface + border) or a to
 ### Card / panel
 Solid `--surface`, `--line` border, radius 12–18px, soft `--glass-shadow`. Product cards lift on
 hover (shadow + scale 1.025 on the image). No frost on content surfaces.
+Shopping and admin pages use a flat `--background`; ambient gradients stay on Home and login.
+Utility headings name the task directly (Cart, Checkout, Order confirmed, Store overview),
+without redundant uppercase kickers or trailing periods. Keep product categories, order IDs
+and status labels. On small screens, heading actions sit below the description.
+Keep the glass login, but its photo stays still. Home has no orbit dots; its photo caption,
+example-check ticker, scroll reveals and complete beetle interaction remain intentional.
+Trim repeated explanatory disclaimers; retain account-expiry warnings and available credit.
 
 ### Interactive target sizes
 Icon-only controls (theme, cart, avatar, add, quantity steppers, icon buttons) are **≥36×36 CSS px,

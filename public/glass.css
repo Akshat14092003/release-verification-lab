@@ -1,15 +1,15 @@
 /* Frosted surfaces share the same treatment in both color themes.
    Design tokens live in tokens.css; this file only consumes them. */
 body,html[data-theme="dark"] body {
-  background:radial-gradient(ellipse at 95% 10%,var(--glow-green),transparent 45%),
-    radial-gradient(ellipse at 10% 75%,var(--glow-gold),transparent 55%),var(--background);
+  background:var(--background);
   color:var(--ink);
 }
+body.landing-body,body.login-body,html[data-theme="dark"] body.landing-body,html[data-theme="dark"] body.login-body {
+  background:radial-gradient(ellipse at 95% 10%,var(--glow-green),transparent 45%),
+    radial-gradient(ellipse at 10% 75%,var(--glow-gold),transparent 55%),var(--background);
+}
 .workspace,html[data-theme="dark"] .workspace { background:transparent; }
-.topbar,.login-tools,.shop-lab,.sidebar,.panel,.product-card,.empty-state,.stat-card,
-.context-guide,.profile-panel,.day-popover,.cart-toast,html[data-theme="dark"] .topbar,
-html[data-theme="dark"] .panel,html[data-theme="dark"] .product-card,
-html[data-theme="dark"] .empty-state,html[data-theme="dark"] .stat-card {
+.topbar,.login-tools,.shop-lab,.sidebar,.profile-panel,.day-popover,.cart-toast,html[data-theme="dark"] .topbar {
   background:var(--glass);backdrop-filter:blur(20px) saturate(135%);-webkit-backdrop-filter:blur(20px) saturate(135%);
   border-color:var(--glass-line);
 }

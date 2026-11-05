@@ -8,7 +8,7 @@
 .home-main,.home-footer { max-width:1320px;margin-inline:auto;padding-inline:32px; }
 .home-hero { min-height:min(650px,78dvh);padding-block:60px;gap:48px;overflow:visible; }
 .home-hero h1 { font-size:clamp(38px,4.3vw,66px);line-height:1.12;letter-spacing:-2px; }.home-hero .hero-copy>p { font-size:16px;max-width:42ch;line-height:1.8;margin-block:24px; }
-.home-hero .hero-photo { animation:none; }.home-hero .hero-scene { min-width:0; }.home-hero .hero-note { font-size:12px; }
+.home-hero .hero-photo,.login-body .story-photo { animation:none; }.home-hero .hero-scene { min-width:0; }
 .home-proof { display:flex;justify-content:space-between;flex-wrap:wrap;gap:18px;padding-block:22px;border-block:1px solid var(--line);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums; }
 .home-section { display:grid;grid-template-columns:1fr 1.2fr;gap:80px;padding-block:88px;scroll-margin-block-start:110px; }
 .section-intro h2 { font-size:clamp(28px,3vw,42px);line-height:1.2;margin-block:16px;letter-spacing:-1px; }.section-intro>p { color:var(--muted);font-size:15px;line-height:1.8;max-width:42ch; }
@@ -41,11 +41,8 @@
 }
 @media (max-width:560px) { .home-main,.home-footer { padding-inline:22px; }.home-header { padding:12px 18px; }.home-header .home-account { gap:8px; }.home-account .button { padding:8px 10px; }.home-hero h1 { font-size:39px;letter-spacing:-1.4px; }.home-hero .hero-copy>p { font-size:14px; }.home-proof { justify-content:flex-start;font-size:11px;gap:12px 24px; }.home-proof span:last-child { flex-basis:100%; }.home-evidence { padding:24px; }.layer-list { grid-template-columns:minmax(0,1fr); }.home-footer>p { margin-inline-start:0; }.home-footer { gap:18px; }.bug-surprise { padding:28px 20px; }.surprise-stage { height:190px; }.surprise-stage .lab-beetle { width:150px; }.home-section { scroll-margin-block-start:140px; } }
 @media (hover:hover) { .home-header nav a:hover { color:var(--accent); } }
-@media (prefers-reduced-motion:no-preference) {
-  .home-hero .orbit-dot { animation:label-float 3s ease-in-out 1 both; }
-
-}
-@media (prefers-reduced-motion:reduce) { .bug-surprise[open] { animation:bug-fade 150ms ease-out; }.home-hero .orbit-dot { animation:none; } }
+@media (max-width:560px) { .page-heading { flex-direction:column;align-items:flex-start;gap:16px; } }
+@media (prefers-reduced-motion:reduce) { .bug-surprise[open] { animation:bug-fade 150ms ease-out; } }
 @keyframes bug-fade { from { opacity:0; } to { opacity:1; } }
 @media (max-width:560px) {
   .has-lab.login-body .login-tools+.shop-lab { padding:8px 12px;gap:6px;flex-wrap:nowrap; }
