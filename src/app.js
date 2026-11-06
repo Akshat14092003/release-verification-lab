@@ -84,7 +84,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
     const query = typeof req.query.q === "string" ? req.query.q.slice(0, 100) : "";
     const category = typeof req.query.category === "string" ? req.query.category : "";
     const products = listProducts(db, query).filter(product => !category || product.category === category);
-    return page(req, res, "Products", "products", view.productsPage(products, query, category));
+    return page(req, res, "Products", "products", view.productsPage(products, query, category, labControls));
   });
   app.get("/products/:id", (req, res) => {
     const product = getProduct(db, req.params.id);

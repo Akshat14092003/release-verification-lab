@@ -7,11 +7,11 @@ A fictional shop where automated checks will demonstrate whether a release meets
 The portfolio goal is reproducible evidence: introduce a realistic defect, catch it at the right layer, inspect the evidence, and verify corrected behaviour.
 
 **Published and verified on GitHub Actions.**
-The published reports have 34 checks. The current local storefront has 47 checks, including 8 security probes;
+The published reports and storefront suite have 47 checks, including 8 security probes;
 its red verifier expects 12 intended failures and 35 passing controls. Visitors can toggle bugs, run the real tests,
 watch progress, and inspect their report from the website. See [the interactive demo](docs/INTERACTIVE-DEMO.md).
-Hosted results below describe the previously published version; the interactive Node app is not publicly deployed yet.
-[View the successful hosted run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/40180501884) and download its green-evidence/red-evidence artifacts.
+Historical measurements below are labeled by version. The interactive Node app is not publicly deployed yet; [free hosting findings](docs/HOSTING.md) explain the confirmed memory limit and remaining account/compute requirement.
+[View the successful hosted run](https://github.com/Akshat14092003/release-verification-lab/actions/runs/41453518469) and download its green-evidence/red-evidence artifacts.
 [Browse the published evidence site](https://akshat14092003.github.io/release-verification-lab/): the landing page, the green report, and the red report from the latest verified run.
 
 ## Run the interactive lab
@@ -29,7 +29,7 @@ Open http://127.0.0.1:3000.
 
 The home page is the storefront. Product arrows open distinct detail pages; Add to cart builds a real
 basket with quantities and removal. Guests can browse and keep their cart through sign-in, then checkout.
-Four compact switches stay in the shop toolbar. Contextual hints follow the visitor through products,
+QA playground explains all four bug switches within the shop; on mobile it lives in the navigation drawer. Try the QA lab opens it directly. Contextual hints follow the visitor through products,
 cart, checkout, and receipts. **Run checks** opens live progress and reports over the same page.
 The sidebar collapses, the sun/moon theme control animates, and the storefront has gentle motion with
 reduced-motion support. Each visitor gets an isolated SQLite sandbox. No separate guide page is needed.
@@ -45,7 +45,6 @@ Use npm run dev for automatic server restarts.
 | Role | Email | Password |
 | --- | --- | --- |
 | Customer | customer@example.test | DemoShop!2026 |
-| Store Owner | owner@example.test | DemoShop!2026 |
 | Admin | admin@example.test | DemoShop!2026 |
 
 These are deliberately public, fictional local-demo credentials.
@@ -53,7 +52,7 @@ The app simulates purchases using demo credit; there is no payment gateway.
 
 ### Repeatable data
 
-In the browser lab, use **Reset my purchases**. This clears only your isolated shop and gives each
+In the browser lab, use **Reset my purchases**. A confirmation explains that this clears your cart, purchases, and sign-in; Keep shopping cancels without changes. Confirming resets only your isolated shop and gives each
 demo account $1,000. Visitor shops expire after two hours of inactivity or a server restart.
 Test runs have separate disposable data and do not modify your purchases.
 
@@ -111,7 +110,7 @@ A server-side clock can also be injected into createApp for the later isolated t
 ### Pages
 
 - /login: role shortcuts, sign-in, and a visible error state.
-- /products: searchable product cards with original SVG illustrations.
+- /products: searchable product cards with supplied Gemini product photographs.
 - /offers: the weekend offer and its actual availability.
 - /products/:id: individual product details, quantity selector, and Add to cart.
 - /cart: review, update quantities, remove items, and proceed to checkout.
@@ -150,6 +149,8 @@ The purchase endpoint accepts either the original single-product body or
 `{ "items": [{ "product_id": 1, "quantity": 2 }, { "product_id": 2, "quantity": 1 }] }`.
 Client-supplied prices, totals, and user IDs cannot override the server's values.
 
+Current verified evidence and limitations: [CURRENT-RESULTS.md](docs/CURRENT-RESULTS.md).
+
 ## Baseline verification
 
 ~~~sh
@@ -158,6 +159,8 @@ npm run test:api
 npm run test:e2e
 npm run test:db
 npm run test:security
+npm run test:unit
+npm run test:runner
 npm run report
 ~~~
 
@@ -165,7 +168,7 @@ The runner starts isolated app instances automatically. Each test owns a SQLite 
 On first browser execution, the runner installs its pinned Chromium revision if missing.
 Browser checks block optional external CDN/fonts and exercise the local CSS fallback.
 
-Coverage: 15 direct API checks, 8 Playwright browser journeys, 3 SQL/database checks, and 8 focused security probes.
+Coverage: 21 direct API checks, 15 Playwright browser journeys, 3 SQL/database checks, and 8 focused security probes.
 Database reconciliation compares actual rendered amounts with independent read-only SQL sums.
 Screenshots and traces are retained on failure; HTTP responses and SQL evidence are attached to reports.
 Retries are disabled. Security probes cover SQL-like login/search/identifier input and reflected/stored XSS contexts.
@@ -233,7 +236,7 @@ rendered amount against independent SQL. A one-line receipt remains a passing co
 
 ## GitHub Actions
 
-The workflow has three jobs: green verifies the correct build, red then verifies all four enabled defects, and publish deploys the evidence site from their artifacts.
+The workflow has four jobs: green verifies the correct build and seven Node unit guards; red verifies all four enabled defects; Live runner integration builds the deployment image and exercises its real subprocess, report ownership, progress, cart preservation, and cancellation under a 1 GB memory limit. Publish deploys the evidence site only after all three checks pass.
 Both retain their reports and evidence artifacts even on test failure. Action references are commit-pinned.
 The red job succeeds only when the expected failing-test identities match; its underlying test report still contains real failures.
 
@@ -245,16 +248,20 @@ This runs the red job's local verification command. Its reports are isolated und
 The first hosted workflow passed on Ubuntu 24.04: green 34/34, red 22 passing controls plus 12 verified assertion failures.
 Both evidence artifacts were downloaded and inspected. See [hosted results](docs/HOSTED-CI-RESULTS.md) and [CI workflow notes](docs/CI.md).
 
-A third job publishes an evidence site built from those artifacts with scripts/build-pages.js: a landing page
+A final job publishes an evidence site built from those artifacts with scripts/build-pages.js: a landing page
 with the measured numbers, the green report, and the red report. It runs only on pushes to main.
 Published at https://akshat14092003.github.io/release-verification-lab/ - landing page, green report,
 and red report, deployed from the artifacts of the same run that verified them.
 
 ## Measurements
 
+Current 47-check repeatability sample: **3/3 green runs clean** and **3/3 red runs verified**,
+with zero retries. The initial repair sample's failures and the older 34-check observations
+are retained separately. See [the complete repeatability record](docs/REPEATABILITY.md).
+
 Historical local baseline (2026-10-25): **34/34 passed in 17.7 seconds**, with CI=true, 2 workers, and zero retries.
 Runtime is the latest full baseline in the verified defect matrix.
-Hosted results: green 34/34 in 17.8s; red verified 12 intended failures in 27.1s.
+Current published results: green 47/47 in 49.3s; red 35 controls and 12 intended failures in 58.2s.
 
 The earlier 34-test version was repeated locally ten times each with `npm run test:repeat`: **10/10 green runs clean**
 (16.8-22.4s, median 18.5s) and **10/10 red runs verified** with an identical set of 12 intended
@@ -270,8 +277,8 @@ See [repeatability](docs/REPEATABILITY.md).
 
 ## Implementation notes
 
-Express serves HTML directly; public assets include a local CSS fallback and original SVG product artwork.
-Tailwind CSS is loaded from the CDN as requested, with optional Google Fonts.
+Express serves HTML directly; public assets include local CSS, original interface icons, and supplied product photographs with responsive WebP variants.
+Styles are local CSS, with optional Google Fonts.
 External CDN/font availability must not be mistaken for backend readiness or future test success.
 All important layout styles are local so the demo remains usable without those services.
 

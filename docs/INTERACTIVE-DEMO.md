@@ -34,7 +34,7 @@ Switch it off in QA playground to see the same stored purchase display correctly
 - The section can be collapsed while shopping and remembers that choice. Its expected-results
   summary updates for the chosen combination; Login + Weekday offers predicts 37 passes/10 failures.
 - **Day** in QA playground opens a small selector on the same page; choose a UTC day and apply it.
-- Reset and all-off actions are inside that selector. Reset affects only the current visitor.
+- Reset and all-off actions are inside that selector. Reset asks for confirmation before clearing purchases, cart, and sign-in; cancelling preserves data. It affects only the current visitor.
 - **Run checks** opens a same-page dialog for current switches, correct build, or all four bugs.
 - Real progress appears in that dialog. On completion the report gets a near-full-window reading
   mode with a fixed heading, a clear expected-failure verdict, and one report scroll area. **Run details**
@@ -53,10 +53,12 @@ Switch it off in QA playground to see the same stored purchase display correctly
 
 The sidebar collapses and remembers its state. The sun/moon theme control animates a theme transition
 and persists the preference across shop pages. Both themes now use blue accents and cool frosted
-navigation and overlays; reading and product surfaces stay solid for contrast. Pass/fail indicators
+navigation and overlays. The full theme reveal runs outside native dialogs; inside an open dialog,
+color/icon transitions keep its controls interactive instead of capturing them in a root snapshot.
+Reading and product surfaces stay solid for contrast. Pass/fail indicators
 keep their semantic colors. Successful Add to cart buttons briefly show Added with a tick.
 The storefront includes supplied Gemini photographs,
-a moving ribbon, hover effects, card entrances, toast feedback, and count animations. Reduced-motion
+a ribbon that moves once for four seconds, hover effects, card entrances, toast feedback, and count animations. Reduced-motion
 preferences disable nonessential movement and the theme's View Transition animation.
 
 The embedded Playwright report starts in the shop's current light/dark theme. Its transparent

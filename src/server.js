@@ -5,7 +5,7 @@ import { dirname, join } from "node:path";
 
 const config = loadConfig();
 const legacyShop = process.argv.includes("--shop");
-const runtime = legacyShop ? createApp(config) : createDemoApp({ directory: join(dirname(config.databasePath), "demo"), trustProxy: config.trustProxy });
+const runtime = legacyShop ? createApp(config) : createDemoApp({ directory: join(dirname(config.databasePath), "demo"), trustProxy: config.trustProxy, testWorkers: config.testWorkers });
 const server = runtime.app.listen(config.port, config.host, () => {
   console.log((legacyShop ? "Fieldwork shop: " : "Release Verification Lab: ") + "http://" + config.host + ":" + config.port);
   if (legacyShop) {

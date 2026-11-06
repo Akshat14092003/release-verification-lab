@@ -1,5 +1,8 @@
 # Measured defect-detection results
 
+**Current release evidence:** 47 checks (21 API, 15 browser, 3 database, 8 security); green 47/47, red 35 passing controls and exactly 12 intended failures. See [current results](CURRENT-RESULTS.md). Older measurements below are historical.
+
+
 The current local revision has 47 green checks and 35 red controls with 12 intended failures.
 See [interactive verification](INTERACTIVE-DEMO.md) for current results and
 [the earlier checkout audit](MANUAL-DEMO-AUDIT.md) for its 38-test matrix.

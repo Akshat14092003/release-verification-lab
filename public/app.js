@@ -34,14 +34,64 @@
       button.setAttribute("aria-expanded", String(!collapsed));
     });
   }
+  const mobileMenu = document.getElementById("mobile-navigation");
+  const mobileToggle = document.querySelector("[data-mobile-menu]");
+  const mobileViewport = window.matchMedia("(max-width: 850px)");
+  const sidebar = document.querySelector(".app-shell>.sidebar");
+  const mobileParts = sidebar ? [sidebar, document.querySelector(".account-bar"), document.querySelector(".shop-lab"),
+    document.getElementById("lab-settings"), document.getElementById("lab-message")].filter(Boolean).map(element => {
+    const placeholder = document.createComment("Desktop navigation position");
+    element.before(placeholder);
+    return { element, placeholder };
+  }) : [];
+  function closeMobileMenu() {
+    if (mobileMenu?.open) mobileMenu.close();
+  }
+  function syncMobileNavigation() {
+    if (!mobileMenu || !sidebar) return;
+    closeMobileMenu();
+    if (mobileViewport.matches) {
+      mobileMenu.append(sidebar);
+      mobileParts.slice(1).forEach(({ element }) => sidebar.insertBefore(element, sidebar.querySelector(".sidebar-footer")));
+    } else mobileParts.forEach(({ element, placeholder }) => placeholder.after(element));
+  }
+  mobileMenu?.addEventListener("close", () => {
+    mobileToggle.setAttribute("aria-expanded", "false");
+    document.documentElement.classList.remove("mobile-menu-open");
+    if (mobileViewport.matches && !document.querySelector("dialog[open]")) mobileToggle.focus();
+  });
+  mobileMenu?.addEventListener("click", event => {
+    if (event.target === mobileMenu) {
+      const bounds = mobileMenu.getBoundingClientRect();
+      if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) closeMobileMenu();
+    }
+  });
+  mobileViewport.addEventListener("change", syncMobileNavigation);
+  syncMobileNavigation();
   updateSidebar();
   document.addEventListener("keydown", event => {
     if (event.key === "Escape") document.querySelectorAll(".profile-menu[open]").forEach(menu => {
+      event.preventDefault();
       menu.open = false;
       menu.querySelector("summary").focus();
     });
   });
   document.addEventListener("click", event => {
+    if (event.target.closest("[data-open-playground]")) {
+      if (mobileViewport.matches) mobileToggle?.click();
+      const playground = document.getElementById("toggle-playground");
+      if (playground?.getAttribute("aria-expanded") === "false") playground.click();
+      playground?.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      playground?.focus({ preventScroll: true });
+    }
+    if (event.target.closest("[data-mobile-menu]")) {
+      mobileMenu.showModal();
+      mobileToggle.setAttribute("aria-expanded", "true");
+      document.documentElement.classList.add("mobile-menu-open");
+      mobileMenu.querySelector("[data-mobile-close]").focus();
+    }
+    if (event.target.closest("[data-mobile-close]") ||
+        (mobileMenu?.open && event.target.closest("a[href],#open-tests,#guide-toggle"))) closeMobileMenu();
     document.querySelectorAll(".profile-menu[open]").forEach(menu => {
       if (!menu.contains(event.target)) menu.open = false;
     });

@@ -46,7 +46,11 @@ export function labTools() {
 }
 
 export function labDialogs() {
-  return '<dialog id="test-drawer" class="verification-drawer" aria-labelledby="run-heading">' +
+  return '<dialog id="reset-dialog" class="reset-dialog" aria-labelledby="reset-heading" aria-describedby="reset-description">' +
+    '<h2 id="reset-heading">Reset your demo shop?</h2><p id="reset-description">This deletes your cart and purchases and signs out all demo accounts in your shop. Credit returns to $1,000 per account. This cannot be undone. Your bug switches and demo day stay the same.</p>' +
+    '<p id="reset-error" role="alert"></p><form method="dialog" class="reset-actions"><button class="button secondary" value="cancel" autofocus>Keep shopping</button>' +
+    '<button type="button" id="confirm-reset" class="button danger">Reset purchases</button></form></dialog>' +
+    '<dialog id="test-drawer" class="verification-drawer" aria-labelledby="run-heading">' +
     '<div class="drawer-heading"><div><span class="eyebrow">REAL CHECKS. REAL EVIDENCE.</span><h2 id="run-heading">Verify this experience</h2></div>' +
     '<div class="drawer-actions"><button type="button" id="toggle-report-view" class="button secondary" hidden>Read report</button>' +
     '<button type="button" class="icon-button" id="close-tests" aria-label="Close test panel">&times;</button></div></div>' +

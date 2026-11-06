@@ -30,7 +30,7 @@ export function themeButton() {
     '<svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="4"/>' +
     '<path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>' +
     '<svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">' +
-    '<path d="M20 14a8.5 8.5 0 0 1-10-10 8.5 8.5 0 1 0 10 10Z"/></svg></button>';
+    '<path d="M20 14a8.5 8.5 0 0 1-10-10 8.5 8.5 0 1 0 10 10Z"/></svg><span class="menu-control-label">Appearance</span></button>';
 }
 export function document(title, body, bodyClass = "", labControls = false) {
   return '<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>' +
@@ -65,9 +65,10 @@ export function shell({ title, active, user, balance, now, body, bugs = {}, labC
       (key === "cart" ? '<span class="nav-count" data-cart-count aria-hidden="true">' + cart.count + '</span>' : "") + '</a>').join("");
   const accountAction = user
     ? '<form method="post" action="/logout"><button class="signout" type="submit" aria-label="Sign out">' + icon("logout") + '<span>Sign out</span></button></form>'
-    : '<a class="signout" href="/login">' + icon("logout") + '<span>Sign in</span></a>';
+    : '';
   const profile = '<details class="profile-menu"><summary class="avatar" role="button" aria-label="Open profile menu" title="' + e(user?.name || "Browsing as a guest") + '">' +
-    e(user ? user.name.split(" ").map(part => part[0]).join("") : "?") + '</summary><div class="profile-panel">' +
+    '<span class="profile-initials">' + e(user ? user.name.split(" ").map(part => part[0]).join("") : "?") + '</span>' +
+    '<span class="menu-control-label">' + e(user?.name || "Guest account") + '</span></summary><div class="profile-panel">' +
     '<strong>' + e(user?.name || "Welcome to Fieldwork") + '</strong><span>' + e(user ? roleName(user.role) : "Browsing as a guest") + '</span>' +
     '<a href="/cart">' + icon("checkout") + 'View cart</a>' + (user ? '<a href="/orders">' + icon("orders") + 'My orders</a>' +
     '<form method="post" action="/logout"><button type="submit">' + icon("logout") + 'Log out</button></form>' :
@@ -79,13 +80,20 @@ export function shell({ title, active, user, balance, now, body, bugs = {}, labC
     '<p class="nav-label">YOUR WORKSPACE</p><nav id="main-navigation" aria-label="Main navigation">' + navigation + '</nav>' +
     '<div class="sidebar-footer"><div class="demo-note"><span class="status-dot"></span><span>Demo storefront</span></div>' +
     '<p>A small shop. A little inspiration.</p>' + accountAction + '</div></aside>' +
-    '<div class="workspace"><header class="topbar"><div class="breadcrumb"><a href="/products">Fieldwork</a><span>/</span><strong>' + e(title) + '</strong></div>' +
-    '<div class="account-bar"><a class="header-cart" href="/cart" aria-label="Open cart">' + icon("checkout") + '<span data-cart-count>' + cart.count + '</span></a>' + themeButton() +
+    '<div class="workspace"><header class="topbar"><a class="brand mobile-brand" href="/products" aria-label="Fieldwork home">' + logo() + '</a>' +
+    '<div class="breadcrumb"><a href="/products">Fieldwork</a><span>/</span><strong>' + e(title) + '</strong></div>' +
+    (!user ? '<a class="button header-sign-in" href="/login">Sign in</a>' : '') +
+    '<div class="account-bar" data-account="' + (user ? 'member' : 'guest') + '"><p class="menu-section-label">ACCOUNT</p>' +
+    '<a class="header-cart" href="/cart" aria-label="Open cart">' + icon("checkout") + '<span data-cart-count>' + cart.count + '</span></a>' + themeButton() +
     '<span class="role-badge">' + e(user ? roleName(user.role) : "Guest") + '</span><div class="credit"><span>Demo credit</span><strong>' +
-    (balance === null ? '&mdash;' : money(balance)) + '</strong></div>' + profile + '</div></header>' +
+    (balance === null ? '&mdash;' : money(balance)) + '</strong></div>' + profile + '</div>' +
+    '<button type="button" class="mobile-menu-toggle icon-button" data-mobile-menu aria-label="Open menu" aria-expanded="false" aria-controls="mobile-navigation">' +
+    '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></header>' +
     (labControls ? labTools() : '') + '<main id="main-content" class="main">' + bugBanners(bugs) + body + '</main>' +
     '<footer class="page-footer"><span>Fieldwork &copy; 2026</span><span>Demo purchases only &middot; ' +
-    e(now.toISOString().slice(0, 10)) + ' UTC</span></footer></div></div>' + (labControls ? labDialogs() : ''), "", labControls);
+    e(now.toISOString().slice(0, 10)) + ' UTC</span></footer></div></div>' +
+    '<dialog id="mobile-navigation" class="mobile-navigation" aria-label="Navigation and account"><button type="button" class="icon-button mobile-menu-close" data-mobile-close aria-label="Close menu">&times;</button></dialog>' +
+    (labControls ? labDialogs() : ''), "", labControls);
 }
 export function loginPage(error = "", email = "", bugs = {}, labControls = false, next = "/products") {
   const accounts = [["customer", "Customer"], ["owner", "Store Owner"], ["admin", "Admin"]];
@@ -150,12 +158,12 @@ function productCards(products) {
     '" aria-label="View ' + e(product.name) + '">' + icon("arrow") + '</a></div>' + addToCartForm(product, { quick: true }) + '</div></article>').join("") + '</div>';
 }
 
-export function productsPage(products, query = "", category = "") {
+export function productsPage(products, query = "", category = "", labControls = false) {
   const categories = ["Stationery", "Audio", "Home", "Lighting"];
-  return '<section class="store-hero"><div class="hero-copy"><span class="eyebrow"><i class="live-spark"></i> A LITTLE EVERYDAY GOOD</span>' +
-    '<h1>Small finds.<br/><em>Good everyday.</em></h1><p>Useful things. Thoughtful details. Pick your favourites and make a little room for something good.</p>' +
+  return '<section class="store-hero"><div class="hero-copy"><span class="eyebrow"><i class="live-spark"></i> INTERACTIVE RELEASE VERIFICATION LAB</span>' +
+    '<h1>Small finds.<br/><em>Good everyday.</em></h1><p>Shop with demo credit. Enable a bug, run real automated checks, and inspect the evidence.</p>' +
     '<div class="hero-actions"><a class="button primary" href="#collection">Explore the collection ' + icon("arrow") +
-    '</a><a class="text-link" href="/offers">The weekend edit</a></div><span class="hero-note">A working shop inside the Release Verification Lab</span></div>' +
+    '</a><a class="text-link" href="/offers">The weekend edit</a>' + (labControls ? '<button type="button" class="text-link hero-lab-link" data-open-playground>Try the QA lab ' + icon("arrow") + '</button>' : '') + '</div><span class="hero-note">Fictional credit. Real tests. Your own isolated shop.</span></div>' +
     '<div class="hero-scene hero-photo-scene"><div class="hero-photo">' + collectionPhoto("(max-width: 560px) 90vw, 45vw") +
     '<span class="floating-label label-demo"><span class="status-dot"></span> Real shopping. Demo credit.</span></div>' +
     '<span class="orbit-dot dot-one"></span><span class="orbit-dot dot-two"></span></div></section>' +

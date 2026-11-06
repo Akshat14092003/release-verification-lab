@@ -360,7 +360,7 @@ npm.cmd run test:repeat -- --runs=3
 Current expected counts: **47 green passes**; **35 red controls and 12 intended failures**.
 The underlying red tests fail; the verifier succeeds only for the exact expected failure set.
 The total detector builds a fresh multi-item order through the browser and reconciles it using SQL.
-Older published 34-test reports and repeatability records describe the earlier version.
+Published green/red reports now cover 47 checks. Older explicitly dated 34-test records remain historical; see docs/CURRENT-RESULTS.md.
 
 Open the local HTML reports:
 
@@ -384,3 +384,15 @@ node scripts/build-pages.js
 
 Generated output: `site/`. This builds files locally; it does not publish them.
 Live saved reports: https://akshat14092003.github.io/release-verification-lab/
+
+## Runner integration and free hosting
+
+```powershell
+npm.cmd run test:unit
+npm.cmd run test:runner
+$env:CI = "true"
+npm.cmd run test:repeat -- --runs=5
+Remove-Item Env:CI
+```
+
+Free Docker deployment setup and validation: [HOSTING.md](docs/HOSTING.md). No hosting account or public app exists yet.
