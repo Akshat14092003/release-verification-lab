@@ -5,13 +5,14 @@ import { mkdirSync, mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { request } from "@playwright/test";
 import { createApp } from "../../src/app.js";
-import { requestSignup, approveSignup } from "../../src/auth.js";
+import { signup, approveSignup } from "../../src/auth.js";
 import { openDatabase, seedDatabase, verifyPassword } from "../../src/database.js";
 
 const details = { name: "Approval Tester", email: "approval@example.test", password: "Approval!2026" };
 
-test("approval routes coexist with signup and enforce admin review without leaking credentials", async () => {
-  const runtime = createApp({ databasePath: ":memory:", now: () => new Date("2026-10-24T12:00:00Z") });
+test("all signup routes enforce admin review without leaking credentials", async () => {
+  const bugs = {};
+  const runtime = createApp({ bugs, databasePath: ":memory:", now: () => new Date("2026-10-24T12:00:00Z") });
   const server = runtime.app.listen(0, "127.0.0.1");
   await once(server, "listening");
   const baseURL = "http://127.0.0.1:" + server.address().port;
@@ -20,7 +21,7 @@ test("approval routes coexist with signup and enforce admin review without leaki
     assert.equal((await buyer.get("/api/admin/signup-requests")).status(), 401);
     const portal = await buyer.get("/admin/signup-requests", { maxRedirects: 0 });
     assert.equal(portal.headers().location, "/admin/login?next=%2Fadmin%2Fsignup-requests");
-    assert.match(await (await buyer.get("/request-access")).text(), /action="\/request-access"/);
+    assert.match(await (await buyer.get("/request-access")).text(), /action="\/signup"/);
     for (const change of [{ name: " " }, { email: "invalid" }, { password: "short" }]) {
       assert.equal((await buyer.post("/api/auth/signup-requests", { data: { ...details, ...change } })).status(), 400);
     }
@@ -33,7 +34,10 @@ test("approval routes coexist with signup and enforce admin review without leaki
     assert.equal((await pending.json()).email, details.email);
     assert.ok((await (await buyer.get("/api/store/state")).json()).revision > before);
     assert.equal((await buyer.get("/api/auth/me")).status(), 401);
-    assert.equal((await buyer.post("/api/auth/login", { data: details })).status(), 401);
+    assert.equal((await buyer.post("/api/auth/login", { data: details })).status(), 403);
+    bugs.BUG_AUTH_BYPASS = true;
+    assert.equal((await buyer.post("/api/auth/login", { data: details })).status(), 403);
+    bugs.BUG_AUTH_BYPASS = false;
     assert.equal((await buyer.post("/api/auth/signup-requests", { data: details })).status(), 409);
     assert.equal((await admin.post("/api/auth/login", {
       data: { email: "admin@example.test", password: "DemoShop!2026" }
@@ -55,9 +59,12 @@ test("approval routes coexist with signup and enforce admin review without leaki
     assert.equal((await buyer.post("/api/auth/signup-requests", { data: rejected })).status(), 202);
     const next = (await (await admin.get("/api/admin/signup-requests")).json()).requests[0].id;
     assert.equal((await admin.post(`/admin/signup-requests/${next}/reject`, { form: {}, maxRedirects: 0 })).status(), 303);
-    assert.equal((await buyer.post("/api/auth/login", { data: rejected })).status(), 401);
+    assert.equal((await buyer.post("/api/auth/login", { data: rejected })).status(), 403);
+    bugs.BUG_AUTH_BYPASS = true;
+    assert.equal((await buyer.post("/api/auth/login", { data: rejected })).status(), 403);
+    bugs.BUG_AUTH_BYPASS = false;
     assert.equal((await buyer.post("/api/auth/signup-requests", { data: rejected })).status(), 202);
-    assert.equal((await buyer.post("/api/auth/signup", { data: { ...details, email: "immediate@example.test" } })).status(), 201);
+    assert.equal((await buyer.post("/api/auth/signup", { data: { ...details, email: "pending@example.test" } })).status(), 202);
     seedDatabase(runtime.db, { reset: true, includeSampleOrder: false });
     assert.equal(runtime.db.prepare("SELECT COUNT(*) AS n FROM signup_requests").get().n, 0);
     assert.equal((await buyer.get("/api/auth/me")).status(), 401);
@@ -74,7 +81,7 @@ test("signup requests survive reopening and both branches' password formats rema
   let db = openDatabase(path);
   try {
     seedDatabase(db);
-    requestSignup(db, details.name, details.email, details.password, new Date());
+    signup(db, details, new Date());
     const row = db.prepare("SELECT * FROM signup_requests").get();
     assert.match(row.password_hash, /^scrypt\$/);
     assert.equal(verifyPassword(details.password, row), true);

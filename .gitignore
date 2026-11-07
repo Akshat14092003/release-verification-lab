@@ -26,3 +26,4 @@ defect-reports/
 # Generated evidence site
 site/
 ci-evidence/
+graphify-out/

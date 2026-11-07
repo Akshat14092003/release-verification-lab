@@ -43,7 +43,7 @@ catalogue, accounts, sessions, purchases and carts; bug switches/day and report 
 
 | What you want | Website action |
 | --- | --- |
-| Request a new account | Open /request-access, fill in name, email, and password; an admin must approve the request before you can sign in |
+| Request a new account | Open /signup, fill in name, email, and password; an admin must approve the request before you can sign in |
 | Approve or reject a signup | Sign in as Admin, open /admin, and click Manage signup requests |
 | Enable or disable a bug | Open QA playground, read the bug card, and use its switch; it applies immediately |
 | Try a weekend rule on Monday | In QA playground, open Day, choose Monday, then Apply day |
@@ -254,10 +254,10 @@ Start the shop (any flags, no special clock needed):
 npm.cmd run start:shop
 ```
 
-1. Open **http://127.0.0.1:3000/request-access**.
+1. Open **http://127.0.0.1:3000/signup**.
 2. Fill in a name, email, and password (8+ characters). Submit.
 3. The confirmation page tells you the request is pending.
-4. Sign in as **Admin** (`admin@example.test` / `DemoShop!2026`).
+4. Open `/admin/login` and sign in as **Admin** (`admin@example.test` / `DemoShop!2026`).
 5. Open **Admin → Manage signup requests** (or go to `/admin/signup-requests`).
 6. Click **Approve** next to the pending request. The account is created with $1,000 demo credit.
 7. Sign out, then sign in with the email and password you chose in step 2.
@@ -269,7 +269,7 @@ To test via the API directly (PowerShell):
 
 ```powershell
 # Submit a signup request
-Invoke-RestMethod http://127.0.0.1:3000/api/auth/signup-requests -Method POST `
+Invoke-RestMethod http://127.0.0.1:3000/api/auth/signup -Method POST `
   -ContentType "application/json" `
   -Body '{"name":"Test User","email":"test@example.test","password":"TestPass1"}'
 

@@ -113,7 +113,7 @@ export function loginPage(error = "", email = "", bugs = {}, labControls = false
     '<p>A considered collection for work, home, and the moments in between.</p><div class="story-art story-photo">' +
     collectionPhoto("(max-width: 560px) 90vw, 45vw") + '</div></div><p class="story-footer">Thoughtfully simple, from start to checkout.</p></section>' +
     '<section class="login-form-section"><div class="login-card"><h2>' + (registering ? 'Create an account' : 'Sign in to Fieldwork') + '</h2>' +
-    '<p class="muted">' + (registering ? 'Create a customer account. Start with $1,000 demo credit.' : 'Sign in to explore the collection.') + '</p>' + bugBanners(bugs) +
+    '<p class="muted">' + (registering ? 'An admin must approve your signup before you can sign in. Approval adds $1,000 demo credit.' : 'Sign in to explore the collection.') + '</p>' + bugBanners(bugs) +
     (error ? '<div class="alert error" id="auth-error" role="alert">' + e(error) + '</div>' : "") +
     '<form method="post" action="/' + (registering ? 'signup' : 'login') + '" class="login-form"' + (error ? ' aria-describedby="auth-error"' : '') + '><input type="hidden" name="next" value="' + e(next) + '"/>' +
     (registering ? '<label for="name">Display name</label><input id="name" name="name" autocomplete="nickname" required maxlength="80" value="' + e(options.name || '') + '"/>' : '') +
@@ -122,7 +122,6 @@ export function loginPage(error = "", email = "", bugs = {}, labControls = false
     (registering ? '<label for="password-confirmation">Confirm password</label><input id="password-confirmation" name="password_confirmation" type="password" autocomplete="new-password" required minlength="8" maxlength="256"/>' : '') +
     '<button class="button primary full" type="submit">' + (registering ? 'Create account' : 'Sign in') + ' ' + icon("arrow") + '</button></form>' +
     '<p class="auth-switch">' + (registering ? 'Already have an account? <a href="/login' + nextQuery + '">Sign in</a>' : 'New here? <a href="/signup' + nextQuery + '">Create account</a>') + '</p>' +
-    (!registering ? '<p class="summary-note"><a href="/request-access">Request access through admin approval</a></p>' : '') +
     (registering ? '<p class="signup-note">Use fictional details. Resetting the demo shop clears this account.</p>' :
     '<div class="demo-accounts"><span class="eyebrow">TRY A DEMO ACCOUNT</span><p>Choose an account to fill in its sign-in details.</p><div class="role-options">' +
     accounts.map(([key, name]) => '<button type="button" class="role-choice" data-demo-role="' + key + '">' + name + '</button>').join("") +
@@ -454,40 +453,17 @@ export function errorPage(status, message, { admin = false } = {}) {
     '</h1><a class="button secondary" href="' + (admin ? '/admin' : '/products') + '">' + (admin ? 'Return to management' : 'Return to products') + '</a></div>';
 }
 
-export function signupPage(error = "", fields = {}, labControls = false) {
-  const { name = "", email = "" } = fields;
-  return document("Sign up",
-    '<div class="login-tools"><a class="lab-return" href="/login">Back to sign in</a>' + themeButton() + '</div>' +
-    '<main id="main-content" class="login-layout"><section class="login-story"><a class="brand" href="/login">' + logo() + '</a>' +
-    '<div class="story-copy"><span class="eyebrow light">JOIN THE LAB</span><h1>Request access.<br/>We\'ll review it.</h1>' +
-    '<p>An admin will approve your request before you can sign in. Demo credit is added automatically on approval.</p>' +
-    '</div><p class="story-footer">Fictional accounts and purchases only.</p></section>' +
-    '<section class="login-form-section"><div class="login-card"><span class="eyebrow">CREATE AN ACCOUNT</span><h2>Request access.</h2>' +
-    '<p class="muted">Fill in your details and an admin will review your request.</p>' +
-    (error ? '<div class="alert error" role="alert">' + e(error) + '</div>' : '') +
-    '<form method="post" action="/request-access" class="login-form">' +
-    '<label for="signup-name">Full name</label>' +
-    '<input id="signup-name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="100" value="' + e(name) + '" placeholder="Alex Morgan"/>' +
-    '<label for="signup-email">Email address</label>' +
-    '<input id="signup-email" name="email" type="email" autocomplete="username" required maxlength="254" value="' + e(email) + '" placeholder="you@example.test"/>' +
-    '<label for="signup-password">Password</label>' +
-    '<input id="signup-password" name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="256" placeholder="At least 8 characters"/>' +
-    '<button class="button primary full" type="submit">Request access ' + icon("arrow") + '</button></form>' +
-    '<p class="summary-note" style="text-align:left;margin-top:18px">Already have an account? <a href="/login" style="color:var(--accent);font-weight:600">Sign in</a></p>' +
-    '</div></section></main>', "login-body", labControls);
-}
-
-export function signupPendingPage(name, labControls = false) {
+export function signupPendingPage(name, labControls = false, next = "/products") {
   return document("Request sent",
-    '<div class="login-tools"><a class="lab-return" href="/login">Back to sign in</a>' + themeButton() + '</div>' +
-    '<main id="main-content" class="login-layout"><section class="login-story"><a class="brand" href="/login">' + logo() + '</a>' +
+    '<div class="login-tools"><a class="lab-return" href="/login?next=' + e(encodeURIComponent(next)) + '">Back to sign in</a>' + themeButton() + '</div>' +
+    '<main id="main-content" class="login-layout"><section class="login-story"><a class="brand" href="/login?next=' + e(encodeURIComponent(next)) + '">' + logo() + '</a>' +
     '<div class="story-copy"><span class="eyebrow light">REQUEST SUBMITTED</span><h1>You\'re on the list.</h1>' +
     '<p>An admin will review your request and approve or reject it. You\'ll be able to sign in once approved.</p></div></section>' +
     '<section class="login-form-section"><div class="login-card" style="text-align:center;padding:40px 30px;">' +
     '<span style="font-size:48px">&#9993;</span><h2 style="margin:16px 0 10px;">Request received</h2>' +
     '<p class="muted">Thanks, ' + e(name) + '. Your signup request has been sent to an admin for review.</p>' +
     '<p class="muted" style="margin-top:12px">Once approved, sign in with the email and password you chose.</p>' +
-    '<a class="button secondary" href="/login" style="margin-top:24px;display:inline-flex">Back to sign in ' + icon("arrow") + '</a>' +
+    '<a class="button secondary" href="/login?next=' + e(encodeURIComponent(next)) + '" style="margin-top:24px;display:inline-flex">Back to sign in ' + icon("arrow") + '</a>' +
     '</div></section></main>', "login-body", labControls);
 }
 

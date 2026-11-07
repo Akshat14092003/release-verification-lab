@@ -86,9 +86,9 @@
       action = total !== ledger ? () => window.Fieldwork.openTests() : lines > 1 ? () => {
         const input = document.querySelector('[name="BUG_TOTAL_MISMATCH"]'); input.checked = true; input.dispatchEvent(new Event("change"));
       } : () => location.assign("/products");
-    } else if (path === "/signup") {
+    } else if (["/signup", "/request-access"].includes(path)) {
       step = 4; title = "A fresh account, a fresh start.";
-      copy = "Use fictional details to create a customer account with $1,000 demo credit. Your cart comes with you. Resetting this sandbox clears the account.";
+      copy = "Use fictional details to request an account. An admin must approve it before you sign in. Approval adds $1,000 demo credit; your cart stays here. Reset clears the account.";
       label = "Fill details"; action = () => highlight('#name');
     } else if (path === "/login") {
       step = 4; title = state?.bugs.BUG_AUTH_BYPASS ? "Try a password that should fail." : "Use a fictional demo account.";

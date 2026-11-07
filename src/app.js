@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 import { projectRoot, readBugFlags } from "./config.js";
 import { balanceCents, openDatabase, seedDatabase } from "./database.js";
-import { findSession, login, logout, signup, requestSignup, listSignupRequests, approveSignup, rejectSignup } from "./auth.js";
+import { findSession, login, logout, signup, listSignupRequests, approveSignup, rejectSignup } from "./auth.js";
 import { listCustomers, ORDER_STATUSES, saveProduct, updateOrderStatus } from "./admin.js";
 import { getOrder, getProduct, listOffers, listOrders, listProducts, placeOrder, quoteOrder, ShopError } from "./shop.js";
 import { addCartItem, cartRequestItems, getCart, removeCartItem, updateCartItem } from "./cart.js";
@@ -135,14 +135,15 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   app.post("/login", signIn);
   app.post("/admin/login", signIn);
   app.post("/api/auth/login", signIn);
-  app.get("/signup", (req, res) => req.user?.role === "customer" ? res.redirect(nextPage(req.query.next))
+  app.get(["/signup", "/request-access"], (req, res) => req.user?.role === "customer" ? res.redirect(nextPage(req.query.next))
     : res.send(view.loginPage("", "", bugs, labControls, nextPage(req.query.next), { signup: true, sharedShop })));
-  app.post(["/signup", "/api/auth/signup"], (req, res, next) => {
+  app.post(["/signup", "/request-access", "/api/auth/signup", "/api/auth/signup-requests"], (req, res, next) => {
     try {
       if (!isApi(req) && req.body?.password !== req.body?.password_confirmation) throw new ShopError("Passwords do not match. Enter them again.");
-      const user = signup(db, req.body, now(), res);
+      const result = signup(db, req.body, now());
       storeRevision++;
-      return isApi(req) ? res.status(201).json({ user, balance_cents: balanceCents(db, user.id) }) : res.redirect(303, nextPage(req.body?.next));
+      return isApi(req) ? res.status(202).json({ message: "Signup request submitted. An admin will review it.", ...result })
+        : res.send(view.signupPendingPage(result.name, labControls, nextPage(req.body?.next)));
     } catch (error) {
       if (!isApi(req) && error instanceof ShopError) {
         const email = typeof req.body?.email === "string" ? req.body.email.slice(0, 254) : "";
@@ -164,28 +165,6 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   app.get("/api/auth/me", authenticated, (req, res) => {
     res.json({ user: req.user, ...(req.user.role === "customer" ? { balance_cents: balanceCents(db, req.user.id) } : {}) });
   });
-
-  // Optional approval workflow; ordinary /signup keeps immediate registration.
-  app.get("/request-access", (req, res) => {
-    if (req.user) return res.redirect("/products");
-    res.send(view.signupPage("", {}, labControls));
-  });
-  const handleSignup = (req, res, next) => {
-    try {
-      const result = requestSignup(db, req.body?.name, req.body?.email, req.body?.password, now());
-      storeRevision++;
-      if (isApi(req)) return res.status(202).json({ message: "Signup request submitted. An admin will review it.", ...result });
-      return res.send(view.signupPendingPage(result.name, labControls));
-    } catch (error) {
-      if (!isApi(req) && error instanceof ShopError) {
-        const fields = { name: typeof req.body?.name === "string" ? req.body.name.slice(0, 100) : "", email: typeof req.body?.email === "string" ? req.body.email.slice(0, 254) : "" };
-        return res.status(error.status).send(view.signupPage(error.message, fields, labControls));
-      }
-      next(error);
-    }
-  };
-  app.post("/request-access", handleSignup);
-  app.post("/api/auth/signup-requests", handleSignup);
 
   app.get("/products", (req, res) => {
     const query = typeof req.query.q === "string" ? req.query.q.slice(0, 100) : "";

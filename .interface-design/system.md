@@ -114,7 +114,8 @@ native dialogs pause/hide it. No sound, flashes, automatic jumpscare, or changes
 Only Customer and Admin roles are visible. Signup reuses the sign-in glass layout and theme;
 keep the four labelled fields, submit action and sign-in link visible at normal mobile heights.
 Its contextual guide uses a compact row to preserve room for the form. Explain demo reset scope
-beside the form. Public signup always creates a customer and retains the guest cart.
+beside the form. Public signup creates a pending request and retains the guest cart. Admin approval creates
+the customer account; the visitor signs in afterward.
 Admin signs in to management and sees Overview/Products/Orders/Customers navigation and customer
 receipts. Keep cart/checkout/offers/personal orders and personal credit out of every admin shell,
 profile and empty state. Shopping is customer-only, with equivalent server-side enforcement.

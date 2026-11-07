@@ -29,6 +29,11 @@ export function login(db, email, password, now, response, bugs = {}, { role } = 
     throw new ShopError("Enter a valid email and password.", 400);
   }
   let user = db.prepare("SELECT * FROM users WHERE email = ?").get(email.trim().toLowerCase());
+  if (!user) {
+    const request = db.prepare("SELECT status FROM signup_requests WHERE email=? ORDER BY id DESC LIMIT 1").get(email.trim().toLowerCase());
+    if (request?.status === "pending") throw new ShopError("Your signup is awaiting administrator approval.", 403);
+    if (request?.status === "rejected") throw new ShopError("Your signup was rejected. Submit a new signup request to try again.", 403);
+  }
   // Seeded defect: an authentication path accidentally reuses guest provisioning,
   // then skips credential verification for both guest and existing accounts.
   if (!user && bugs.BUG_AUTH_BYPASS) {
@@ -51,32 +56,6 @@ function startSession(db, user, now, response) {
   );
   response.cookie(user.role === "admin" ? ADMIN_COOKIE : COOKIE, token, { httpOnly: true, sameSite: "lax", secure: Boolean(response.req?.secure), path: "/", maxAge: SESSION_SECONDS * 1000 });
   return { id: user.id, email: user.email, name: user.name, role: user.role };
-}
-
-export function signup(db, input, now, response) {
-  const { name, email, password } = input || {};
-  if (typeof name !== "string" || !name.trim() || name.trim().length > 80) {
-    throw new ShopError("Enter a display name between 1 and 80 characters.");
-  }
-  if (typeof email !== "string" || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-    throw new ShopError("Enter a valid email address.");
-  }
-  if (typeof password !== "string" || password.length < 8 || password.length > 256) {
-    throw new ShopError("Use a password between 8 and 256 characters.");
-  }
-  const address = email.trim().toLowerCase();
-  const passwordHash = hashPassword(password);
-  db.exec("BEGIN IMMEDIATE");
-  try {
-    if (db.prepare("SELECT id FROM users WHERE email=?").get(address)) {
-      throw new ShopError("This email already has an account. Sign in instead.", 409);
-    }
-    const result = db.prepare("INSERT INTO users (email,name,role,password_hash,opening_balance_cents) VALUES (?,?,'customer',?,100000)")
-      .run(address, name.trim(), passwordHash);
-    const user = startSession(db, { id: Number(result.lastInsertRowid), email: address, name: name.trim(), role: "customer" }, now, response);
-    db.exec("COMMIT");
-    return user;
-  } catch (error) { db.exec("ROLLBACK"); throw error; }
 }
 
 export function logout(db, cookieHeader, response, { role } = {}) {
@@ -106,9 +85,10 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * Submit a signup request for admin approval.
  * Does NOT create a user account — that happens in approveSignup().
  */
-export function requestSignup(db, name, email, password, now) {
-  if (typeof name !== "string" || name.trim().length < 2 || name.trim().length > 100) {
-    throw new ShopError("Enter your full name (2–100 characters).", 400);
+export function signup(db, input, now) {
+  const { name, email, password } = input || {};
+  if (typeof name !== "string" || !name.trim() || name.trim().length > 80) {
+    throw new ShopError("Enter a display name between 1 and 80 characters.", 400);
   }
   if (typeof email !== "string" || !EMAIL_RE.test(email.trim()) || email.length > 254) {
     throw new ShopError("Enter a valid email address.", 400);

@@ -3,16 +3,41 @@ import { checkResponse } from "../support/api.js";
 
 const details = { name: "Morgan Tester", email: "morgan@example.test", password: "FreshDemo!2026" };
 
-test("signup creates a customer with credit, preserves the guest cart and supports later login", async ({ request, lab }, testInfo) => {
+test("signup requires admin approval, preserves the guest cart and supports later login", async ({ request, lab, playwright }, testInfo) => {
   await request.post("/api/cart/items", { data: { product_id: 2 } });
-  const created = await checkResponse(await request.post("/api/auth/signup", {
+  const pending = await checkResponse(await request.post("/api/auth/signup", {
     data: { ...details, email: " MORGAN@example.test ", role: "admin", opening_balance_cents: 9999999 }
-  }), 201, testInfo, "signup");
-  expect(created).toMatchObject({ user: { name: details.name, email: details.email, role: "customer" }, balance_cents: 100000 });
-  expect(created.user).not.toHaveProperty("password_hash");
-  const first = lab.sql.prepare("SELECT * FROM users WHERE id=?").get(created.user.id);
-  expect(first.password_hash).toMatch(/^scrypt\$[a-f0-9]{32}\$[a-f0-9]{128}$/);
-  expect((await request.get("/api/cart")).ok()).toBe(true);
+  }), 202, testInfo, "signup-pending");
+  expect(pending).toMatchObject({ name: details.name, email: details.email });
+  expect(pending).not.toHaveProperty("password_hash");
+  expect(pending).not.toHaveProperty("user");
+  expect(lab.sql.prepare("SELECT id FROM users WHERE email=?").get(details.email)).toBeUndefined();
+  expect((await request.get("/api/auth/me")).status()).toBe(401);
+  await checkResponse(await request.post("/api/auth/login", { data: details }), 403, testInfo, "pending-login");
+  expect(lab.sql.prepare("SELECT COUNT(*) AS n FROM sessions").get().n).toBe(0);
+  await checkResponse(await request.post("/api/auth/signup", { data: details }), 409, testInfo, "duplicate-pending");
+  const admin = await playwright.request.newContext({ baseURL: lab.baseURL });
+  let first;
+  try {
+    await checkResponse(await admin.post("/api/auth/login", {
+      data: { email: "admin@example.test", password: "DemoShop!2026" }
+    }), 200, testInfo, "admin-login");
+    const requests = await (await admin.get("/api/admin/signup-requests")).json();
+    const id = requests.requests[0].id;
+    expect(requests.requests[0]).not.toHaveProperty("password_hash");
+    await checkResponse(await request.post(`/api/admin/signup-requests/${id}/approve`, { data: {} }), 401, testInfo, "anonymous-approval");
+    await checkResponse(await admin.post(`/api/admin/signup-requests/${id}/approve`, { data: {} }), 200, testInfo, "approve-signup");
+    await checkResponse(await admin.post(`/api/admin/signup-requests/${id}/approve`, { data: {} }), 404, testInfo, "duplicate-approval");
+    first = lab.sql.prepare("SELECT * FROM users WHERE email=?").get(details.email);
+    expect(first).toMatchObject({ role: "customer", opening_balance_cents: 100000 });
+    expect(first.password_hash).toMatch(/^scrypt\$[a-f0-9]{32}\$[a-f0-9]{128}$/);
+    // Approval creates no customer session in either browser.
+    expect((await request.get("/api/auth/me")).status()).toBe(401);
+    await checkResponse(await request.post("/api/auth/login", { data: details }), 200, testInfo, "approved-login");
+    const me = await (await request.get("/api/auth/me")).json();
+    expect(me).toMatchObject({ user: { email: details.email, role: "customer" }, balance_cents: 100000 });
+    expect(me.user).not.toHaveProperty("password_hash");
+  } finally { await admin.dispose(); }
   expect((await (await request.get("/api/cart")).json()).cart.items).toHaveLength(1);
   await checkResponse(await request.post("/api/cart/checkout", { data: {} }), 201, testInfo, "registered-checkout");
   expect((await (await request.get("/api/auth/me")).json()).balance_cents).toBe(95500);
@@ -21,10 +46,10 @@ test("signup creates a customer with credit, preserves the guest cart and suppor
   await checkResponse(await request.post("/api/auth/login", { data: details }), 200, testInfo, "new-account-login");
   expect((await (await request.get("/api/orders")).json()).orders).toHaveLength(1);
   await request.post("/api/auth/logout");
-  const second = await checkResponse(await request.post("/api/auth/signup", {
+  await checkResponse(await request.post("/api/auth/signup", {
     data: { ...details, email: "another@example.test" }
-  }), 201, testInfo, "second-signup");
-  expect(lab.sql.prepare("SELECT password_hash FROM users WHERE id=?").get(second.user.id).password_hash).not.toBe(first.password_hash);
+  }), 202, testInfo, "second-signup");
+  expect(lab.sql.prepare("SELECT password_hash FROM signup_requests WHERE email=?").get("another@example.test").password_hash).not.toBe(first.password_hash);
 });
 
 test("invalid and duplicate signup cannot create accounts or sessions", async ({ request, lab }, testInfo) => {
@@ -47,6 +72,10 @@ test("signup rejects cross-origin submissions and unsafe redirect destinations",
   const response = await request.post("/signup", {
     form: { ...details, password_confirmation: details.password, next: "https://untrusted.example" }, maxRedirects: 0
   });
-  expect(response.status()).toBe(303);
-  expect(response.headers().location).toBe("/products");
+  expect(response.status()).toBe(200);
+  const html = await response.text();
+  expect(html).toContain("Request received");
+  expect(html).toContain('/login?next=%2Fproducts');
+  expect(html).not.toContain("untrusted.example");
+  expect((await request.get("/api/auth/me")).status()).toBe(401);
 });
