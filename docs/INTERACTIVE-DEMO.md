@@ -17,6 +17,13 @@ the leap. Other native dialogs hide/pause it. Shop controls remain clickable whe
 
 ## Shopping flow
 
+Optional admin approval is available at `/request-access`, separate from immediate registration
+at `/signup`. Requests create no account or session. Admins review them through
+**Admin → Manage signup requests** (`/admin/signup-requests`). Approval creates a customer
+with $1,000 demo credit; the customer then signs in with their chosen credentials.
+Rejected requests may be resubmitted. Reset clears requests along with accounts and purchases.
+
+
 Create an account from Sign in → Create account. Registration signs in a new customer with
 $1,000 demo credit, retaining the guest cart and checkout destination. Use fictional details;
 resetting the demo removes these accounts. Local shared accounts survive server restarts;

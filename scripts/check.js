@@ -10,7 +10,7 @@ for (const root of roots) {
   }
 }
 for (const path of paths) {
-  const result = spawnSync(process.execPath, ["--check", path], { stdio: "inherit" });
-  if (result.status !== 0) process.exit(result.status || 1);
+  const { status } = spawnSync(process.execPath, ["--check", path], { stdio: "inherit" });
+  if (status !== 0) process.exit(status || 1);
 }
 console.log("Syntax checked " + paths.length + " JavaScript files.");

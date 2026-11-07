@@ -40,6 +40,11 @@ No manually started app or shared demo database is required.
 - pages/: small Playwright page objects.
 - support/: independent synthetic-account expectations and recorded HTTP evidence.
 
+`npm run test:unit` also checks optional signup approval: admin permissions, pending login
+rejection, duplicate review, rejection/resubmission, credit/checkout, reset, persistence,
+and compatibility with both branches' password formats. Immediate `/signup` remains covered
+by the existing browser/API suite.
+
 ## Isolation and evidence
 
 Fixtures import the app factory, but business requests run over real HTTP.

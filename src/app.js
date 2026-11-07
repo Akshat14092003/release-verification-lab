@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 import { projectRoot, readBugFlags } from "./config.js";
 import { balanceCents, openDatabase, seedDatabase } from "./database.js";
-import { findSession, login, logout, signup } from "./auth.js";
+import { findSession, login, logout, signup, requestSignup, listSignupRequests, approveSignup, rejectSignup } from "./auth.js";
 import { listCustomers, ORDER_STATUSES, saveProduct, updateOrderStatus } from "./admin.js";
 import { getOrder, getProduct, listOffers, listOrders, listProducts, placeOrder, quoteOrder, ShopError } from "./shop.js";
 import { addCartItem, cartRequestItems, getCart, removeCartItem, updateCartItem } from "./cart.js";
@@ -85,7 +85,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
     if (typeof value !== "string" || value.length > 2048) return "/admin";
     try {
       const destination = new URL(value, "http://fieldwork.local");
-      return destination.origin === "http://fieldwork.local" && /^\/admin(?:\/products|\/customers|\/orders(?:\/[1-9]\d*)?)?$/.test(destination.pathname)
+      return destination.origin === "http://fieldwork.local" && /^\/admin(?:\/products|\/customers|\/signup-requests|\/orders(?:\/[1-9]\d*)?)?$/.test(destination.pathname)
         ? destination.pathname + destination.search : "/admin";
     } catch { return "/admin"; }
   };
@@ -164,6 +164,28 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   app.get("/api/auth/me", authenticated, (req, res) => {
     res.json({ user: req.user, ...(req.user.role === "customer" ? { balance_cents: balanceCents(db, req.user.id) } : {}) });
   });
+
+  // Optional approval workflow; ordinary /signup keeps immediate registration.
+  app.get("/request-access", (req, res) => {
+    if (req.user) return res.redirect("/products");
+    res.send(view.signupPage("", {}, labControls));
+  });
+  const handleSignup = (req, res, next) => {
+    try {
+      const result = requestSignup(db, req.body?.name, req.body?.email, req.body?.password, now());
+      storeRevision++;
+      if (isApi(req)) return res.status(202).json({ message: "Signup request submitted. An admin will review it.", ...result });
+      return res.send(view.signupPendingPage(result.name, labControls));
+    } catch (error) {
+      if (!isApi(req) && error instanceof ShopError) {
+        const fields = { name: typeof req.body?.name === "string" ? req.body.name.slice(0, 100) : "", email: typeof req.body?.email === "string" ? req.body.email.slice(0, 254) : "" };
+        return res.status(error.status).send(view.signupPage(error.message, fields, labControls));
+      }
+      next(error);
+    }
+  };
+  app.post("/request-access", handleSignup);
+  app.post("/api/auth/signup-requests", handleSignup);
 
   app.get("/products", (req, res) => {
     const query = typeof req.query.q === "string" ? req.query.q.slice(0, 100) : "";
@@ -318,6 +340,46 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   };
   app.post(["/admin/orders/:id/status", "/api/admin/orders/:id/status"], authenticated, administrator, orderAction);
   app.patch("/api/admin/orders/:id/status", authenticated, administrator, orderAction);
+
+  // --- admin: signup request management ---
+  app.get("/admin/signup-requests", authenticated, administrator, (req, res) => {
+    const pending  = listSignupRequests(db, "pending");
+    const approved = listSignupRequests(db, "approved");
+    const rejected = listSignupRequests(db, "rejected");
+    return page(req, res, "Signup requests", "admin", view.adminSignupRequestsPage(pending, [...approved, ...rejected]));
+  });
+  app.get("/api/admin/signup-requests", authenticated, administrator, (req, res) => {
+    const status = ["pending", "approved", "rejected"].includes(req.query.status) ? req.query.status : "pending";
+    res.json({ requests: listSignupRequests(db, status) });
+  });
+  app.post("/admin/signup-requests/:id/approve", authenticated, administrator, (req, res, next) => {
+    try {
+      const result = approveSignup(db, Number(req.params.id), now());
+      storeRevision++;
+      if (isApi(req)) return res.json({ message: "Approved.", ...result });
+      return res.redirect(303, "/admin/signup-requests");
+    } catch (error) { next(error); }
+  });
+  app.post("/api/admin/signup-requests/:id/approve", authenticated, administrator, (req, res, next) => {
+    try {
+      const result = approveSignup(db, Number(req.params.id), now());
+      storeRevision++;
+      res.json({ message: "Approved.", ...result });
+    }
+    catch (error) { next(error); }
+  });
+  app.post("/admin/signup-requests/:id/reject", authenticated, administrator, (req, res, next) => {
+    try {
+      rejectSignup(db, Number(req.params.id), now());
+      storeRevision++;
+      if (isApi(req)) return res.json({ message: "Rejected." });
+      return res.redirect(303, "/admin/signup-requests");
+    } catch (error) { next(error); }
+  });
+  app.post("/api/admin/signup-requests/:id/reject", authenticated, administrator, (req, res, next) => {
+    try { rejectSignup(db, Number(req.params.id), now()); storeRevision++; res.json({ message: "Rejected." }); }
+    catch (error) { next(error); }
+  });
 
   app.use((req, res, next) => next(new ShopError("Page not found.", 404)));
   app.use((error, req, res, next) => {

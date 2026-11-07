@@ -2,33 +2,34 @@
 // locally from this working tree, in CI from the downloaded job artifacts.
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 
-const site = "site";
+const site     = "site";
 const evidence = "ci-evidence";
 
 function pick(...candidates) {
-  return candidates.find(candidate => existsSync(candidate)) || null;
+  return candidates.find(c => existsSync(c)) || null;
 }
 
 function readJson(path) {
   return path ? JSON.parse(readFileSync(path, "utf8")) : null;
 }
 
+const ESC = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" };
 function escape(value) {
-  return String(value).replace(/[&<>"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[character]));
+  return String(value).replace(/[&<>"]/g, c => ESC[c]);
 }
 
 const greenReport = pick(evidence + "/green/playwright-report", "playwright-report");
-const redReport = pick(evidence + "/red/defect-reports/red", "defect-reports/red");
+const redReport   = pick(evidence + "/red/defect-reports/red",  "defect-reports/red");
 if (!greenReport) throw new Error("No green HTML report found. Run npm test or download green-evidence first.");
-if (!redReport) throw new Error("No red HTML report found. Run npm run test:red or download red-evidence first.");
+if (!redReport)   throw new Error("No red HTML report found. Run npm run test:red or download red-evidence first.");
 for (const report of [greenReport, redReport]) {
   if (!existsSync(report + "/index.html")) throw new Error("Report folder has no index.html: " + report);
 }
 
-const greenStats = readJson(pick(evidence + "/green/test-results/results.json", "test-results/results.json"))?.stats || null;
-const redSummary = readJson(pick(evidence + "/red/test-results/defects/red-summary.json", "test-results/defects/red-summary.json"));
-const redRun = redSummary?.scenarios?.find(scenario => scenario.name === "red") || null;
-const repeat = readJson(pick("test-results/repeatability.json", "docs/repeatability.json"));
+const greenStats  = readJson(pick(evidence + "/green/test-results/results.json", "test-results/results.json"))?.stats || null;
+const redSummary  = readJson(pick(evidence + "/red/test-results/defects/red-summary.json", "test-results/defects/red-summary.json"));
+const redRun      = redSummary?.scenarios?.find(s => s.name === "red") || null;
+const repeat      = readJson(pick("test-results/repeatability.json", "docs/repeatability.json"));
 
 const repo = "https://github.com/Akshat14092003/release-verification-lab";
 const run = process.env.GITHUB_RUN_ID
@@ -43,8 +44,7 @@ const redLine = redRun
   : "Result counts were not available for this build.";
 const verified = Boolean(redSummary?.complete && redRun?.verified);
 
-const repeatBlock = repeat
-  ? `<section>
+const repeatBlock = repeat ? `<section>
       <h2>Repeatability (${repeat.expectedChecks}-check suite)</h2>
       <p>${repeat.runs} local green runs and ${repeat.runs} local red runs on ${escape(repeat.environment.platform)},
       Node ${escape(repeat.environment.node)}, ${repeat.environment.workers} workers.</p>
@@ -56,8 +56,7 @@ const repeatBlock = repeat
         <li>Identical failing-test set on every red run: <strong>${repeat.red.failureSetStable ? "yes" : "no"}</strong>.</li>
       </ul>
       <p class="note">A ${repeat.runs}-run sample on one machine. It is not a long-run flake rate.</p>
-    </section>`
-  : "";
+    </section>` : "";
 
 const failures = redRun
   ? redRun.expectedFailures.map(name => `<li><code>${escape(name)}</code></li>`).join("\n        ")
@@ -151,11 +150,11 @@ ${repeatBlock}
 rmSync(site, { recursive: true, force: true });
 mkdirSync(site, { recursive: true });
 cpSync(greenReport, site + "/green", { recursive: true });
-cpSync(redReport, site + "/red", { recursive: true });
+cpSync(redReport,   site + "/red",   { recursive: true });
 writeFileSync(site + "/index.html", html);
 writeFileSync(site + "/.nojekyll", "");
 
-console.log("green report: " + greenReport);
-console.log("red report:   " + redReport);
+console.log("green report:  " + greenReport);
+console.log("red report:    " + redReport);
 console.log("repeatability: " + (repeat ? "included" : "not available"));
-console.log("site written: " + site + "/index.html");
+console.log("site written:  " + site + "/index.html");

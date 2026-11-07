@@ -127,6 +127,8 @@ A server-side clock can also be injected into createApp for the later isolated t
 
 - /login: role shortcuts, sign-in, and a visible error state.
 - /signup: customer registration, automatic sign-in, and password confirmation.
+- /request-access: optional signup request requiring admin approval; no account or session until approved.
+- /admin/signup-requests: administrator-only approval and rejection of access requests.
 - /products: searchable product cards with supplied Gemini product photographs.
 - /offers: the weekend offer and its actual availability.
 - /products/:id: individual product details, quantity selector, and Add to cart.
@@ -171,6 +173,10 @@ are resolved by the server. Order lines and ledger entries commit in one transac
 | --- | --- | --- |
 | GET | /health | Readiness |
 | POST | /api/auth/signup | Create a customer with demo credit and a signed-in session |
+| POST | /api/auth/signup-requests | Submit an optional access request for admin approval |
+| GET | /api/admin/signup-requests?status=pending | List access requests (admin only) |
+| POST | /api/admin/signup-requests/:id/approve | Approve a pending request (admin only) |
+| POST | /api/admin/signup-requests/:id/reject | Reject a pending request (admin only) |
 | POST | /api/auth/login | Sign in with email and password |
 | POST | /api/auth/logout | End the session |
 | GET | /api/auth/me | Current user and demo credit |
