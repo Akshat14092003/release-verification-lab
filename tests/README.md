@@ -29,9 +29,9 @@ No manually started app or shared demo database is required.
 
 ## Layers
 
-- api/: signup, customer-only registration, validation, admin product/order permissions, authentication, catalogue search, authoritative price/identity, offer cap, account ownership,
+- api/: signup approval, customer-only registration, validation, admin product/order permissions, authentication, catalogue search, authoritative price/identity, offer cap, account ownership,
   role access, and UTC opening/closing boundaries.
-- e2e/: signup from checkout, admin price/status editing, login/logout, error presentation, purchase/receipt, offers, stale checkout at expiry,
+- e2e/: signup approval from checkout, admin price/status editing, login/logout, error presentation, purchase/receipt, offers, stale checkout at expiry,
   mobile layout/sign-out, and administrator navigation.
 - db/: a multi-item order created through checkout from an empty database and a new single-item purchase reconciled against independent SQL,
   remaining credit, and absence of writes after a rejected purchase.
@@ -39,6 +39,11 @@ No manually started app or shared demo database is required.
 - fixtures/: one real SQLite database and ephemeral server per test, plus a controlled clock.
 - pages/: small Playwright page objects.
 - support/: independent synthetic-account expectations and recorded HTTP evidence.
+
+`npm run test:unit` also checks mandatory signup approval: admin permissions, pending login
+rejection, duplicate review, rejection/resubmission, credit/checkout, reset, persistence,
+and compatibility with both branches' password formats. The browser/API suite covers `/signup` submission, admin approval and later login
+with the original guest cart.
 
 ## Isolation and evidence
 

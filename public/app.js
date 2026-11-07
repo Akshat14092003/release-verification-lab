@@ -1,4 +1,58 @@
 (() => {
+  // --- Shared utilities exposed on window.Fieldwork for lab.js / guide.js ---
+
+  /** Safe localStorage wrapper. get: store(key). set: store(key, value). */
+  function store(key, value) {
+    try {
+      if (arguments.length > 1) localStorage.setItem(key, value);
+      else return localStorage.getItem(key);
+    } catch { /* Storage may be disabled. */ }
+  }
+
+  /** Safe sessionStorage wrapper. get: session(key). set: session(key, value). remove: session(key, null). */
+  function session(key, value) {
+    try {
+      if (arguments.length > 1) {
+        if (value === null) sessionStorage.removeItem(key);
+        else sessionStorage.setItem(key, value);
+      } else return sessionStorage.getItem(key);
+    } catch { /* Storage may be disabled. */ }
+  }
+
+  /**
+   * Fetch JSON helper. GET when data is undefined, POST otherwise.
+   * Throws an Error (with .status) for non-2xx responses.
+   */
+  async function fetchJson(path, data) {
+    const response = await fetch(path, data === undefined
+      ? { cache: "no-store" }
+      : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }
+    );
+    const result = await response.json().catch(() => ({ error: "The server is unavailable. Please retry shortly." }));
+    if (!response.ok) {
+      const err = new Error(result.error || "The request could not be completed.");
+      err.status = response.status;
+      throw err;
+    }
+    return result;
+  }
+
+  /**
+   * Disable a button (and optional extra inputs), run an async fn, then re-enable.
+   * Sets aria-busy on the button during execution.
+   */
+  async function withButton(button, fn, extraInputs = []) {
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    extraInputs.forEach(el => { el.disabled = true; });
+    try { return await fn(); }
+    finally {
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+      extraInputs.forEach(el => { el.disabled = false; });
+    }
+  }
+
   const motion = window.FieldworkMotion;
   const toastBox = document.getElementById("cart-toast");
   let toastTimer, toastDeadline = 0, toastRemaining = 3800;
@@ -71,7 +125,7 @@
     }
     return false;
   }
-  window.Fieldwork = { toast, syncCart, refresh };
+  window.Fieldwork = { toast, syncCart, refresh, store, session, fetchJson, withButton };
   async function updateCartPage(cart) {
     const rows = document.querySelectorAll("[data-cart-line]");
     if (!rows.length) return;
@@ -240,7 +294,7 @@
     if (event.target.closest("[data-sidebar-toggle]")) {
       const state = document.documentElement.dataset.sidebar === "collapsed" ? "expanded" : "collapsed";
       document.documentElement.dataset.sidebar = state;
-      try { localStorage.setItem("fieldwork-sidebar", state); } catch { /* Optional persistence. */ }
+      store("fieldwork-sidebar", state);
       updateSidebar();
     }
     const step = event.target.closest("[data-quantity-step]");

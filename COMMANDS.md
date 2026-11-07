@@ -43,6 +43,8 @@ catalogue, accounts, sessions, purchases and carts; bug switches/day and report 
 
 | What you want | Website action |
 | --- | --- |
+| Request a new account | Open /signup, fill in name, email, and password; an admin must approve the request before you can sign in |
+| Approve or reject a signup | Sign in as Admin, open /admin, and click Manage signup requests |
 | Enable or disable a bug | Open QA playground, read the bug card, and use its switch; it applies immediately |
 | Try a weekend rule on Monday | In QA playground, open Day, choose Monday, then Apply day |
 | Reset purchases and balance | Reset shared shop; confirmation covers every browser, restores catalogue and clears all accounts/purchases/carts; seeded customers return to $1,000 |
@@ -244,9 +246,46 @@ Reload the same receipt: both totals now show **$101**. No pre-existing order is
 Choose other products/quantities to demonstrate it again. Two different product lines expose the defect;
 one line with quantity 2 alone still displays its correct line total.
 
-### Manually reproduce invalid login acceptance
+### Test the signup approval flow
 
-Stop the shop, then run:
+Start the shop (any flags, no special clock needed):
+
+```powershell
+npm.cmd run start:shop
+```
+
+1. Open **http://127.0.0.1:3000/signup**.
+2. Fill in a name, email, and password (8+ characters). Submit.
+3. The confirmation page tells you the request is pending.
+4. Open `/admin/login` and sign in as **Admin** (`admin@example.test` / `DemoShop!2026`).
+5. Open **Admin → Manage signup requests** (or go to `/admin/signup-requests`).
+6. Click **Approve** next to the pending request. The account is created with $1,000 demo credit.
+7. Sign out, then sign in with the email and password you chose in step 2.
+
+To test rejection: repeat steps 1–5 with a different email and click **Reject** instead.
+A rejected user cannot sign in; they would need to submit a new request.
+
+To test via the API directly (PowerShell):
+
+```powershell
+# Submit a signup request
+Invoke-RestMethod http://127.0.0.1:3000/api/auth/signup -Method POST `
+  -ContentType "application/json" `
+  -Body '{"name":"Test User","email":"test@example.test","password":"TestPass1"}'
+
+# List pending requests (as admin)
+$adminCreds = '{"email":"admin@example.test","password":"DemoShop!2026"}'
+Invoke-RestMethod http://127.0.0.1:3000/api/auth/login -Method POST `
+  -ContentType "application/json" -Body $adminCreds -SessionVariable adminSess
+Invoke-RestMethod "http://127.0.0.1:3000/api/admin/signup-requests?status=pending" `
+  -WebSession $adminSess
+
+# Approve request ID 1
+Invoke-RestMethod http://127.0.0.1:3000/api/admin/signup-requests/1/approve `
+  -Method POST -ContentType "application/json" -Body '{}' -WebSession $adminSess
+```
+
+### Manually reproduce invalid login acceptance
 
 ```powershell
 $env:BUG_AUTH_BYPASS = "1"

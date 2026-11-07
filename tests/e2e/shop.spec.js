@@ -159,7 +159,7 @@ test("an administrator can inspect the store overview", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Store overview", exact: true })).toBeVisible();
 });
 
-test("a visitor signs up from checkout, keeps their cart and signs in again", async ({ page }) => {
+test("a visitor signs up from checkout, gets admin approval and keeps their cart", async ({ page, browser, lab }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/products/2");
   await page.getByRole("button", { name: "Add to cart", exact: true }).click();
@@ -176,6 +176,20 @@ test("a visitor signs up from checkout, keeps their cart and signs in again", as
   await page.locator("#password").fill("FreshDemo!2026");
   await page.getByLabel("Confirm password", { exact: true }).fill("FreshDemo!2026");
   await page.getByRole("button", { name: "Create account", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Request received", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Back to sign in", exact: true }).first().click();
+  await new LoginPage(page).submit("riley@example.test", "FreshDemo!2026");
+  await expect(page.getByRole("alert")).toContainText("awaiting administrator approval");
+  const adminContext = await browser.newContext({ baseURL: lab.baseURL, reducedMotion: "reduce" });
+  await adminContext.route("https://fonts.googleapis.com/**", route => route.abort());
+  try {
+    const adminPage = await adminContext.newPage();
+    await new LoginPage(adminPage).signInAs("Admin");
+    await adminPage.getByRole("link", { name: "Manage signup requests" }).click();
+    await adminPage.getByRole("row").filter({ hasText: "riley@example.test" }).getByRole("button", { name: "Approve", exact: true }).click();
+    await expect(adminPage.getByRole("row").filter({ hasText: "riley@example.test" })).toContainText("Approved");
+  } finally { await adminContext.close(); }
+  await new LoginPage(page).submit("riley@example.test", "FreshDemo!2026");
   await expect(page).toHaveURL(/\/checkout$/);
   await expect(page.locator(".role-badge")).toHaveText("Customer");
   await expect(page.getByTestId("checkout-total")).toHaveText("$45.00");

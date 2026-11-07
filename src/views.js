@@ -113,7 +113,7 @@ export function loginPage(error = "", email = "", bugs = {}, labControls = false
     '<p>A considered collection for work, home, and the moments in between.</p><div class="story-art story-photo">' +
     collectionPhoto("(max-width: 560px) 90vw, 45vw") + '</div></div><p class="story-footer">Thoughtfully simple, from start to checkout.</p></section>' +
     '<section class="login-form-section"><div class="login-card"><h2>' + (registering ? 'Create an account' : 'Sign in to Fieldwork') + '</h2>' +
-    '<p class="muted">' + (registering ? 'Create a customer account. Start with $1,000 demo credit.' : 'Sign in to explore the collection.') + '</p>' + bugBanners(bugs) +
+    '<p class="muted">' + (registering ? 'An admin must approve your signup before you can sign in. Approval adds $1,000 demo credit.' : 'Sign in to explore the collection.') + '</p>' + bugBanners(bugs) +
     (error ? '<div class="alert error" id="auth-error" role="alert">' + e(error) + '</div>' : "") +
     '<form method="post" action="/' + (registering ? 'signup' : 'login') + '" class="login-form"' + (error ? ' aria-describedby="auth-error"' : '') + '><input type="hidden" name="next" value="' + e(next) + '"/>' +
     (registering ? '<label for="name">Display name</label><input id="name" name="name" autocomplete="nickname" required maxlength="80" value="' + e(options.name || '') + '"/>' : '') +
@@ -410,7 +410,8 @@ export function adminPage({ stats, orders, products, customers }, options = {}) 
     '<section class="admin-tasks" aria-label="Management shortcuts">' +
     task("/admin/products", "Manage products", active + " for sale · " + (products.length - active) + " hidden", "products") +
     task("/admin/orders", "Manage orders", "Review receipts and update fulfilment", "orders") +
-    task("/admin/customers", "View customers", "Inspect demo credit and purchase history", "customers") + '</section>' +
+    task("/admin/customers", "View customers", "Inspect demo credit and purchase history", "customers") +
+    task("/admin/signup-requests", "Manage signup requests", "Approve or reject access requests", "admin") + '</section>' +
     '<section class="panel table-panel"><div class="panel-heading"><h2>Recent orders</h2><a class="subtle-link" href="/admin/orders">All orders ' + icon("arrow") + '</a></div>' +
     orderTable(orders.slice(0, 5), true, { editable: false }) + '</section>' +
     '<p class="admin-sandbox-note">' + (options.sharedShop ? 'This shop is shared across browsers. Catalogue changes reach every buyer; orders and customers appear here.' : 'This is your isolated demo shop. Open a linked buyer window from Products to test admin changes alongside a customer.') + ' QA playground checks use separate test data.</p>';
@@ -451,6 +452,62 @@ export function errorPage(status, message, { admin = false } = {}) {
   return '<div class="empty-state"><span class="eyebrow">' + status + '</span><h1>' + e(message) +
     '</h1><a class="button secondary" href="' + (admin ? '/admin' : '/products') + '">' + (admin ? 'Return to management' : 'Return to products') + '</a></div>';
 }
+
+export function signupPendingPage(name, labControls = false, next = "/products") {
+  return document("Request sent",
+    '<div class="login-tools"><a class="lab-return" href="/login?next=' + e(encodeURIComponent(next)) + '">Back to sign in</a>' + themeButton() + '</div>' +
+    '<main id="main-content" class="login-layout"><section class="login-story"><a class="brand" href="/login?next=' + e(encodeURIComponent(next)) + '">' + logo() + '</a>' +
+    '<div class="story-copy"><span class="eyebrow light">REQUEST SUBMITTED</span><h1>You\'re on the list.</h1>' +
+    '<p>An admin will review your request and approve or reject it. You\'ll be able to sign in once approved.</p></div></section>' +
+    '<section class="login-form-section"><div class="login-card" style="text-align:center;padding:40px 30px;">' +
+    '<span style="font-size:48px">&#9993;</span><h2 style="margin:16px 0 10px;">Request received</h2>' +
+    '<p class="muted">Thanks, ' + e(name) + '. Your signup request has been sent to an admin for review.</p>' +
+    '<p class="muted" style="margin-top:12px">Once approved, sign in with the email and password you chose.</p>' +
+    '<a class="button secondary" href="/login?next=' + e(encodeURIComponent(next)) + '" style="margin-top:24px;display:inline-flex">Back to sign in ' + icon("arrow") + '</a>' +
+    '</div></section></main>', "login-body", labControls);
+}
+
+const STATUS_PILL = {
+  pending:  '<span class="pill neutral">Pending</span>',
+  approved: '<span class="pill success">Approved</span>',
+  rejected: '<span class="pill" style="background:var(--danger-soft);color:var(--danger-ink)">Rejected</span>'
+};
+
+export function adminSignupRequestsPage(pending, reviewed) {
+  const requestRow = req =>
+    '<tr><td><strong>' + e(req.name) + '</strong></td><td>' + e(req.email) + '</td>' +
+    '<td>' + e(dateLabel(req.requested_at)) + '</td>' +
+    '<td>' + (STATUS_PILL[req.status] || req.status) + '</td>' +
+    (req.status === "pending"
+      ? '<td><form method="post" action="/admin/signup-requests/' + req.id + '/approve" style="display:inline">' +
+        '<button class="button primary" style="font-size:11px;padding:7px 12px" type="submit">Approve</button></form> ' +
+        '<form method="post" action="/admin/signup-requests/' + req.id + '/reject" style="display:inline">' +
+        '<button class="button secondary" style="font-size:11px;padding:7px 12px" type="submit">Reject</button></form></td>'
+      : '<td><span class="muted" style="font-size:11px">' + (req.reviewed_at ? dateLabel(req.reviewed_at) : '—') + '</span></td>'
+    ) + '</tr>';
+
+  const pendingSection = '<section class="panel table-panel" style="margin-bottom:24px">' +
+    '<div class="panel-heading" style="padding:25px 26px 0"><h2>Pending requests</h2>' +
+    '<span class="pill ' + (pending.length ? 'neutral' : 'success') + '">' + pending.length + ' pending</span></div>' +
+    (pending.length
+      ? '<div class="table-scroll"><table><thead><tr><th>Name</th><th>Email</th><th>Requested</th><th>Status</th><th>Actions</th></tr></thead>' +
+        '<tbody>' + pending.map(requestRow).join("") + '</tbody></table></div>'
+      : '<div style="padding:24px 26px"><p class="muted">No pending requests.</p></div>') +
+    '</section>';
+
+  const reviewedSection = reviewed.length
+    ? '<section class="panel table-panel">' +
+      '<div class="panel-heading" style="padding:25px 26px 0"><h2>Reviewed</h2></div>' +
+      '<div class="table-scroll"><table><thead><tr><th>Name</th><th>Email</th><th>Requested</th><th>Status</th><th>Reviewed</th></tr></thead>' +
+      '<tbody>' + reviewed.map(requestRow).join("") + '</tbody></table></div></section>'
+    : '';
+
+  return '<div class="page-heading"><div><span class="eyebrow">USER MANAGEMENT</span>' +
+    '<h1>Signup requests</h1><p class="muted">Approve or reject access requests from new users.</p></div>' +
+    '<a class="button secondary" href="/admin">Back to admin ' + icon("arrow") + '</a></div>' +
+    pendingSection + reviewedSection;
+}
+
 import { labDialogs, labToolbar, labTools } from "./lab-view.js";
 import { ARTWORK, CATEGORIES, ORDER_STATUSES } from "./admin.js";
 import { BASELINE_CHECKS } from "./defects.js";

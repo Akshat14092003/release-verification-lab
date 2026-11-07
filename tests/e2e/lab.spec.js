@@ -226,8 +226,10 @@ test("linked buyer windows share admin changes while unrelated shops and role se
     expect(originalState.revision).toBe(adminState.revision);
     expect(originalState.storeId).not.toBe(adminState.storeId);
     await expect(oldBuyerTab.locator(".product-card").first()).toContainText("$28.00");
-    await page.getByRole("button", { name: "Copy link for another browser", exact: true }).click();
     const connection = page.getByLabel("Buyer connection link", { exact: true });
+    const previousLink = await connection.inputValue();
+    await page.getByRole("button", { name: "Copy link for another browser", exact: true }).click();
+    await expect(connection).not.toHaveValue(previousLink);
     await expect(connection).toHaveValue(/\/buyer\/[a-f0-9-]+$/);
     const link = await connection.inputValue();
     const joinedTab = await otherContext.newPage();

@@ -4,8 +4,8 @@
 .lab-return { color: var(--ink); font-size: 12px; font-weight: 700; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); white-space: nowrap; }
 .login-tools { position: absolute; top: 18px; right: 20px; display: flex; align-items: center; gap: 10px; z-index: 2; }
 html[data-theme="dark"] body, html[data-theme="dark"] .workspace, html[data-theme="dark"] .login-body { background: var(--background); color: var(--ink); }
-html[data-theme="dark"] .topbar, html[data-theme="dark"] .panel, html[data-theme="dark"] .product-card,
-html[data-theme="dark"] .empty-state, html[data-theme="dark"] .offer-copy, html[data-theme="dark"] .stat-card { background: var(--surface); color: var(--ink); }
+/* Surfaces handled by glass.css (topbar, panel, product-card, empty-state, stat-card, offer-copy)
+   are token-driven and need no overrides here. */
 html[data-theme="dark"] input, html[data-theme="dark"] select, html[data-theme="dark"] .search-box input { color: var(--ink); background: var(--background); border-color: var(--line); }
 html[data-theme="dark"] .muted, html[data-theme="dark"] td, html[data-theme="dark"] .summary-note,
 html[data-theme="dark"] .product-details p, html[data-theme="dark"] .login-form label,

@@ -17,7 +17,7 @@ function passwordHash(password, email) {
 }
 
 export function verifyPassword(password, user) {
-  const [kind, salt, hash] = user.password_hash.split("$");
+  const [kind, salt, hash] = user.password_hash.split(user.password_hash.startsWith("scrypt:") ? ":" : "$");
   const expected = Buffer.from(kind === "scrypt" ? hash : user.password_hash, "hex");
   const actual = kind === "scrypt" ? scryptSync(password, salt, 64) : passwordHash(password, user.email);
   return expected.length === actual.length && timingSafeEqual(actual, expected);
@@ -65,7 +65,7 @@ export function seedDatabase(db, { reset = false, includeSampleOrder = true } = 
   db.exec("BEGIN IMMEDIATE");
   try {
     if (reset) {
-      for (const table of ["sessions", "cart_items", "ledger", "order_items", "orders", "offers", "products", "users"]) {
+      for (const table of ["sessions", "cart_items", "ledger", "order_items", "orders", "offers", "products", "users", "signup_requests"]) {
         db.exec("DELETE FROM " + table);
       }
       db.exec("DELETE FROM sqlite_sequence");

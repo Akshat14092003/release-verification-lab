@@ -1,19 +1,23 @@
 // Machine-readable progress from real Playwright events, consumed by the demo server.
 import { isAssertionFailure } from "../src/defects.js";
+
 function emit(event) {
   process.stdout.write("@@LAB_EVENT " + JSON.stringify(event) + "\n");
 }
 
+function testInfo(test) {
+  return { id: test.id, title: test.title, project: test.parent.project().name };
+}
+
 export default class LiveReporter {
-  onBegin(config, suite) {
+  onBegin(_config, suite) {
     emit({ type: "begin", total: suite.allTests().length });
   }
   onTestBegin(test) {
-    emit({ type: "test-start", id: test.id, title: test.title, project: test.parent.project().name });
+    emit({ type: "test-start", ...testInfo(test) });
   }
   onTestEnd(test, result) {
-    emit({ type: "test-end", id: test.id, title: test.title, project: test.parent.project().name, status: result.status,
-      assertionFailure: isAssertionFailure(result) });
+    emit({ type: "test-end", ...testInfo(test), status: result.status, assertionFailure: isAssertionFailure(result) });
   }
   onEnd() {
     // HTML, JSON and attachments are written after this event, before CLI exit.

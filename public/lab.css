@@ -187,8 +187,8 @@ html[data-theme="dark"] .lab-result.is-error { background:#3c2025;color:#ffc0c0;
 .bug-card:has(input:checked) .bug-card-state { color:#b4232d; }
 .bug-card:has(input:checked) .switch-track { background:#cc3042; }
 html[data-theme="dark"] .bug-card:has(input:checked) { background:#302031;border-color:#934957;box-shadow:0 0 22px #ef444412; }
-html[data-theme="dark"] .bug-card:has(input:checked) .bug-card-icon { color:#ffabae;background:#4b2835; }
-html[data-theme="dark"] .bug-card:has(input:checked) .bug-card-state { color:#ffabae; }
+html[data-theme="dark"] .bug-card:has(input:checked) .bug-card-icon { color:var(--catch-ink, #ffabae);background:#4b2835; }
+html[data-theme="dark"] .bug-card:has(input:checked) .bug-card-state { color:var(--catch-ink, #ffabae); }
 .bug-card:has(input:disabled) .bug-card-state { opacity:.6; }
 .verification-drawer:has(.catch-popup:not([hidden])) .bug-caught-alert { display:none; }
 .bug-caught-alert[data-state="observed"],.bug-caught-alert[data-state="verified"] { padding:9px 28px;gap:9px;background:var(--catch-surface); }

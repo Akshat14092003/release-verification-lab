@@ -67,6 +67,19 @@ CREATE TABLE IF NOT EXISTS cart_items (
   PRIMARY KEY (cart_key, product_id)
 );
 
+-- Signup requests awaiting admin approval. Approved rows are moved into users.
+CREATE TABLE IF NOT EXISTS signup_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL,
+  name TEXT NOT NULL,
+  password_hash TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  requested_at TEXT NOT NULL,
+  reviewed_at TEXT
+);
+
 CREATE INDEX IF NOT EXISTS orders_user_offer ON orders(user_id, offer_id);
 CREATE INDEX IF NOT EXISTS ledger_user ON ledger(user_id);
 CREATE INDEX IF NOT EXISTS ledger_order ON ledger(order_id);
+CREATE INDEX IF NOT EXISTS signup_requests_email ON signup_requests(email);
+CREATE INDEX IF NOT EXISTS signup_requests_status ON signup_requests(status);

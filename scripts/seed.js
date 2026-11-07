@@ -2,10 +2,11 @@ import { loadConfig } from "../src/config.js";
 import { DEMO_ACCOUNTS, DEMO_PASSWORD, openDatabase, seedDatabase } from "../src/database.js";
 
 const args = process.argv.slice(2);
-if (args.some(arg => !["--reset", "--fresh"].includes(arg)) || args.length > 1) {
+if (args.length > 1 || args.some(arg => !["--reset", "--fresh"].includes(arg))) {
   console.error("Usage: npm run seed [-- --reset | --fresh]");
   process.exit(1);
 }
+
 const config = loadConfig();
 const db = openDatabase(config.databasePath);
 try {
@@ -16,7 +17,7 @@ try {
     : "Synthetic demo data seeded (includes the $73 sample order)."
     : "Existing demo data preserved. Use --reset for sample data or --fresh for no purchases.");
   console.log("Database: " + config.databasePath);
-  for (const account of DEMO_ACCOUNTS) console.log(account.role + ": " + account.email);
+  for (const { role, email } of DEMO_ACCOUNTS) console.log(role + ": " + email);
   console.log("Shared demo password: " + DEMO_PASSWORD);
 } finally {
   db.close();

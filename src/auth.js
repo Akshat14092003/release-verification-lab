@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { hashPassword, verifyPassword } from "./database.js";
-import { ShopError } from "./shop.js";
+import { positiveId, ShopError } from "./shop.js";
 
 const COOKIE = "fieldwork_session";
 const ADMIN_COOKIE = "fieldwork_admin_session";
@@ -29,6 +29,11 @@ export function login(db, email, password, now, response, bugs = {}, { role } = 
     throw new ShopError("Enter a valid email and password.", 400);
   }
   let user = db.prepare("SELECT * FROM users WHERE email = ?").get(email.trim().toLowerCase());
+  if (!user) {
+    const request = db.prepare("SELECT status FROM signup_requests WHERE email=? ORDER BY id DESC LIMIT 1").get(email.trim().toLowerCase());
+    if (request?.status === "pending") throw new ShopError("Your signup is awaiting administrator approval.", 403);
+    if (request?.status === "rejected") throw new ShopError("Your signup was rejected. Submit a new signup request to try again.", 403);
+  }
   // Seeded defect: an authentication path accidentally reuses guest provisioning,
   // then skips credential verification for both guest and existing accounts.
   if (!user && bugs.BUG_AUTH_BYPASS) {
@@ -53,32 +58,6 @@ function startSession(db, user, now, response) {
   return { id: user.id, email: user.email, name: user.name, role: user.role };
 }
 
-export function signup(db, input, now, response) {
-  const { name, email, password } = input || {};
-  if (typeof name !== "string" || !name.trim() || name.trim().length > 80) {
-    throw new ShopError("Enter a display name between 1 and 80 characters.");
-  }
-  if (typeof email !== "string" || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-    throw new ShopError("Enter a valid email address.");
-  }
-  if (typeof password !== "string" || password.length < 8 || password.length > 256) {
-    throw new ShopError("Use a password between 8 and 256 characters.");
-  }
-  const address = email.trim().toLowerCase();
-  const passwordHash = hashPassword(password);
-  db.exec("BEGIN IMMEDIATE");
-  try {
-    if (db.prepare("SELECT id FROM users WHERE email=?").get(address)) {
-      throw new ShopError("This email already has an account. Sign in instead.", 409);
-    }
-    const result = db.prepare("INSERT INTO users (email,name,role,password_hash,opening_balance_cents) VALUES (?,?,'customer',?,100000)")
-      .run(address, name.trim(), passwordHash);
-    const user = startSession(db, { id: Number(result.lastInsertRowid), email: address, name: name.trim(), role: "customer" }, now, response);
-    db.exec("COMMIT");
-    return user;
-  } catch (error) { db.exec("ROLLBACK"); throw error; }
-}
-
 export function logout(db, cookieHeader, response, { role } = {}) {
   const cookies = String(cookieHeader || "").split(";").map(part => part.trim());
   for (const name of role === "customer" ? [COOKIE] : [COOKIE, ADMIN_COOKIE]) {
@@ -96,4 +75,80 @@ export function logout(db, cookieHeader, response, { role } = {}) {
   const cartKey = cartPair?.slice("fieldwork_cart=".length);
   if (/^[a-f0-9]{32}$/.test(cartKey || "")) db.prepare("DELETE FROM cart_items WHERE cart_key = ?").run(cartKey);
   response.clearCookie("fieldwork_cart", { httpOnly: true, sameSite: "lax", path: "/" });
+}
+
+// --- signup approval flow ---
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Submit a signup request for admin approval.
+ * Does NOT create a user account — that happens in approveSignup().
+ */
+export function signup(db, input, now) {
+  const { name, email, password } = input || {};
+  if (typeof name !== "string" || !name.trim() || name.trim().length > 80) {
+    throw new ShopError("Enter a display name between 1 and 80 characters.", 400);
+  }
+  if (typeof email !== "string" || !EMAIL_RE.test(email.trim()) || email.length > 254) {
+    throw new ShopError("Enter a valid email address.", 400);
+  }
+  if (typeof password !== "string" || password.length < 8 || password.length > 256) {
+    throw new ShopError("Password must be 8–256 characters.", 400);
+  }
+  const normalEmail = email.trim().toLowerCase();
+  if (db.prepare("SELECT id FROM users WHERE email = ?").get(normalEmail)) {
+    throw new ShopError("An account with this email already exists.", 409);
+  }
+  if (db.prepare("SELECT id FROM signup_requests WHERE email = ? AND status = 'pending'").get(normalEmail)) {
+    throw new ShopError("A signup request for this email is already awaiting approval.", 409);
+  }
+  db.prepare(
+    "INSERT INTO signup_requests (email, name, password_hash, status, requested_at) VALUES (?, ?, ?, 'pending', ?)"
+  ).run(normalEmail, name.trim(), hashPassword(password), now.toISOString());
+  return { email: normalEmail, name: name.trim() };
+}
+
+export function listSignupRequests(db, status = "pending") {
+  return db.prepare(
+    "SELECT id, email, name, status, requested_at, reviewed_at " +
+    "FROM signup_requests WHERE status = ? ORDER BY requested_at ASC"
+  ).all(status);
+}
+
+/**
+ * Approve a pending request: create the user account and mark the request approved.
+ * New customers get $1,000 demo credit.
+ */
+export function approveSignup(db, requestId, now) {
+  requestId = positiveId(requestId, "Signup request");
+  const req = db.prepare("SELECT * FROM signup_requests WHERE id = ? AND status = 'pending'").get(requestId);
+  if (!req) throw new ShopError("Signup request not found or already reviewed.", 404);
+  // Guard against a duplicate that arrived between request and approval.
+  if (db.prepare("SELECT id FROM users WHERE email = ?").get(req.email)) {
+    db.prepare("UPDATE signup_requests SET status = 'rejected', reviewed_at = ? WHERE id = ?")
+      .run(now.toISOString(), requestId);
+    throw new ShopError("An account with this email already exists. Request rejected automatically.", 409);
+  }
+  db.exec("BEGIN IMMEDIATE");
+  try {
+    db.prepare(
+      "INSERT INTO users (email, name, role, password_hash, opening_balance_cents) VALUES (?, ?, 'customer', ?, 100000)"
+    ).run(req.email, req.name, req.password_hash);
+    db.prepare("UPDATE signup_requests SET status = 'approved', reviewed_at = ? WHERE id = ?")
+      .run(now.toISOString(), requestId);
+    db.exec("COMMIT");
+  } catch (err) {
+    db.exec("ROLLBACK");
+    throw err;
+  }
+  return { email: req.email, name: req.name };
+}
+
+export function rejectSignup(db, requestId, now) {
+  requestId = positiveId(requestId, "Signup request");
+  const req = db.prepare("SELECT id FROM signup_requests WHERE id = ? AND status = 'pending'").get(requestId);
+  if (!req) throw new ShopError("Signup request not found or already reviewed.", 404);
+  db.prepare("UPDATE signup_requests SET status = 'rejected', reviewed_at = ? WHERE id = ?")
+    .run(now.toISOString(), requestId);
 }
