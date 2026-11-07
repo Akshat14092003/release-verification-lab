@@ -5,15 +5,28 @@ redirect to the same storefront. There is no separate controls or tutorial page.
 
 ## Shopping flow
 
-1. Browse the collection or filter/search it. Each product arrow opens that product's detail page.
-2. Choose a quantity and **Add to cart**, or use a card's quick-add button. A toast and cart badge confirm the change.
-3. Open **Cart** to update quantities, remove lines, and review the server-priced total.
-4. **Proceed to checkout**. Guests sign in and return to checkout with their cart intact.
-5. Place the order. Every line and ledger debit is recorded; the cart clears in that transaction.
+1. New visitors can request an account at `/signup`. An admin must approve the request before sign-in works.
+2. Browse the collection or filter/search it. Each product arrow opens that product's detail page.
+3. Choose a quantity and **Add to cart**, or use a card's quick-add button. A toast and cart badge confirm the change.
+4. Open **Cart** to update quantities, remove lines, and review the server-priced total.
+5. **Proceed to checkout**. Guests sign in and return to checkout with their cart intact.
+6. Place the order. Every line and ledger debit is recorded; the cart clears in that transaction.
 
 Browsing, product details, and carts work without login. Purchase identity always comes from the
 server session. Client prices, user IDs, and submitted replacement items cannot override a cart checkout.
 Offer items remain quantity 1 and obey eligibility/caps; normal products support quantities 1-99.
+
+## Signup approval flow
+
+New accounts go through a two-step approval process:
+
+1. A visitor fills in their name, email, and password at `/signup`. This creates a pending `signup_requests` row — no user account yet.
+2. An admin signs in, visits `/admin/signup-requests`, and clicks **Approve** or **Reject**.
+3. On approval, a `users` row is created automatically with $1,000 demo credit. The visitor can then sign in normally.
+4. Rejected requests block re-use of the same email until a new request is submitted.
+
+Admins can also use the API: `GET /api/admin/signup-requests?status=pending`, `POST /api/admin/signup-requests/:id/approve`, and `POST /api/admin/signup-requests/:id/reject`.
+The login page links to `/signup`. The signup page links back to `/login`. The admin overview links to the requests page.
 
 ## Guidance in context
 
@@ -144,7 +157,7 @@ Do not replace the real tests with a simulated browser animation to fit static h
 
 ## Current local verification - 2026-11-01
 
-- Syntax: 36 JavaScript files pass.
+- Syntax: 37 JavaScript files pass.
 - API: 21/21; browser: 15/15; database: 3/3. Full baseline: 47/47 (63.2s, Windows, 3 workers, no retries).
 - Individual scenarios: auth 0 passes/5 intended failures; weekend 2/5; limit 1/1; total 1/1.
 - Combined scenario: 35 controls/12 intended failures (67.4s), exact identities verified.

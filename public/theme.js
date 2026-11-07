@@ -1,9 +1,10 @@
 (() => {
-  let saved;
-  try { saved = localStorage.getItem("lab-theme"); } catch { /* Storage can be disabled. */ }
+  // Runs inline in <head> before app.js; keep a local storage helper here.
+  const store = (key, val) => { try { return val === undefined ? localStorage.getItem(key) : localStorage.setItem(key, val); } catch { /* Storage may be disabled. */ } };
+  const saved = store("lab-theme");
   const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   document.documentElement.dataset.theme = ["light", "dark"].includes(saved) ? saved : preferred;
-  try { document.documentElement.dataset.sidebar = localStorage.getItem("fieldwork-sidebar") || "expanded"; } catch { /* Default layout. */ }
+  document.documentElement.dataset.sidebar = store("fieldwork-sidebar") || "expanded";
   function updateButtons() {
     const dark = document.documentElement.dataset.theme === "dark";
     document.querySelectorAll("[data-theme-toggle]").forEach(button => {
@@ -20,7 +21,7 @@
       document.documentElement.style.setProperty("--theme-x", rect.left + rect.width / 2 + "px");
       document.documentElement.style.setProperty("--theme-y", rect.top + rect.height / 2 + "px");
       // Navigation can cancel the deferred View Transition callback. Save the choice first.
-      try { localStorage.setItem("lab-theme", next); } catch { /* Keep the session preference. */ }
+      store("lab-theme", next);
       const apply = () => {
         document.documentElement.dataset.theme = next;
         updateButtons();

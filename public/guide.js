@@ -2,8 +2,9 @@
   const coach = document.getElementById("guide-coach");
   if (!coach) return;
   const $ = id => document.getElementById(id);
+  const { store } = window.Fieldwork;
   let dismissed = false, added = false, cart = null;
-  try { dismissed = localStorage.getItem("fieldwork-guide-dismissed") === "1"; } catch { /* Guide remains available. */ }
+  dismissed = store("fieldwork-guide-dismissed") === "1";
   let action = () => {};
   function highlight(selector) {
     const target = document.querySelector(selector);
@@ -99,10 +100,14 @@
   }
   $("guide-action").addEventListener("click", () => action());
   $("guide-dismiss").addEventListener("click", () => {
-    dismissed = true; try { localStorage.setItem("fieldwork-guide-dismissed", "1"); } catch { /* Optional persistence. */ } render();
+    dismissed = true;
+    store("fieldwork-guide-dismissed", "1");
+    render();
   });
   $("guide-toggle").addEventListener("click", () => {
-    dismissed = !dismissed; try { localStorage.setItem("fieldwork-guide-dismissed", dismissed ? "1" : "0"); } catch { /* Optional persistence. */ } render();
+    dismissed = !dismissed;
+    store("fieldwork-guide-dismissed", dismissed ? "1" : "0");
+    render();
   });
   document.addEventListener("fieldwork:settings", render);
   document.addEventListener("fieldwork:content", render);

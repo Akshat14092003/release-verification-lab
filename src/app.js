@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 import { projectRoot, readBugFlags } from "./config.js";
 import { balanceCents, openDatabase, seedDatabase } from "./database.js";
-import { findSession, login, logout } from "./auth.js";
+import { findSession, login, logout, signup, listSignupRequests, approveSignup, rejectSignup } from "./auth.js";
 import { getOrder, getProduct, listOffers, listOrders, listProducts, placeOrder, quoteOrder, ShopError } from "./shop.js";
 import { addCartItem, cartRequestItems, getCart, removeCartItem, updateCartItem } from "./cart.js";
 import * as view from "./views.js";
@@ -79,6 +79,27 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   app.get("/api/auth/me", authenticated, (req, res) => {
     res.json({ user: req.user, balance_cents: balanceCents(db, req.user.id) });
   });
+
+  // --- signup ---
+  app.get("/signup", (req, res) => {
+    if (req.user) return res.redirect("/products");
+    res.send(view.signupPage("", {}, labControls));
+  });
+  const handleSignup = (req, res, next) => {
+    try {
+      const result = signup(db, req.body?.name, req.body?.email, req.body?.password, now());
+      if (isApi(req)) return res.status(202).json({ message: "Signup request submitted. An admin will review it.", ...result });
+      return res.send(view.signupPendingPage(result.name, labControls));
+    } catch (error) {
+      if (!isApi(req) && error instanceof ShopError) {
+        const fields = { name: typeof req.body?.name === "string" ? req.body.name.slice(0, 100) : "", email: typeof req.body?.email === "string" ? req.body.email.slice(0, 254) : "" };
+        return res.status(error.status).send(view.signupPage(error.message, fields, labControls));
+      }
+      next(error);
+    }
+  };
+  app.post("/signup", handleSignup);
+  app.post("/api/auth/signup", handleSignup);
 
   app.get("/products", (req, res) => {
     const query = typeof req.query.q === "string" ? req.query.q.slice(0, 100) : "";
@@ -167,6 +188,40 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
       sales_cents: db.prepare("SELECT COALESCE(-SUM(amount_cents), 0) AS total FROM ledger").get().total
     };
     return page(req, res, "Admin", "admin", view.adminPage(stats, listOrders(db, req.user, { all: true })));
+  });
+
+  // --- admin: signup request management ---
+  app.get("/admin/signup-requests", authenticated, administrator, (req, res) => {
+    const pending  = listSignupRequests(db, "pending");
+    const approved = listSignupRequests(db, "approved");
+    const rejected = listSignupRequests(db, "rejected");
+    return page(req, res, "Signup requests", "admin", view.adminSignupRequestsPage(pending, [...approved, ...rejected]));
+  });
+  app.get("/api/admin/signup-requests", authenticated, administrator, (req, res) => {
+    const status = ["pending", "approved", "rejected"].includes(req.query.status) ? req.query.status : "pending";
+    res.json({ requests: listSignupRequests(db, status) });
+  });
+  app.post("/admin/signup-requests/:id/approve", authenticated, administrator, (req, res, next) => {
+    try {
+      const result = approveSignup(db, Number(req.params.id), now());
+      if (isApi(req)) return res.json({ message: "Approved.", ...result });
+      return res.redirect(303, "/admin/signup-requests");
+    } catch (error) { next(error); }
+  });
+  app.post("/api/admin/signup-requests/:id/approve", authenticated, administrator, (req, res, next) => {
+    try { res.json({ message: "Approved.", ...approveSignup(db, Number(req.params.id), now()) }); }
+    catch (error) { next(error); }
+  });
+  app.post("/admin/signup-requests/:id/reject", authenticated, administrator, (req, res, next) => {
+    try {
+      rejectSignup(db, Number(req.params.id), now());
+      if (isApi(req)) return res.json({ message: "Rejected." });
+      return res.redirect(303, "/admin/signup-requests");
+    } catch (error) { next(error); }
+  });
+  app.post("/api/admin/signup-requests/:id/reject", authenticated, administrator, (req, res, next) => {
+    try { rejectSignup(db, Number(req.params.id), now()); res.json({ message: "Rejected." }); }
+    catch (error) { next(error); }
   });
 
   app.use((req, res, next) => next(new ShopError("Page not found.", 404)));

@@ -2,6 +2,7 @@
   const settings = document.getElementById("lab-settings");
   if (!settings) return;
   const $ = id => document.getElementById(id);
+  const { store, session, fetchJson: api, withButton } = window.Fieldwork;
   const switches = [...settings.querySelectorAll('[role="switch"]')];
   const bugArtwork = {
     BUG_AUTH_BYPASS: '<rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/>',
@@ -85,7 +86,7 @@
   function showNextCatch() {
     if (activeCatch || !catchQueue.length) return;
     activeCatch = catchQueue.shift();
-    try { sessionStorage.setItem(activeCatch.key, "seen"); } catch { /* Optional preference. */ }
+    session(activeCatch.key, "seen");
     $("catch-popup-title").textContent = activeCatch.final ? activeCatch.count === 1 ? "BUG CAUGHT!" : "BUGS CAUGHT!" : "BUG SPOTTED!";
     $("catch-popup-name").textContent = activeCatch.names;
     $("catch-popup-copy").textContent = activeCatch.final ? "Caught by your tests. Switch the bugs off and run again to verify the fix." : "A matching check failed. Keep watching while we verify the full run.";
@@ -139,7 +140,7 @@
       const key = "fieldwork-catch:" + run.id + ":" + id;
       if (queuedCatches.has(key)) return;
       queuedCatches.add(key);
-      try { if (sessionStorage.getItem(key)) return; } catch { /* Optional preference. */ }
+      if (session(key)) return;
       catchQueue.push({ key, names, count, total: detections.length, final: verified });
     };
     if (final) enqueue("verified", detections.map(detection => detection.label).join(" · "), detections.length, true);
@@ -152,7 +153,7 @@
   function syncReportTheme(reload = false) {
     const dark = document.documentElement.dataset.theme === "dark";
     // The pinned Playwright reporter reads this preference when it initializes.
-    try { localStorage.setItem("theme", dark ? "dark-mode" : "light-mode"); } catch { /* Optional preference. */ }
+    store("theme", dark ? "dark-mode" : "light-mode");
     reportFrame.style.colorScheme = dark ? "dark" : "light";
     if (reload && reportFrame.getAttribute("src")) {
       try {
@@ -204,12 +205,11 @@
     settings.hidden = !open;
     playgroundToggle.setAttribute("aria-expanded", String(open));
   }
-  try { setPlayground(!loginPage && localStorage.getItem("fieldwork-playground") !== "closed"); }
-  catch { setPlayground(!loginPage); }
+  setPlayground(!loginPage && store("fieldwork-playground") !== "closed");
   playgroundToggle.addEventListener("click", () => {
     const open = settings.hidden;
     setPlayground(open);
-    try { localStorage.setItem("fieldwork-playground", open ? "open" : "closed"); } catch { /* Optional preference. */ }
+    store("fieldwork-playground", open ? "open" : "closed");
   });
   window.Fieldwork.openTests = openDrawer;
 
@@ -220,18 +220,6 @@
       $("runner-message").textContent = text;
       $("runner-message").classList.add("is-error");
     }
-  }
-  async function api(path, data) {
-    const response = await fetch(path, data === undefined ? { cache: "no-store" } : {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data)
-    });
-    const result = await response.json().catch(() => ({ error: "The server is unavailable. Please retry shortly." }));
-    if (!response.ok) {
-      const error = new Error(result.error || "The request could not be completed.");
-      error.status = response.status;
-      throw error;
-    }
-    return result;
   }
   function updateSettings(state) {
     switches.forEach(input => {
@@ -253,21 +241,22 @@
   async function save() {
     if (saving) return saving;
     const button = settings.querySelector('button[type="submit"]');
-    button.disabled = true;
-    settings.querySelectorAll("input, select").forEach(input => { input.disabled = true; });
-    saving = api("/api/lab/settings", {
-      bugs: Object.fromEntries(switches.map(input => [input.name, input.checked])), clock: $("demo-clock").value
-    }).then(async state => {
-      updateSettings(state);
-      await window.Fieldwork.refresh();
-      message("Settings applied. Try the behaviour right here.");
-      return state;
-    }).finally(() => {
-      saving = null;
-      button.disabled = false;
-      button.removeAttribute("aria-busy");
-      settings.querySelectorAll("input, select").forEach(input => { input.disabled = false; });
-    });
+    const inputs = [...settings.querySelectorAll("input, select")];
+    saving = withButton(button, async () => {
+      inputs.forEach(el => { el.disabled = true; });
+      try {
+        const state = await api("/api/lab/settings", {
+          bugs: Object.fromEntries(switches.map(input => [input.name, input.checked])),
+          clock: $("demo-clock").value
+        });
+        updateSettings(state);
+        await window.Fieldwork.refresh();
+        message("Settings applied. Try the behaviour right here.");
+        return state;
+      } finally {
+        inputs.forEach(el => { el.disabled = false; });
+      }
+    }).finally(() => { saving = null; });
     return saving;
   }
   settings.addEventListener("submit", event => {
@@ -279,24 +268,20 @@
     switches.forEach(input => { input.checked = false; });
     save().catch(error => message(error.message, true));
   });
-  $("reset-shop").addEventListener("click", async () => {
-    const button = $("reset-shop");
-    button.disabled = true;
-    try { await api("/api/lab/reset", {}); location.assign("/products"); }
-    catch (error) { message(error.message, true); }
-    finally { button.disabled = false; }
+  $("reset-shop").addEventListener("click", () => {
+    withButton($("reset-shop"), async () => {
+      await api("/api/lab/reset", {});
+      location.assign("/products");
+    }).catch(error => message(error.message, true));
   });
-  $("repeat-offer").addEventListener("click", async () => {
-    const button = $("repeat-offer");
-    button.disabled = true;
-    try {
+  $("repeat-offer").addEventListener("click", () => {
+    withButton($("repeat-offer"), async () => {
       const response = await fetch("/api/lab/repeat-offer", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
       const body = await response.json();
       $("repeat-result").hidden = false;
       $("repeat-result").textContent = "HTTP " + response.status + "\n" + JSON.stringify(body, null, 2) +
         (response.status === 401 ? "\nSign in as Customer and purchase the offer once, then retry." : "");
-    } catch (error) { message(error.message, true); }
-    finally { button.disabled = false; }
+    }).catch(error => message(error.message, true));
   });
 
   function elapsed() {
@@ -433,10 +418,10 @@
         ? run.failed ? run.passed + " passed. All " + run.failed + " failures match your enabled bugs." : "All " + run.passed + " checks passed. Correct build verified."
         : "Inspect this report: the run did not match the expected result.";
       let seen = false;
-      try { seen = sessionStorage.getItem("last-opened-report") === run.id; } catch { /* Optional preference. */ }
+      seen = session("last-opened-report") === run.id;
       if (!seen) {
         openDrawer();
-        try { sessionStorage.setItem("last-opened-report", run.id); } catch { /* Optional preference. */ }
+        session("last-opened-report", run.id);
       }
     }
   }

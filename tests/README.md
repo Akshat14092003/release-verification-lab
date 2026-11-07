@@ -27,8 +27,8 @@ No manually started app or shared demo database is required.
 
 ## Layers
 
-- api/: authentication, catalogue search, authoritative price/identity, offer cap, account ownership,
-  role access, and UTC opening/closing boundaries.
+- api/: authentication (login/logout/session/credential rejection), catalogue search, authoritative price/identity, offer cap, account ownership,
+  role access, and UTC opening/closing boundaries. The signup approval flow (`/signup`, `/admin/signup-requests`) is not yet covered by automated tests.
 - e2e/: login/logout, error presentation, purchase/receipt, offers, stale checkout at expiry,
   mobile layout/sign-out, and administrator navigation.
 - db/: a multi-item order created through checkout from an empty database and a new single-item purchase reconciled against independent SQL,

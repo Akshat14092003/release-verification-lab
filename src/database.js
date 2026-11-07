@@ -17,7 +17,17 @@ function passwordHash(password, email) {
 }
 
 export function verifyPassword(password, user) {
-  return timingSafeEqual(passwordHash(password, user.email), Buffer.from(user.password_hash, "hex"));
+  const stored = user.password_hash;
+  // Signup-approved accounts use "scrypt:<salt_hex>:<hash_hex>" (random salt).
+  if (stored.startsWith("scrypt:")) {
+    const parts = stored.split(":");
+    if (parts.length !== 3) return false;
+    const actual = scryptSync(password, parts[1], 64);
+    return timingSafeEqual(actual, Buffer.from(parts[2], "hex"));
+  }
+  // Demo seed accounts use a deterministic salt derived from the email.
+  const salt = createHash("sha256").update("fieldwork-demo:" + user.email).digest("hex");
+  return timingSafeEqual(scryptSync(password, salt, 64), Buffer.from(stored, "hex"));
 }
 
 export function openDatabase(path) {
@@ -33,7 +43,7 @@ export function seedDatabase(db, { reset = false, includeSampleOrder = true } = 
   db.exec("BEGIN IMMEDIATE");
   try {
     if (reset) {
-      for (const table of ["sessions", "cart_items", "ledger", "order_items", "orders", "offers", "products", "users"]) {
+      for (const table of ["sessions", "cart_items", "ledger", "order_items", "orders", "offers", "products", "users", "signup_requests"]) {
         db.exec("DELETE FROM " + table);
       }
       db.exec("DELETE FROM sqlite_sequence");

@@ -1,4 +1,58 @@
 (() => {
+  // --- Shared utilities exposed on window.Fieldwork for lab.js / guide.js ---
+
+  /** Safe localStorage wrapper. get: store(key). set: store(key, value). */
+  function store(key, value) {
+    try {
+      if (arguments.length > 1) localStorage.setItem(key, value);
+      else return localStorage.getItem(key);
+    } catch { /* Storage may be disabled. */ }
+  }
+
+  /** Safe sessionStorage wrapper. get: session(key). set: session(key, value). remove: session(key, null). */
+  function session(key, value) {
+    try {
+      if (arguments.length > 1) {
+        if (value === null) sessionStorage.removeItem(key);
+        else sessionStorage.setItem(key, value);
+      } else return sessionStorage.getItem(key);
+    } catch { /* Storage may be disabled. */ }
+  }
+
+  /**
+   * Fetch JSON helper. GET when data is undefined, POST otherwise.
+   * Throws an Error (with .status) for non-2xx responses.
+   */
+  async function fetchJson(path, data) {
+    const response = await fetch(path, data === undefined
+      ? { cache: "no-store" }
+      : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }
+    );
+    const result = await response.json().catch(() => ({ error: "The server is unavailable. Please retry shortly." }));
+    if (!response.ok) {
+      const err = new Error(result.error || "The request could not be completed.");
+      err.status = response.status;
+      throw err;
+    }
+    return result;
+  }
+
+  /**
+   * Disable a button (and optional extra inputs), run an async fn, then re-enable.
+   * Sets aria-busy on the button during execution.
+   */
+  async function withButton(button, fn, extraInputs = []) {
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    extraInputs.forEach(el => { el.disabled = true; });
+    try { return await fn(); }
+    finally {
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+      extraInputs.forEach(el => { el.disabled = false; });
+    }
+  }
+
   let toastTimer;
   const addedTimers = new WeakMap();
   function toast(text, error = false) {
@@ -26,7 +80,7 @@
     const current = document.getElementById("main-content");
     if (next && current) { current.replaceChildren(...next.childNodes); document.dispatchEvent(new Event("fieldwork:content")); }
   }
-  window.Fieldwork = { toast, syncCart, refresh };
+  window.Fieldwork = { toast, syncCart, refresh, store, session, fetchJson, withButton };
   function updateSidebar() {
     const collapsed = document.documentElement.dataset.sidebar === "collapsed";
     document.querySelectorAll("[data-sidebar-toggle]").forEach(button => {
@@ -58,7 +112,7 @@
     if (event.target.closest("[data-sidebar-toggle]")) {
       const state = document.documentElement.dataset.sidebar === "collapsed" ? "expanded" : "collapsed";
       document.documentElement.dataset.sidebar = state;
-      try { localStorage.setItem("fieldwork-sidebar", state); } catch { /* Optional persistence. */ }
+      store("fieldwork-sidebar", state);
       updateSidebar();
     }
     const step = event.target.closest("[data-quantity-step]");
@@ -96,7 +150,7 @@
         const name = result.cart.items.find(line => String(line.product.id) === data.product_id)?.product.name;
         const text = added ? (name || "Item") + " added to your cart" : "Your cart is updated";
         if (form.hasAttribute("data-cart-reload")) {
-          try { sessionStorage.setItem("cart-message", text); } catch { /* No storage required. */ }
+          session("cart-message", text);
           location.reload();
         } else {
           toast(text);
@@ -121,5 +175,6 @@
     }
   });
   fetch("/api/cart", { cache: "no-store" }).then(r => r.json()).then(data => syncCart(data.cart)).catch(() => {});
-  try { const text = sessionStorage.getItem("cart-message"); if (text) { sessionStorage.removeItem("cart-message"); toast(text); } } catch { /* Optional toast. */ }
+  const pendingToast = session("cart-message");
+  if (pendingToast) { session("cart-message", null); toast(pendingToast); }
 })();

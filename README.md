@@ -110,6 +110,7 @@ A server-side clock can also be injected into createApp for the later isolated t
 
 ### Pages
 
+- /signup: request a new account; sends the request to an admin for approval.
 - /login: role shortcuts, sign-in, and a visible error state.
 - /products: searchable product cards with original SVG illustrations.
 - /offers: the weekend offer and its actual availability.
@@ -117,7 +118,8 @@ A server-side clock can also be injected into createApp for the later isolated t
 - /cart: review, update quantities, remove items, and proceed to checkout.
 - /checkout: final server-priced review of the current cart before purchase.
 - /orders and /orders/:id: personal orders, receipt, and transaction records.
-- /admin: administrator-only, read-only store overview.
+- /admin: administrator-only, read-only store overview with a link to signup requests.
+- /admin/signup-requests: administrator-only; approve or reject pending signup requests.
 
 Store Owner is a separate seeded role; additional owner-management workflows are outside this scaffold.
 Checkout supports multiple products and quantities 1-99. An order can use one promotion, with
@@ -129,6 +131,7 @@ are resolved by the server. Order lines and ledger entries commit in one transac
 | Method | Path | Purpose |
 | --- | --- | --- |
 | GET | /health | Readiness |
+| POST | /api/auth/signup | Submit a signup request for admin approval |
 | POST | /api/auth/login | Sign in with email and password |
 | POST | /api/auth/logout | End the session |
 | GET | /api/auth/me | Current user and demo credit |
@@ -142,6 +145,9 @@ are resolved by the server. Order lines and ledger entries commit in one transac
 | POST | /api/cart/checkout | Purchase the server-side cart and clear it atomically |
 | GET | /api/orders | Own orders |
 | GET | /api/orders/:id | Own receipt, items, and ledger; admins can inspect any order |
+| GET | /api/admin/signup-requests?status= | List signup requests by status (admin only) |
+| POST | /api/admin/signup-requests/:id/approve | Approve a pending request and create the user account (admin only) |
+| POST | /api/admin/signup-requests/:id/reject | Reject a pending request (admin only) |
 
 API authentication uses the same HTTP-only session cookie as the browser.
 Prices, customer identity, and totals come from server data, not client-supplied amounts.
