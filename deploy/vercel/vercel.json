@@ -5,5 +5,8 @@
   "installCommand": "",
   "outputDirectory": "public",
   "headers": [{ "source": "/:path*", "headers": [{ "key": "Cache-Control", "value": "no-store" }] }],
-  "rewrites": [{ "source": "/:path*", "destination": "https://release-verification-lab-326570610390.us-central1.run.app/:path*" }]
+  "rewrites": [
+    { "source": "/", "destination": "https://release-verification-lab-326570610390.us-central1.run.app/" },
+    { "source": "/:path*", "destination": "https://release-verification-lab-326570610390.us-central1.run.app/:path*" }
+  ]
 }
