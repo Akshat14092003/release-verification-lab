@@ -2,8 +2,8 @@
 
 ## Cloud Run deployment - 2026-11-13
 
-- Public URL: https://release-verification-lab-vercel.vercel.app/
-- Direct backend URL: https://release-verification-lab-326570610390.us-central1.run.app
+- Public URL: https://release-verification-lab-326570610390.us-central1.run.app/
+- Cloud Run hosts the complete website; Vercel is no longer needed.
 - Project/service: `release-verification-lab`; region: `us-central1`.
 - Revision: `release-verification-lab-00002-g25`; application commit: `9b00923`.
 - Image: `us-central1-docker.pkg.dev/release-verification-lab/lab-images/lab:9b00923`.
@@ -11,7 +11,8 @@
   maximum1, concurrency20, request timeout900 seconds; CPU throttling disabled.
 - Environment: `HOST=0.0.0.0`, `PORT=3000`, `LAB_SHARED_SHOP=0`,
   `LAB_TEST_WORKERS=1`, `TRUST_PROXY=1`,
-  `PUBLIC_ORIGIN=https://release-verification-lab-vercel.vercel.app`.
+  `PUBLIC_ORIGIN=https://release-verification-lab-vercel.vercel.app` at the last
+  verified rollout. Change it to the Cloud Run origin using the command below.
 - Separate service accounts: `lab-builder` has `roles/run.builder`; `lab-runtime`
   runs the website without project-wide roles. Container builds log to Cloud Logging.
 
@@ -30,6 +31,49 @@ owner-only report access and preserved cart/credit all pass. The smoke verifier
 completed successfully with no browser page errors.
 Current smoke evidence is in ignored `test-results/vercel-9b00923/summary.json`.
 
+After choosing Cloud Run alone, direct browser sign-in, cart, checkout and origin
+protection were checked again successfully. No additional full live test run was
+started. The Vercel project has not been deleted by this repository change.
+
+## Simplified updates from Cloud Shell
+
+The initial APIs, service accounts and permissions are already configured. After
+tests pass and changes are pushed to `master-branch`, run:
+
+```sh
+cd ~/release-verification-lab
+git pull --ff-only origin master-branch && \
+gcloud run deploy release-verification-lab \
+  --source=. \
+  --project=release-verification-lab \
+  --region=us-central1 \
+  --build-service-account=projects/release-verification-lab/serviceAccounts/lab-builder@release-verification-lab.iam.gserviceaccount.com \
+  --update-env-vars=PUBLIC_ORIGIN=https://release-verification-lab-326570610390.us-central1.run.app
+```
+
+Source deployment builds the existing Dockerfile and deploys the image in one
+command. It can prompt to create the `cloud-run-source-deploy` image repository
+on first use. It does not use `~/lab-cloudbuild.yaml` or the manual image tags.
+Existing runtime settings stay in place. This simpler source-deployment path is
+documented but has not yet been executed for this project.
+
+For the current site, only the origin setting needs changing; no rebuild needed:
+
+```sh
+gcloud run services update release-verification-lab \
+  --project=release-verification-lab \
+  --region=us-central1 \
+  --update-env-vars=PUBLIC_ORIGIN=https://release-verification-lab-326570610390.us-central1.run.app
+```
+
+Once that update succeeds, delete the `release-verification-lab-vercel` project
+from Vercel Settings. Keep the Cloud Run project and service accounts.
+Redeployments restart temporary visitor shops and reports.
+
+Source: [Deploy services from source code](https://docs.cloud.google.com/run/docs/deploying-source-code).
+
+## Previous Vercel entry point
+
 Cloud Run serves the Express-rendered pages and API. The Vercel project uses root
 directory `deploy/vercel`, Other preset, no install/build and external rewrites.
 The home route has an explicit rewrite in addition to the catch-all. Dynamic
@@ -39,8 +83,7 @@ The exact production origin is configured on Cloud Run, not Vercel: the proxy
 changes the upstream Host header. Setting Vercel environment variables does not
 configure the Express process. Unset PUBLIC_ORIGIN preserves strict same-origin;
 wildcards and arbitrary origins are rejected. Preview domains are not implicitly
-trusted. Confirm Vercel Production Branch Tracking is `master-branch`; a Preview
-deployment must be promoted before it updates the stable public domain.
+trusted. This proxy configuration is historical; use the Cloud Run URL above.
 
 Future application/UI changes require rebuilding the Docker image and updating
 Cloud Run. A Vercel deployment alone only updates the forwarding configuration.

@@ -10,7 +10,7 @@ The portfolio goal is reproducible evidence: introduce a realistic defect, catch
 The published reports contain 47 checks. The current revision has 60 checks,
 including 8 security probes; its red verifier expects 12 intended failures and 48 passing controls. Visitors can toggle bugs, run the real tests,
 watch progress, and inspect their report from the website. See [the interactive demo](docs/INTERACTIVE-DEMO.md).
-Historical measurements below are labeled by version. [Open the live interactive lab](https://release-verification-lab-vercel.vercel.app/). Vercel forwards the public site to Cloud Run, where Express, SQLite and Playwright run. [Hosting details](docs/HOSTING.md) explain its configuration, usage-based billing, temporary visitor data, and update process.
+Historical measurements below are labeled by version. [Open the live interactive lab](https://release-verification-lab-326570610390.us-central1.run.app/). Cloud Run hosts the complete website: Express, SQLite and Playwright. [Hosting details](docs/HOSTING.md) explain its configuration, usage-based billing, temporary visitor data, and update process.
 [View the successful hosted verification for the deployed code](https://github.com/Akshat14092003/release-verification-lab/actions/runs/43412064403) and download its verification artifacts.
 [Browse the published evidence site](https://akshat14092003.github.io/release-verification-lab/): the landing page, the green report, and the red report from the latest verified run.
 
