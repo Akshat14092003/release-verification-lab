@@ -2,29 +2,51 @@
 
 ## Cloud Run deployment - 2026-11-13
 
-- Public URL: https://release-verification-lab-326570610390.us-central1.run.app
+- Public URL: https://release-verification-lab-vercel.vercel.app/
+- Direct backend URL: https://release-verification-lab-326570610390.us-central1.run.app
 - Project/service: `release-verification-lab`; region: `us-central1`.
-- Revision: `release-verification-lab-00001-sl4`; application commit: `25c530b`.
-- Image: `us-central1-docker.pkg.dev/release-verification-lab/lab-images/lab:25c530b`.
+- Revision: `release-verification-lab-00002-g25`; application commit: `9b00923`.
+- Image: `us-central1-docker.pkg.dev/release-verification-lab/lab-images/lab:9b00923`.
 - Runtime: one CPU,2 GiB RAM, second-generation execution; minimum instances0,
   maximum1, concurrency20, request timeout900 seconds; CPU throttling disabled.
 - Environment: `HOST=0.0.0.0`, `PORT=3000`, `LAB_SHARED_SHOP=0`,
-  `LAB_TEST_WORKERS=1`, `TRUST_PROXY=1`.
+  `LAB_TEST_WORKERS=1`, `TRUST_PROXY=1`,
+  `PUBLIC_ORIGIN=https://release-verification-lab-vercel.vercel.app`.
 - Separate service accounts: `lab-builder` has `roles/run.builder`; `lab-runtime`
   runs the website without project-wide roles. Container builds log to Cloud Logging.
 
-[CI for the deployed code](https://github.com/Akshat14092003/release-verification-lab/actions/runs/43404490112)
+[CI for the deployed code](https://github.com/Akshat14092003/release-verification-lab/actions/runs/43412064403)
 passed the correct-build, seeded-defect and real container-runner jobs. The current
 suite contains60 checks; all four defects produce12 expected failures and48 passing
-controls. Live HTTPS/browser checkout, independent visitors, secure cookies, a
-60/60 baseline and a weekend-defect run with55 passes/5 matching failures are
-verified. Both run reports return200 for their owner and404 for another visitor.
+controls. The original25c530b Cloud Run rollout verified browser checkout,
+independent visitors, secure cookies, a60/60 baseline and a weekend-defect run with
+55 passes/5 matching failures. Both reports returned200 for their owner and404 for
+another visitor. Its smoke evidence remains in `test-results/cloud-run-25c530b/`.
 Advancing the demo clock can expire a login; signing in again preserves cart/credit.
-Smoke evidence and the clock/session check are in ignored
-`test-results/cloud-run-25c530b/summary.json`.
+The Vercel-compatible9b00923 rollout verifies origin handling, browser sign-in,
+checkout, desktop/mobile layout, secure cookies, independent visitors and a real
+60/60 baseline through the public Vercel URL. Live progress, readable iframe report,
+owner-only report access and preserved cart/credit all pass. The smoke verifier
+completed successfully with no browser page errors.
+Current smoke evidence is in ignored `test-results/vercel-9b00923/summary.json`.
 
-Cloud Run currently serves the Express-rendered pages and API. Vercel is not yet
-connected. GitHub Pages is a separate site for historical saved evidence.
+Cloud Run serves the Express-rendered pages and API. The Vercel project uses root
+directory `deploy/vercel`, Other preset, no install/build and external rewrites.
+The home route has an explicit rewrite in addition to the catch-all. Dynamic
+responses use no-store caching. GitHub Pages is a separate historical evidence site.
+
+The exact production origin is configured on Cloud Run, not Vercel: the proxy
+changes the upstream Host header. Setting Vercel environment variables does not
+configure the Express process. Unset PUBLIC_ORIGIN preserves strict same-origin;
+wildcards and arbitrary origins are rejected. Preview domains are not implicitly
+trusted. Confirm Vercel Production Branch Tracking is `master-branch`; a Preview
+deployment must be promoted before it updates the stable public domain.
+
+Future application/UI changes require rebuilding the Docker image and updating
+Cloud Run. A Vercel deployment alone only updates the forwarding configuration.
+Cloud Build config was saved at `~/lab-cloudbuild.yaml` in the owner's Cloud Shell;
+run builds from `~/release-verification-lab` and use a new commit-specific image tag.
+Update with `--update-env-vars` to preserve the other environment settings.
 
 The owner selected usage-based Cloud Run after reviewing possible charges. It has
 a monthly free allowance, not a guaranteed zero bill. Instance lifetime, including
