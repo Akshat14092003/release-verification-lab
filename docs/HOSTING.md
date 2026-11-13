@@ -5,14 +5,15 @@
 - Public URL: https://release-verification-lab-326570610390.us-central1.run.app/
 - Cloud Run hosts the complete website; Vercel is no longer needed.
 - Project/service: `release-verification-lab`; region: `us-central1`.
-- Revision: `release-verification-lab-00002-g25`; application commit: `9b00923`.
+- Latest owner-reported revision: `release-verification-lab-00003-lh6`;
+  application commit: `9b00923`.
 - Image: `us-central1-docker.pkg.dev/release-verification-lab/lab-images/lab:9b00923`.
 - Runtime: one CPU,2 GiB RAM, second-generation execution; minimum instances0,
   maximum1, concurrency20, request timeout900 seconds; CPU throttling disabled.
 - Environment: `HOST=0.0.0.0`, `PORT=3000`, `LAB_SHARED_SHOP=0`,
   `LAB_TEST_WORKERS=1`, `TRUST_PROXY=1`,
-  `PUBLIC_ORIGIN=https://release-verification-lab-vercel.vercel.app` at the last
-  verified rollout. Change it to the Cloud Run origin using the command below.
+  `PUBLIC_ORIGIN=https://release-verification-lab-326570610390.us-central1.run.app`
+  following the owner's reported configuration update.
 - Separate service accounts: `lab-builder` has `roles/run.builder`; `lab-runtime`
   runs the website without project-wide roles. Container builds log to Cloud Logging.
 
@@ -33,7 +34,38 @@ Current smoke evidence is in ignored `test-results/vercel-9b00923/summary.json`.
 
 After choosing Cloud Run alone, direct browser sign-in, cart, checkout and origin
 protection were checked again successfully. No additional full live test run was
-started. The Vercel project has not been deleted by this repository change.
+started. The owner subsequently confirmed the origin update and Vercel deletion.
+
+## Deploy directly from VS Code
+
+Open `D:\Akshat\Projects\release-verification-lab` as the VS Code workspace.
+One-time setup on Windows:
+
+1. Install the [Google Cloud CLI](https://docs.cloud.google.com/sdk/docs/install-sdk)
+   with its bundled Python and add it to PATH. Restart VS Code afterward.
+2. In the VS Code terminal, create a separate personal configuration and sign in
+   with the Google account that owns this project:
+
+   ```powershell
+   gcloud.cmd configurations create release-verification-lab --no-activate
+   gcloud.cmd auth login --configuration=release-verification-lab
+   ```
+
+For future updates, save your files, run the relevant tests, then press
+**Ctrl+Shift+P**, choose **Tasks: Run Task**, and select **Deploy to Cloud Run**.
+The task checks JavaScript syntax, then uploads this local workspace, builds the
+Dockerfile in Google Cloud and updates the existing service. A syntax error stops
+deployment. The task does not run the full release suite or commit/push changes;
+it deploys saved files, including uncommitted changes. Keep source changes in Git.
+
+No local Docker install or Cloud Shell is required. The task explicitly targets
+this project's personal configuration, project, region and builder account.
+`.gcloudignore` limits uploads to Docker inputs and excludes private bookkeeping,
+environment files, databases, dependencies and generated reports.
+
+The local task configuration was checked, but no deployment was started: the
+Google Cloud CLI was not available on PATH during setup. Existing runtime settings
+are retained; visitor shops and reports reset on redeployment.
 
 ## Simplified updates from Cloud Shell
 

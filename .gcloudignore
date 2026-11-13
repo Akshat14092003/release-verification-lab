@@ -1,0 +1,16 @@
+# Upload only the Docker build inputs, not private local files or credentials.
+**
+!.gcloudignore
+!.dockerignore
+!Dockerfile
+!package.json
+!package-lock.json
+!playwright.config.js
+!src/
+!src/**
+!public/
+!public/**
+!scripts/
+!scripts/**
+!tests/
+!tests/**

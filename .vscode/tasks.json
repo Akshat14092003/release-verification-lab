@@ -1,0 +1,32 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Check JavaScript",
+      "type": "process",
+      "command": "node",
+      "args": ["scripts/check.js"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Deploy to Cloud Run",
+      "type": "shell",
+      "command": "gcloud",
+      "windows": { "command": "gcloud.cmd" },
+      "args": [
+        "run", "deploy", "release-verification-lab",
+        "--source=.",
+        "--configuration=release-verification-lab",
+        "--project=release-verification-lab",
+        "--region=us-central1",
+        "--build-service-account=projects/release-verification-lab/serviceAccounts/lab-builder@release-verification-lab.iam.gserviceaccount.com",
+        "--update-env-vars=PUBLIC_ORIGIN=https://release-verification-lab-326570610390.us-central1.run.app"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": "Check JavaScript",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    }
+  ]
+}
