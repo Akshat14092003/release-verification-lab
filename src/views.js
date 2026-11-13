@@ -41,7 +41,7 @@ export function document(title, body, bodyClass = "", labControls = false) {
     '<title>' + e(title) + ' | Fieldwork</title><link rel="icon" href="/favicon.svg" type="image/svg+xml"/>' +
     '<script src="/theme.js"></script><link rel="stylesheet" href="/tokens.css"/><link rel="stylesheet" href="/styles.css"/><link rel="stylesheet" href="/theme.css"/>' +
     '<link rel="stylesheet" href="/shop.css"/>' + (labControls ? '<link rel="stylesheet" href="/lab.css"/>' : '') + '<link rel="stylesheet" href="/glass.css"/><link rel="stylesheet" href="/blue.css"/>' +
-    '<link rel="stylesheet" href="/experience.css"/><script src="/motion.js" defer></script><script src="/app.js" defer></script><script src="/bug.js" defer></script><script src="/home.js" defer></script>' + (labControls ? '<script src="/lab.js" defer></script><script src="/guide.js" defer></script>' : '') + '</head>' +
+    '<link rel="stylesheet" href="/experience.css"/><script src="/motion.js" defer></script><script src="/app.js" defer></script><script src="/bug.js" defer></script><script src="/home.js" defer></script><script src="/experiment.js" defer></script>' + (labControls ? '<script src="/lab.js" defer></script><script src="/guide.js" defer></script>' : '') + '</head>' +
     '<body class="' + e(bodyClass) + (labControls ? ' has-lab' : '') + '">' + body + bugHunt() +
     '<div class="cart-toast" id="cart-toast" role="status" aria-live="polite" hidden><span class="toast-check">&#10003;</span><span id="cart-toast-text"></span>' +
     (admin ? '' : '<a href="/cart">View cart &rarr;</a>') + '<button type="button" class="icon-button" id="dismiss-cart-toast" aria-label="Dismiss notification">&times;</button></div></body></html>';
@@ -79,7 +79,7 @@ export function shell({ title, active, user, balance, now, body, bugs = {}, labC
     '<form method="post" action="' + (admin ? '/admin/logout' : '/logout') + '"><button type="submit">' + icon("logout") + 'Log out</button></form>' :
     '<a href="/login">' + icon("logout") + 'Sign in / Sign up</a>') + '</div></details>';
   return document(title,
-    '<div class="app-shell"><aside class="sidebar"><a class="brand" href="' + home + '" aria-label="Fieldwork home">' + logo() + '</a>' +
+    '<a class="skip-link" href="#main-content">Skip to content</a><div class="app-shell"><aside class="sidebar"><a class="brand" href="' + home + '" aria-label="Fieldwork home">' + logo() + '</a>' +
     '<button type="button" class="sidebar-toggle icon-button" data-sidebar-toggle aria-label="Collapse sidebar" aria-expanded="true" aria-controls="main-navigation">' +
     '<svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16m7-11-3 3 3 3"/></svg></button>' +
     '<p class="nav-label">' + (admin ? 'STORE MANAGEMENT' : 'YOUR WORKSPACE') + '</p><nav id="main-navigation" aria-label="Main navigation">' + navigation + '</nav>' +
@@ -95,7 +95,7 @@ export function shell({ title, active, user, balance, now, body, bugs = {}, labC
     (balance === null ? '&mdash;' : money(balance)) + '</strong></div>') + profile + '</div>' +
     '<button type="button" class="mobile-menu-toggle icon-button" data-mobile-menu aria-label="Open menu" aria-expanded="false" aria-controls="mobile-navigation">' +
     '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></header>' +
-    (labControls ? labTools({ admin, toolbar: false, sharedShop }) : '') + '<main id="main-content" class="main" data-store-revision="' + revision + '" data-store-id="' + e(storeId) + '" data-account-id="' + e(user?.id) + '" data-shared-shop="' + sharedShop + '">' + bugBanners(bugs) + body + '</main>' +
+    (labControls ? '<section class="mobile-qa-actions" aria-label="Release verification"><button type="button" class="button secondary" data-open-playground aria-controls="mobile-navigation">QA playground</button><button type="button" class="button primary" data-open-tests>Run checks</button></section>' + labTools({ admin, toolbar: false, sharedShop }) : '') + '<main id="main-content" class="main" data-store-revision="' + revision + '" data-store-id="' + e(storeId) + '" data-account-id="' + e(user?.id) + '" data-shared-shop="' + sharedShop + '">' + bugBanners(bugs) + body + '</main>' +
     '<footer class="page-footer"><span>Fieldwork &copy; 2026</span><span>' + (admin ? 'Demo management only' : 'Demo purchases only') + ' &middot; ' +
     e(now.toISOString().slice(0, 10)) + ' UTC</span></footer></div></div>' +
     '<dialog id="mobile-navigation" class="mobile-navigation" aria-label="Navigation and account"><button type="button" class="icon-button mobile-menu-close" data-mobile-close aria-label="Close menu">&times;</button></dialog>' +
@@ -106,12 +106,8 @@ export function loginPage(error = "", email = "", bugs = {}, labControls = false
   // Buyer-facing login shows customer demo accounts only; admin leaves no trace here.
   const accounts = [["customer", "Customer"], ["jamie", "Jamie"]];
   const nextQuery = "?next=" + encodeURIComponent(next);
-  return document(registering ? "Create account" : "Sign in",
-    '<div class="login-tools"><a class="lab-return" href="/products">Back to shop</a>' + themeButton() + '</div>' + (labControls ? labTools(options) : '') +
-    '<main id="main-content" class="login-layout"><section class="login-story"><a class="brand" href="/login">' + logo() + '</a>' +
-    '<div class="story-copy"><span class="eyebrow light">A LITTLE MORE INTENTIONAL</span><h1>Good things.<br/>For your everyday.</h1>' +
-    '<p>A considered collection for work, home, and the moments in between.</p><div class="story-art story-photo">' +
-    collectionPhoto("(max-width: 560px) 90vw, 45vw") + '</div></div><p class="story-footer">Thoughtfully simple, from start to checkout.</p></section>' +
+  const body =
+    '<section class="auth-page"><div class="auth-intro"><h1>' + (registering ? 'Request your demo account.' : next.startsWith('/orders') ? 'Your orders, your account.' : next === '/checkout' ? 'One step before checkout.' : 'Welcome back to Fieldwork.') + '</h1><p>' + (registering ? 'Use fictional details. An administrator reviews every new account.' : next.startsWith('/orders') ? 'Sign in to see your purchases, receipts and transaction records.' : next === '/checkout' ? 'Sign in to complete your purchase. Your cart stays with you.' : 'Sign in to shop with demo credit and explore the release lab.') + '</p><a class="text-link" href="/products">Back to the shop ' + icon("arrow") + '</a><div class="auth-assurance"><h2>Real behaviour. Fictional purchases.</h2><p>No payment details needed. Use a demo customer below, or request your own account.</p></div></div>' +
     '<section class="login-form-section"><div class="login-card"><h2>' + (registering ? 'Create an account' : 'Sign in to Fieldwork') + '</h2>' +
     '<p class="muted">' + (registering ? 'An admin must approve your signup before you can sign in. Approval adds $1,000 demo credit.' : 'Sign in to explore the collection.') + '</p>' + bugBanners(bugs) +
     (error ? '<div class="alert error" id="auth-error" role="alert">' + e(error) + '</div>' : "") +
@@ -125,7 +121,8 @@ export function loginPage(error = "", email = "", bugs = {}, labControls = false
     (registering ? '<p class="signup-note">Use fictional details. Resetting the demo shop clears this account.</p>' :
     '<div class="demo-accounts"><span class="eyebrow">TRY A DEMO ACCOUNT</span><p>Choose an account to fill in its sign-in details.</p><div class="role-options">' +
     accounts.map(([key, name]) => '<button type="button" class="role-choice" data-demo-role="' + key + '">' + name + '</button>').join("") +
-    '</div><p class="login-disclaimer">Fictional accounts and purchases. No payment information needed.</p></div>') + '</div></section></main>' + (labControls ? labDialogs(options) : ''), "login-body" + (registering ? " signup-body" : ""), labControls);
+    '</div><p class="login-disclaimer">Fictional accounts and purchases. No payment information needed.</p></div>') + '</div></section></section>';
+  return shell({ title: registering ? 'Create account' : 'Sign in', active: next === '/checkout' ? 'checkout' : next.startsWith('/orders') ? 'orders' : '', user: null, balance: null, now: options.now || new Date(), body, bugs, labControls, cart: options.cart, revision: options.revision, storeId: options.storeId, sharedShop: options.sharedShop });
 }
 export function adminLoginPage(error = "", email = "", next = "/admin") {
   return document("Admin sign in", '<a class="skip-link" href="#main-content">Skip to content</a><header class="admin-login-header"><a class="brand" href="/">' + logo() + '</a>' + themeButton() + '</header>' +
@@ -191,25 +188,19 @@ function productCards(products) {
 }
 
 function beetle() {
-  return '<svg class="lab-beetle" viewBox="0 0 160 180" fill="none" aria-hidden="true">' +
-    '<g class="beetle-legs" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">' +
-    '<path d="m52 69-24-16-10 9m33 31-30 4-9 17m42 8-23 26 3 15m74-94 24-16 10 9m-33 31 30 4 9 17m-42 8 23 26-3 15"/>' +
-    '<path d="m67 39-8-22m34 22 8-22"/></g><ellipse cx="80" cy="98" rx="43" ry="57" fill="currentColor"/>' +
-    '<path d="M80 52v98M43 80q37-22 74 0" stroke="var(--bug-shell-line)" stroke-width="3"/>' +
-    '<ellipse cx="80" cy="43" rx="25" ry="20" fill="currentColor"/><circle cx="70" cy="40" r="5" fill="var(--bug-eye)"/>' +
-    '<circle cx="90" cy="40" r="5" fill="var(--bug-eye)"/><path d="m68 107 9 9 17-21" class="beetle-tick" stroke="var(--bug-eye)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const legs = ["front", "middle", "back"].flatMap((joint, index) => ["left", "right"].map((side, sideIndex) =>
+    '<span class="beetle-leg leg-' + side + ' leg-' + joint + ((index + sideIndex) % 2 ? ' gait-b' : ' gait-a') + '"><i class="beetle-upper"><b class="beetle-lower"></b></i></span>')).join("");
+  return '<span class="lab-beetle" aria-hidden="true"><span class="beetle-shadow"></span>' + legs +
+    '<span class="beetle-body"><span class="beetle-antenna antenna-left"></span><span class="beetle-antenna antenna-right"></span>' +
+    '<span class="beetle-head"><i></i><b></b></span><span class="beetle-thorax"></span><span class="beetle-shell"></span></span></span>';
 }
 
 function bugHunt() {
-  return '<button type="button" id="roaming-bug" class="roaming-bug" aria-label="Catch the roaming bug" title="Catch me if you can">' + beetle() + '</button>' +
-    '<button type="button" id="pause-bug" class="bug-pause" aria-label="Pause roaming bug" title="Pause roaming bug" aria-pressed="false">' +
-    '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path class="pause-mark" d="M8 5v14m8-14v14"/><path class="play-mark" d="m8 5 10 7-10 7V5Z"/></svg></button>' +
-    '<dialog id="bug-surprise" class="bug-surprise is-caught" aria-labelledby="surprise-heading" aria-describedby="bug-result"><form method="dialog"><button class="icon-button surprise-close" aria-label="Close bug surprise">&times;</button></form>' +
-    '<div id="bug-leap" class="bug-leap" aria-hidden="true" hidden>' + beetle() + '</div><div class="surprise-stage">' + beetle() + '<span class="bug-fixed-mark" aria-hidden="true">&#10003;</span></div>' +
-    '<div class="surprise-content"><span class="eyebrow" id="bug-caption">NICE CATCH</span><h2 id="surprise-heading">You caught the bug!</h2>' +
-    '<p id="bug-result">A tiny bug. A very big entrance. What happens next?</p><div class="surprise-actions"><button type="button" class="button secondary" id="release-bug" autofocus>Let it roam</button>' +
-    '<button type="button" class="button primary" id="fix-bug">Fix it</button><form method="dialog" id="bug-done" hidden><button class="button primary">Done</button></form></div>' +
-    '<p class="surprise-note">Just a playful stowaway. QA playground switches stay as you set them.</p></div></dialog>';
+  return '<button type="button" id="roaming-bug" class="ambient-bug" aria-label="Meet the little bug" title="A little bug. Catch it if you like.">' + beetle() + '</button>' +
+    '<dialog id="bug-surprise" class="mascot-dialog" aria-labelledby="surprise-heading"><form method="dialog"><button class="icon-button" aria-label="Close little bug">&times;</button></form>' +
+    '<div class="mascot-art" aria-hidden="true">' + beetle() + '</div><h2 id="surprise-heading">You found the little bug.</h2>' +
+    '<p id="bug-result">Just a playful companion. It wanders quietly around the edges and never changes your shop or test settings.</p>' +
+    '<div class="mascot-actions"><button type="button" class="button secondary" id="release-bug" autofocus>Let it wander</button><button type="button" class="button primary" id="fix-bug">Fix it</button><button type="button" class="button secondary" id="pause-wandering" aria-pressed="false">Pause wandering</button><button type="button" class="button primary" id="bug-done" hidden>Done</button></div></dialog>';
 }
 
 function checkTicker() {
@@ -224,21 +215,17 @@ function checkTicker() {
     checks.map((text, i) => '<li data-check style="--row:' + i + '"><span class="check-dot" aria-hidden="true"></span>' + e(text) + '</li>').join("") +
     '</ul><span class="ticker-note">Illustrative preview &middot; ' + BASELINE_CHECKS + ' automated checks run in the shop.</span></div>';
 }
-export function landingPage(user) {
+function experimentHome(offer, labControls) {
+  return `<section class="experiment" aria-labelledby="experiment-title"><div class="experiment-intro"><h1 id="experiment-title">Shop it.<br>Break it.<br><span>Prove it.</span></h1><p>Can this shop stop a mistake before you pay?<br>Try buying a weekend deal on Monday. Then see how the checks catch a broken rule.</p><a href="#experiment-controls" class="experiment-link">Try the Monday experiment ${icon("arrow")}</a><p class="experiment-honesty">Fictional purchases. No real money is spent.</p></div><div class="experiment-scene" aria-label="Monday weekend offer"><article class="offer-ticket"><div class="ticket-top"><span>Fieldwork / Weekend offer</span>${icon("products")}</div>${artwork(offer.artwork, { size: "detail", eager: true })}<div class="ticket-info"><h2>${e(offer.product_name)}</h2><p>${e(offer.description)}</p><div class="ticket-price"><strong>${money(offer.price_cents)}</strong><s>${money(offer.regular_price_cents)}</s><span class="ticket-saving">Save ${money(offer.regular_price_cents - offer.price_cents)}</span></div></div><div class="ticket-bottom"><span>Saturday & Sunday only</span><strong id="offer-state">Weekend-only rule</strong></div></article><div class="calendar-slip"><span>Experiment day · UTC</span><strong>Monday</strong><span>The weekend is over.<br>Is the offer?</span></div></div><div id="experiment-controls" class="experiment-controls"><div class="experiment-instruction"><strong>Start with the bug off.</strong><p>Set up Monday, then try the offer in the shop. Repeat with the bug enabled and compare the results.</p><p class="experiment-scope" id="experiment-scope">Applies the selected bug and Monday to this demo shop.</p><p id="experiment-error" role="alert"></p></div><label class="experiment-switch"><span><strong>Weekend-rule bug</strong><small id="switch-explanation">Off · weekday purchases must be rejected</small></span><input id="experiment-bug" type="checkbox" class="switch" role="switch"></label><button class="experiment-buy" id="attempt-purchase">Try the offer on Monday ${icon("arrow")}</button></div></section>
+<section class="causality" aria-labelledby="trace-heading"><div class="trace-heading"><h2 id="trace-heading">Follow the purchase. Find the failure.</h2><p id="trace-caption">One action. Three places to inspect.</p></div><ol class="trace"><li id="trace-browser"><div class="trace-node"><span>1</span><strong>The shop</strong><small>Browser</small></div><h3 id="browser-result">What does the buyer see?</h3><p id="browser-detail">The offer should be unavailable on Monday.</p></li><li id="trace-api"><div class="trace-node"><span>2</span><strong>The rule</strong><small>API</small></div><h3 id="api-result">Does the server enforce it?</h3><p id="api-detail">Hiding a button is not enough. The request must be refused.</p></li><li id="trace-ledger"><div class="trace-node"><span>3</span><strong>The record</strong><small>Database</small></div><h3 id="ledger-result">Did anything get written?</h3><p id="ledger-detail">A rejected purchase must leave orders and the ledger unchanged.</p></li></ol><div class="experiment-verdict" id="experiment-verdict" aria-live="polite"><span class="verdict-mark" aria-hidden="true">?</span><div><strong id="experiment-verdict-title">Try the rule. Then verify it.</strong><p id="experiment-verdict-copy">After trying the offer, run the real checks to inspect browser, API and database evidence.</p></div><button class="button primary" id="experiment-run-checks">Run real checks ${icon("arrow")}</button></div></section>`;
+}
+
+export function landingPage(user, offer = null, labControls = false) {
   const repo = "https://github.com/Akshat14092003/release-verification-lab";
   const admin = user?.role === "admin";
   const destination = admin ? "/admin" : "/products";
-  return document("Release Verification Lab", '<a class="skip-link" href="#main-content">Skip to content</a>' +
-    '<header class="home-header"><a class="brand" href="/" aria-label="Fieldwork home">' + logo() + '</a>' +
-    '<nav aria-label="Main navigation"><a href="/" aria-current="page">Home</a><a href="' + destination + '">' + (admin ? 'Admin' : 'Shop') + '</a><a href="#about-lab">About the lab</a></nav>' +
-    '<div class="home-account"><a class="button secondary" href="' + (user ? destination : '/login') + '">' + (admin ? 'Manage shop' : user ? 'Open shop' : 'Sign in / Sign up') + '</a>' + themeButton() + '</div></header>' +
-    '<main id="main-content" class="home-main" tabindex="-1"><section class="store-hero home-hero"><div class="hero-copy"><span class="eyebrow">FIELDWORK / RELEASE VERIFICATION LAB</span>' +
-    '<h1>A little shopping.<br/><em>A little bug hunting.</em></h1><p>A working demo shop with a twist. Introduce realistic bugs, run automated checks, and see the evidence for yourself.</p>' + checkTicker() +
-    '<div class="hero-actions"><a class="button primary" href="' + destination + '">' + (admin ? 'Open dashboard ' : 'Enter the shop ') + icon("arrow") + '</a><a class="text-link" href="#how-it-works">How it works ' + icon("arrow") + '</a></div>' +
-    '</div><div class="hero-scene hero-photo-scene"><div class="hero-photo">' +
-    collectionPhoto("(max-width: 850px) 94vw, 48vw") + '<span class="floating-label label-demo"><span class="status-dot"></span> Real shopping. Demo credit.</span></div>' +
-    '</div></section>' +
-    '<div class="home-proof"><span data-reveal="slow">4 intentional bugs</span><span data-reveal="slow">' + BASELINE_CHECKS + ' release checks</span><span data-reveal="slow">Browser · API · Database · Security</span></div>' +
+  return '<div class="home-main">' + (offer && labControls ? experimentHome(offer, labControls) : '<section class="home-case"><h1>Release Verification Lab</h1><p>Explore the shop and verify its rules.</p><a class="button primary" href="/products">Enter the shop</a></section>') +
+    '<div class="home-entry"><a class="button secondary" href="/products">Enter the shop ' + icon("arrow") + '</a><div class="report-link-explanation"><a class="text-link" href="https://akshat14092003.github.io/release-verification-lab/" aria-describedby="saved-reports-help">See saved test results ' + icon("arrow") + '</a><p id="saved-reports-help">Opens the published reports: what passed in the working shop, which deliberate mistakes were caught, and the details behind each result.</p></div></div>' +
     '<section id="how-it-works" class="home-section"><div class="section-intro"><span class="eyebrow">YOUR FIRST BUG HUNT</span><h2>Break it. Catch it.<br/>Make it right.</h2><p>Follow the steps in the shop. Every switch changes actual behavior; every result comes from a real test.</p></div>' +
     '<ol class="home-steps">' + [
       ["Shop", "Start with $1,000 in demo credit. Add products to your cart and place an order."],
@@ -252,8 +239,7 @@ export function landingPage(user) {
       ["Database", "Order totals checked against independent SQL and ledger sums."], ["Security", "Focused SQL-like input and reflected/stored script probes."]
     ].map(([title, copy]) => '<div data-reveal><h3>' + title + '</h3><p>' + copy + '</p></div>').join("") + '</div></section>' +
     '<section class="home-evidence"><div><span class="eyebrow">SEE HOW IT IS BUILT</span><h2>Every result has a paper trail.</h2><p>Explore the source or browse the latest published CI reports.</p></div>' +
-    '<div><a class="button secondary" href="' + repo + '">View source ' + icon("arrow") + '</a><a class="text-link" href="https://akshat14092003.github.io/release-verification-lab/">Browse test reports ' + icon("arrow") + '</a></div></section></main>' +
-    '<footer class="home-footer"><a class="brand" href="/">' + logo() + '</a><p>Release Verification Lab</p></footer>', "landing-body" + (admin ? " admin-body" : ""));
+    '<div><a class="button secondary" href="' + repo + '">View source ' + icon("arrow") + '</a><a class="text-link" href="https://akshat14092003.github.io/release-verification-lab/">See saved test results ' + icon("arrow") + '</a></div></section></div>';
 }
 
 export function productsPage(products, query = "", category = "") {
@@ -261,7 +247,7 @@ export function productsPage(products, query = "", category = "") {
   return '<section id="collection" class="catalogue"><div class="section-toolbar"><div><h1>Products</h1><p class="muted">Browse the collection and add products to your cart.</p></div>' +
     '<form action="/products" method="get" class="search-box"><label class="sr-only" for="search">Search products</label>' + icon("search") +
     '<input id="search" name="q" type="search" maxlength="100" value="' + e(query) + '" placeholder="Search the collection"/>' +
-    '<button type="submit" class="sr-only">Search</button></form></div><div class="category-filters" aria-label="Product categories">' +
+    '<button type="submit" class="button secondary search-submit">Search</button></form></div><div class="category-filters" aria-label="Product categories">' +
     '<a href="/products" class="filter-chip ' + (!category ? 'selected' : '') + '">All finds</a>' +
     categories.map(name => '<a href="/products?category=' + encodeURIComponent(name) + '" class="filter-chip ' + (category === name ? 'selected' : '') + '">' + e(name) + '</a>').join("") + '</div>' +
     (products.length ? productCards(products) : '<div class="empty-state"><h2>No matching products</h2><p>Try another search or browse the full collection.</p>' +

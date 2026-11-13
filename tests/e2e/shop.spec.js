@@ -14,7 +14,12 @@ test("customer signs in through a role shortcut and signs out", async ({ page })
   await page.getByRole("button", { name: "Log out", exact: true }).click();
   await expect(page).toHaveURL(/\/login$/);
   await page.goto("/orders");
-  await expect(page).toHaveURL(/\/login$/);
+  await expect(page).toHaveURL(/\/login\?next=\/orders$/);
+  await expect(page.locator(".app-shell")).toHaveCount(1);
+  await expect(page.locator(".login-story")).toHaveCount(0);
+  await page.getByRole("button", { name: "Customer", exact: true }).click();
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/orders$/);
 });
 
 test("invalid credentials show an error without logging in @auth", async ({ page }) => {

@@ -33,8 +33,8 @@ export function labTools({ admin = false, toolbar = true, sharedShop = false } =
     '</div><div class="playground-footer"><p id="bug-expectation" role="status">All ' + BASELINE_CHECKS + ' checks should pass with the bugs off.</p>' +
     '<details class="lab-day"><summary>Day: <span id="clock-label">Saturday</span></summary><div class="day-popover">' +
     '<label for="demo-clock">Demo day (UTC)</label><select id="demo-clock" name="clock">' +
-    '<option value="saturday">Saturday ? offer open</option><option value="sunday">Sunday ? just before expiry</option>' +
-    '<option value="monday">Monday ? offer closed</option><option value="real">Today ? real clock</option></select>' +
+    '<option value="saturday">Saturday &middot; offer open</option><option value="sunday">Sunday &middot; just before expiry</option>' +
+    '<option value="monday">Monday &middot; offer closed</option><option value="real">Today &middot; real clock</option></select>' +
     '<p id="clock-value" class="summary-note"></p><button type="submit" class="button primary">Apply day</button>' +
     '<button type="button" class="button secondary" id="all-off">Switch all bugs off</button>' +
     '<button type="button" class="button secondary" id="reset-shop">' + (sharedShop ? 'Reset shared shop' : admin ? 'Reset demo shop' : 'Reset my purchases') + '</button></div></details>' +
@@ -64,7 +64,7 @@ export function labDialogs({ sharedShop = false } = {}) {
     '<div class="drawer-body"><section class="lab-runner"><div class="runner-intro"><p class="muted">Choose your setup, watch the checks run, then inspect the evidence.</p>' +
     '<span id="run-badge" class="pill neutral">Ready</span></div>' +
     '<label for="run-mode">Test setup</label><select id="run-mode"><option value="current">My current bug switches</option>' +
-    '<option value="baseline">Correct build ? all bugs off</option><option value="all">All four bugs on</option></select>' +
+    '<option value="baseline">Correct build &middot; all bugs off</option><option value="all">All four bugs on</option></select>' +
     '<p class="lab-footnote">Checks use isolated data and controlled dates. Your cart, purchases, and credit are preserved.</p>' +
     '<div class="lab-run-actions"><button type="button" id="run-tests" class="button primary">Run tests</button>' +
     '<button type="button" id="cancel-run" class="button secondary" hidden>Stop run</button></div>' +
@@ -74,9 +74,9 @@ export function labDialogs({ sharedShop = false } = {}) {
     '<p id="run-snapshot" class="lab-footnote"></p><ul id="run-detections" class="run-detections" aria-label="Detection of enabled bugs" hidden></ul>' +
     '<p id="current-check" class="current-check" role="status" aria-live="polite"></p>' +
     '<ol id="run-checks" class="run-checks" aria-label="Test case results"></ol></div>' +
-    '<div id="run-result" class="lab-result" hidden></div><a id="open-report" class="text-link" hidden>Open full report &rarr;</a>' +
+    '<div id="run-result" class="lab-result" tabindex="-1" hidden></div><a id="open-report" class="text-link" hidden>Open full report &rarr;</a>' +
     '<p class="lab-footnote">Bugs on? Some failures are expected. Detection is verified only when the exact expected failures match.</p></section>' +
-    '<section id="report-section" class="lab-report" hidden><div class="panel-heading"><div><h2>Your pass/fail report</h2><p id="report-verdict" class="lab-footnote"></p></div>' +
+    '<section id="report-section" class="lab-report" tabindex="-1" aria-label="Verification result and report" hidden><div class="panel-heading"><div><h2>Your pass/fail report</h2><p id="report-verdict" class="lab-footnote"></p></div>' +
     '<a id="report-new-tab" class="text-link" target="_blank" rel="noopener">Open in a new tab &rarr;</a></div>' +
     '<iframe id="report-frame" title="Playwright pass/fail report"></iframe></section></div></dialog>';
 }

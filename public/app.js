@@ -255,6 +255,7 @@
     });
   });
   document.addEventListener("click", event => {
+    if (event.target.closest("[data-open-tests]")) window.Fieldwork.openTests();
     if (event.target.closest("[data-open-playground]")) {
       if (mobileViewport.matches) mobileToggle?.click();
       const playground = document.getElementById("toggle-playground");

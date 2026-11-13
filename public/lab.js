@@ -223,7 +223,7 @@
   $("close-playground").addEventListener("click", () => { setPlayground(false); playgroundToggle.focus(); });
   document.addEventListener("click", event => {
     if (playgroundToggle.getAttribute("aria-expanded") === "true" && !settings.contains(event.target) && !playgroundToggle.contains(event.target) &&
-        !event.target.closest("[data-open-playground],#reset-dialog")) setPlayground(false);
+        !event.target.closest("[data-open-playground],#reset-dialog,#guide-coach")) setPlayground(false);
   });
   document.addEventListener("keydown", event => {
     if (event.key === "Escape" && !settings.hidden && !$("reset-dialog").open) {
@@ -398,6 +398,7 @@
   }
   function renderRun(run) {
     currentRun = run;
+    window.Fieldwork.currentRun = run;
     const running = run.status === "running";
     $("run-progress").hidden = false;
     $("run-tests").disabled = running;
@@ -421,6 +422,7 @@
     renderChecks(run);
     renderDetections(run);
     elapsed();
+    document.dispatchEvent(new CustomEvent("fieldwork:run", { detail: run }));
     if (running) return;
     clearTimeout(timer);
     clearInterval(elapsedTimer);

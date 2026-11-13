@@ -62,7 +62,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
       const destination = adminNextPage(req.originalUrl);
       return res.redirect("/admin/login" + (destination === "/admin" ? "" : "?next=" + encodeURIComponent(destination)));
     }
-    return res.redirect("/login" + (req.path === "/checkout" ? "?next=/checkout" : ""));
+    return res.redirect("/login" + (/^\/(?:checkout|orders(?:\/[1-9]\d*)?)$/.test(req.path) ? "?next=" + req.path : ""));
   };
   const administrator = (req, res, next) => {
     if (req.user.role === "admin") return next();
@@ -79,8 +79,8 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
 
   app.get("/health", (req, res) => res.json({ status: "ok", application: "release-verification-lab" }));
   app.get("/api/store/state", (req, res) => res.json({ revision: storeRevision, storeId }));
-  app.get("/", (req, res) => req.user?.role === "admin" ? res.redirect("/admin") : res.send(view.landingPage(req.user)));
-  const nextPage = value => ["/checkout", "/cart", "/products"].includes(value) ? value : "/products";
+  app.get("/", (req, res) => req.user?.role === "admin" ? res.redirect("/admin") : page(req, res, "Home", "home", view.landingPage(req.user, listOffers(db, req.user?.id ?? null, now(), { bugs })[0], labControls)));
+  const nextPage = value => typeof value === "string" && /^(?:\/checkout|\/cart|\/products|\/orders(?:\/[1-9]\d*)?)$/.test(value) ? value : "/products";
   const adminNextPage = value => {
     if (typeof value !== "string" || value.length > 2048) return "/admin";
     try {
@@ -89,8 +89,9 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
         ? destination.pathname + destination.search : "/admin";
     } catch { return "/admin"; }
   };
+  const customerAuthOptions = (req, options = {}) => ({ ...options, sharedShop, now: now(), revision: storeRevision, storeId, cart: req.cartKey ? getCart(db, req.cartKey) : { count: 0 } });
   app.get("/login", (req, res) => req.user?.role === "customer" ? res.redirect(nextPage(req.query.next))
-    : res.send(view.loginPage("", "", bugs, labControls, nextPage(req.query.next), { sharedShop })));
+    : res.send(view.loginPage("", "", bugs, labControls, nextPage(req.query.next), customerAuthOptions(req))));
   app.get("/admin/login", (req, res) => req.user?.role === "admin" ? res.redirect(adminNextPage(req.query.next))
     : res.send(view.adminLoginPage("", "", adminNextPage(req.query.next))));
 
@@ -127,7 +128,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
         if (adminLogin) return res.status(error.status).send(view.adminLoginPage(
           error.status === 401 ? "Enter a valid administrator email and password." : error.message, email, adminNextPage(req.body?.next)
         ));
-        return res.status(error.status).send(view.loginPage(error.message, email, bugs, labControls, nextPage(req.body?.next), { sharedShop }));
+        return res.status(error.status).send(view.loginPage(error.message, email, bugs, labControls, nextPage(req.body?.next), customerAuthOptions(req)));
       }
       next(error);
     }
@@ -136,7 +137,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   app.post("/admin/login", signIn);
   app.post("/api/auth/login", signIn);
   app.get(["/signup", "/request-access"], (req, res) => req.user?.role === "customer" ? res.redirect(nextPage(req.query.next))
-    : res.send(view.loginPage("", "", bugs, labControls, nextPage(req.query.next), { signup: true, sharedShop })));
+    : res.send(view.loginPage("", "", bugs, labControls, nextPage(req.query.next), customerAuthOptions(req, { signup: true }))));
   app.post(["/signup", "/request-access", "/api/auth/signup", "/api/auth/signup-requests"], (req, res, next) => {
     try {
       if (!isApi(req) && req.body?.password !== req.body?.password_confirmation) throw new ShopError("Passwords do not match. Enter them again.");
@@ -148,7 +149,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
       if (!isApi(req) && error instanceof ShopError) {
         const email = typeof req.body?.email === "string" ? req.body.email.slice(0, 254) : "";
         const name = typeof req.body?.name === "string" ? req.body.name.slice(0, 80) : "";
-        return res.status(error.status).send(view.loginPage(error.message, email, bugs, labControls, nextPage(req.body?.next), { signup: true, name, sharedShop }));
+        return res.status(error.status).send(view.loginPage(error.message, email, bugs, labControls, nextPage(req.body?.next), customerAuthOptions(req, { signup: true, name })));
       }
       next(error);
     }
@@ -371,7 +372,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
       : "Something went wrong. Please try again.";
     if (status === 500) console.error(error);
     if (isApi(req)) return res.status(status).json({ error: message });
-    if (!req.cartKey) return res.status(status).send(view.loginPage(message, "", bugs, labControls, "/products", { sharedShop }));
+    if (!req.cartKey) return res.status(status).send(view.loginPage(message, "", bugs, labControls, "/products", customerAuthOptions(req)));
     return page(req, res, "Something went wrong", "", view.errorPage(status, message, { admin: req.user?.role === "admin" }), status);
   });
 

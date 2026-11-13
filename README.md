@@ -28,16 +28,21 @@ npm start
 Open http://127.0.0.1:3000.
 
 The home page introduces the release verification lab, with an Enter the shop action, a short
-walkthrough and source/report links. A beetle follows your mouse (or roams on touch devices); catch it to trigger a
-full-screen jump. Choose Let it roam to release it or Fix it to throw it away and see Bug Fixeddd!
-Fixing removes the roaming beetle until the page is refreshed.
-Pause its movement with the small pause control.
+walkthrough and source/report links. A shaded, 3D-style beetle walks continuously near the page edges. Its six jointed
+legs move in alternating groups, with antenna movement and a subtle body sway.
+It avoids controls, stops during typing, hover and keyboard focus, and hides behind dialogs.
+Catching it with a pointer triggers a brief leap toward the viewer, then it settles into
+a small dialog. Escape cancels immediately. Keyboard/reduced-motion catches open the
+dialog directly. There is no cursor-following. Fix it hides the bug until refresh;
+reduced-motion mode keeps its wandering still.
 Products at `/products` is the catalogue. Product arrows open distinct detail pages; Add to cart builds a real
 basket with quantities and removal. Guests can browse and keep their cart through sign-in, then checkout.
 QA playground is a compact header tool with an anchored settings panel, closed initially.
 On mobile it lives in the navigation drawer. Each bug explains what it changes, with reproduction
-steps under How to try it. Active bugs show a red state and count. Contextual hints follow the visitor through products,
-cart, checkout, and receipts. **Run checks** opens live progress and reports over the same page.
+steps under How to try it. Active bugs show a red state and count. First-time visitors get an interactive guide
+with a persistent highlight for the next action: shopping, checkout, introducing a defect, inspecting test
+evidence, and verifying the fix. Progress survives navigation and reload; skipping or finishing stops automatic
+reopening. Use **Guide** to restart. **Run checks** opens live progress and reports over the same page.
 The sidebar collapses, the sun/moon theme control animates, and the storefront has gentle motion with
 reduced-motion support. Local browsers share one SQLite shop; test runs use isolated data. No separate guide page is needed.
 
