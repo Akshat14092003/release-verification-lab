@@ -16,13 +16,13 @@ const CLOCKS = {
 };
 const COOKIE = "lab_visitor";
 
-export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), allowRuns = true, maxVisitors = 50, sessionMs = 2 * 60 * 60 * 1000, trustProxy = false, testWorkers = 2, sharedShop = false } = {}) {
+export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), allowRuns = true, maxVisitors = 50, sessionMs = 2 * 60 * 60 * 1000, trustProxy = false, testWorkers = 2, sharedShop = false, publicOrigin = null } = {}) {
   const app = express();
   let sharedStore;
   const createStore = () => {
     const store = { bugs: readBugFlags({}), clock: "saturday" };
     store.now = () => store.clock === "real" ? new Date() : new Date(CLOCKS[store.clock]);
-    store.runtime = createApp({ databasePath: sharedShop ? join(directory, "shop.sqlite") : ":memory:", now: store.now, bugs: store.bugs, labControls: true, trustProxy, sharedShop });
+    store.runtime = createApp({ databasePath: sharedShop ? join(directory, "shop.sqlite") : ":memory:", now: store.now, bugs: store.bugs, labControls: true, trustProxy, sharedShop, publicOrigin });
     return store;
   };
   const visitors = new Map();
@@ -36,7 +36,7 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
     res.set("Cache-Control", "no-store");
     if (!["GET", "HEAD", "OPTIONS"].includes(req.method)) {
       const origin = req.get("origin");
-      if (req.get("sec-fetch-site") === "cross-site" || (origin && origin !== req.protocol + "://" + req.get("host"))) {
+      if (req.get("sec-fetch-site") === "cross-site" || (origin && origin !== req.protocol + "://" + req.get("host") && origin !== publicOrigin)) {
         return res.status(403).json({ error: "Use the controls from this website." });
       }
     }

@@ -29,8 +29,15 @@ export function loadConfig(env = process.env) {
   if (![1, 2].includes(testWorkers)) throw new Error("LAB_TEST_WORKERS must be 1 or 2.");
   if (env.LAB_SHARED_SHOP !== undefined && !["0", "1"].includes(env.LAB_SHARED_SHOP)) throw new Error("LAB_SHARED_SHOP must be 0 or 1.");
   const host = env.HOST || "127.0.0.1";
+  const publicOrigin = env.PUBLIC_ORIGIN || null;
+  if (publicOrigin) {
+    let valid = false;
+    try { const url = new URL(publicOrigin); valid = url.protocol === "https:" && !url.hostname.includes("*") && url.origin === publicOrigin; } catch { /* Invalid origin. */ }
+    if (!valid) throw new Error("PUBLIC_ORIGIN must be an HTTPS origin without a path or trailing slash.");
+  }
   return {
     host,
+    publicOrigin,
     sharedShop: env.LAB_SHARED_SHOP === "1" || (env.LAB_SHARED_SHOP !== "0" && ["127.0.0.1", "localhost", "::1"].includes(host)),
     bugs: readBugFlags(env),
     port,

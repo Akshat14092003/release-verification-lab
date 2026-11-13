@@ -9,7 +9,7 @@ import { getOrder, getProduct, listOffers, listOrders, listProducts, placeOrder,
 import { addCartItem, cartRequestItems, getCart, removeCartItem, updateCartItem } from "./cart.js";
 import * as view from "./views.js";
 
-export function createApp({ databasePath, now = () => new Date(), bugs = readBugFlags({}), includeSampleOrder = false, labControls = false, trustProxy = false, sharedShop = false }) {
+export function createApp({ databasePath, now = () => new Date(), bugs = readBugFlags({}), includeSampleOrder = false, labControls = false, trustProxy = false, sharedShop = false, publicOrigin = null }) {
   const db = openDatabase(databasePath);
   seedDatabase(db, { includeSampleOrder });
   const app = express();
@@ -36,7 +36,7 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
     // Normal browser forms are same-origin; reject cross-origin mutations.
     if (!["GET", "HEAD", "OPTIONS"].includes(req.method)) {
       const origin = req.get("origin");
-      if (origin && origin !== req.protocol + "://" + req.get("host")) {
+      if (origin && origin !== req.protocol + "://" + req.get("host") && origin !== publicOrigin) {
         return res.status(403).json({ error: "Cross-origin request rejected." });
       }
     }
