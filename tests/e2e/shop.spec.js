@@ -194,6 +194,9 @@ test("a visitor signs up from checkout, gets admin approval and keeps their cart
     await adminPage.getByRole("row").filter({ hasText: "riley@example.test" }).getByRole("button", { name: "Approve", exact: true }).click();
     await expect(adminPage.getByRole("row").filter({ hasText: "riley@example.test" })).toContainText("Approved");
   } finally { await adminContext.close(); }
+  // Approval can trigger catalogue polling while the customer is still on the POST-rendered login page.
+  await page.evaluate(() => window.Fieldwork.refresh({ background: true }));
+  await expect(page.locator('.login-form input[name="next"]')).toHaveValue("/checkout");
   await new LoginPage(page).submit("riley@example.test", "FreshDemo!2026");
   await expect(page).toHaveURL(/\/checkout$/);
   await expect(page.locator(".role-badge")).toHaveText("Customer");

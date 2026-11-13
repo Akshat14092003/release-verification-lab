@@ -99,7 +99,7 @@
   }
   function canRefreshStore() {
     const main = document.getElementById("main-content");
-    return main && !document.querySelector("dialog[open]") && !main.querySelector('[data-admin-dirty],[data-store-dirty],.admin-product[open],[aria-busy="true"],.is-pending')
+    return main && !document.querySelector("dialog[open]") && !main.querySelector('.login-form,[data-admin-dirty],[data-store-dirty],.admin-product[open],[aria-busy="true"],.is-pending')
       && !(main.contains(document.activeElement) && document.activeElement.matches("input,textarea,select"));
   }
   async function refresh({ background = false } = {}) {
