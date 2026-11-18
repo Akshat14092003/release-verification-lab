@@ -15,9 +15,10 @@ npm.cmd ci
 npx.cmd playwright install chromium --no-shell
 ```
 
-Start:
+Build and start a production preview:
 
 ```powershell
+npm.cmd run build
 npm.cmd start
 ```
 
@@ -31,8 +32,10 @@ For development, start this once and leave its terminal running:
 npm.cmd run dev
 ```
 
-Keep using **http://127.0.0.1:3000** and refresh the browser after edits. CSS, images and browser
-scripts are served directly from disk. Server-code changes restart Node automatically.
+Keep using **http://127.0.0.1:3000**. Vite updates CSS without reloading the page and
+reloads browser-script changes. Server-code changes restart Node automatically.
+Rebuild with `npm.cmd run build` before the next production preview. Cloud Run's
+Dockerfile builds automatically during the existing source deployment.
 VS Code's Go Live extension serves static files and cannot run this Express/SQLite app.
 Switch from an already running `npm start` to this mode once; do not start a second server on port 3000.
 Local development uses a shared persistent shop at `.data/demo/shop.sqlite`. Admin changes

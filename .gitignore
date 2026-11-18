@@ -23,7 +23,15 @@ defect-reports/
 /CODEX-PROMPT.md
 /RELEASE-VERIFICATION-LAB.md
 
+# Local deployment setup and notes
+/.vscode/tasks.json
+/docs/HOSTING.md
+
 # Generated evidence site
 site/
 ci-evidence/
 graphify-out/
+
+# Vite production assets
+/dist/
+design-sources/

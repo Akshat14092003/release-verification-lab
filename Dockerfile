@@ -14,7 +14,8 @@ COPY --chown=node:node src ./src
 COPY --chown=node:node public ./public
 COPY --chown=node:node scripts ./scripts
 COPY --chown=node:node tests ./tests
-COPY --chown=node:node playwright.config.js ./
+COPY --chown=node:node playwright.config.js vite.config.js ./
+RUN npm run build
 RUN mkdir -p .data test-results && chown node:node /app .data test-results
 USER node
 EXPOSE 3000

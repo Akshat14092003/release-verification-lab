@@ -8,9 +8,9 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "start": "node src/server.js",
-    "start:shop": "node src/server.js --shop",
-    "dev": "node --watch src/server.js",
+    "start": "node src/server.js --production",
+    "start:shop": "node src/server.js --shop --production",
+    "dev": "node --watch src/server.js --dev",
     "seed": "node scripts/seed.js",
     "check": "node scripts/check.js",
     "test:unit": "node --test tests/unit/*.test.js",
@@ -23,12 +23,15 @@
     "test:bugs": "node scripts/verify-defects.js",
     "test:security": "node scripts/test.js --project=security",
     "test:red": "node scripts/verify-defects.js --red-only",
-    "test:repeat": "node scripts/measure-repeatability.js"
+    "test:repeat": "node scripts/measure-repeatability.js",
+    "build": "vite build",
+    "dev:shop": "node --watch src/server.js --shop --dev"
   },
   "dependencies": {
     "express": "5.1.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.64.1"
+    "@playwright/test": "1.64.1",
+    "vite": "8.3.8"
   }
 }

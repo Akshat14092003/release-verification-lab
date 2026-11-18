@@ -1,0 +1,591 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-16T08:55:00.240156+00:00",
+  "title": "Design System: Release Verification Lab - Field Guide",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Accent",
+        "tonalRamp": [
+          "oklch(0.150 0.0369 56.02)",
+          "oklch(0.260 0.0776 56.02)",
+          "oklch(0.380 0.1108 56.02)",
+          "oklch(0.500 0.1108 56.02)",
+          "oklch(0.620 0.1108 56.02)",
+          "oklch(0.740 0.1108 56.02)",
+          "oklch(0.860 0.0776 56.02)",
+          "oklch(0.950 0.0277 56.02)"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Accent Hover",
+        "tonalRamp": [
+          "oklch(0.150 0.0322 53.25)",
+          "oklch(0.260 0.0677 53.25)",
+          "oklch(0.380 0.0967 53.25)",
+          "oklch(0.500 0.0967 53.25)",
+          "oklch(0.620 0.0967 53.25)",
+          "oklch(0.740 0.0967 53.25)",
+          "oklch(0.860 0.0677 53.25)",
+          "oklch(0.950 0.0242 53.25)"
+        ]
+      },
+      "accent-ink": {
+        "role": "primary",
+        "displayName": "Accent Ink",
+        "tonalRamp": [
+          "oklch(0.150 0.0047 84.58)",
+          "oklch(0.260 0.0100 84.58)",
+          "oklch(0.380 0.0142 84.58)",
+          "oklch(0.500 0.0142 84.58)",
+          "oklch(0.620 0.0142 84.58)",
+          "oklch(0.740 0.0142 84.58)",
+          "oklch(0.860 0.0100 84.58)",
+          "oklch(0.950 0.0036 84.58)"
+        ]
+      },
+      "accent-wash": {
+        "role": "primary",
+        "displayName": "Accent Wash",
+        "tonalRamp": [
+          "oklch(0.150 0.0118 81.27)",
+          "oklch(0.260 0.0248 81.27)",
+          "oklch(0.380 0.0354 81.27)",
+          "oklch(0.500 0.0354 81.27)",
+          "oklch(0.620 0.0354 81.27)",
+          "oklch(0.740 0.0354 81.27)",
+          "oklch(0.860 0.0248 81.27)",
+          "oklch(0.950 0.0088 81.27)"
+        ]
+      },
+      "focus": {
+        "role": "semantic",
+        "displayName": "Focus",
+        "tonalRamp": [
+          "oklch(0.150 0.0439 58.56)",
+          "oklch(0.260 0.0921 58.56)",
+          "oklch(0.380 0.1316 58.56)",
+          "oklch(0.500 0.1316 58.56)",
+          "oklch(0.620 0.1316 58.56)",
+          "oklch(0.740 0.1316 58.56)",
+          "oklch(0.860 0.0921 58.56)",
+          "oklch(0.950 0.0329 58.56)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(0.150 0.0076 238.04)",
+          "oklch(0.260 0.0159 238.04)",
+          "oklch(0.380 0.0227 238.04)",
+          "oklch(0.500 0.0227 238.04)",
+          "oklch(0.620 0.0227 238.04)",
+          "oklch(0.740 0.0227 238.04)",
+          "oklch(0.860 0.0159 238.04)",
+          "oklch(0.950 0.0057 238.04)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(0.150 0.0062 233.36)",
+          "oklch(0.260 0.0130 233.36)",
+          "oklch(0.380 0.0186 233.36)",
+          "oklch(0.500 0.0186 233.36)",
+          "oklch(0.620 0.0186 233.36)",
+          "oklch(0.740 0.0186 233.36)",
+          "oklch(0.860 0.0130 233.36)",
+          "oklch(0.950 0.0046 233.36)"
+        ]
+      },
+      "faint": {
+        "role": "neutral",
+        "displayName": "Faint",
+        "tonalRamp": [
+          "oklch(0.150 0.0061 233.29)",
+          "oklch(0.260 0.0127 233.29)",
+          "oklch(0.380 0.0182 233.29)",
+          "oklch(0.500 0.0182 233.29)",
+          "oklch(0.620 0.0182 233.29)",
+          "oklch(0.740 0.0182 233.29)",
+          "oklch(0.860 0.0127 233.29)",
+          "oklch(0.950 0.0045 233.29)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(0.150 0.0054 106.73)",
+          "oklch(0.260 0.0114 106.73)",
+          "oklch(0.380 0.0162 106.73)",
+          "oklch(0.500 0.0162 106.73)",
+          "oklch(0.620 0.0162 106.73)",
+          "oklch(0.740 0.0162 106.73)",
+          "oklch(0.860 0.0114 106.73)",
+          "oklch(0.950 0.0041 106.73)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "tonalRamp": [
+          "oklch(0.150 0.0032 93.57)",
+          "oklch(0.260 0.0066 93.57)",
+          "oklch(0.380 0.0095 93.57)",
+          "oklch(0.500 0.0095 93.57)",
+          "oklch(0.620 0.0095 93.57)",
+          "oklch(0.740 0.0095 93.57)",
+          "oklch(0.860 0.0066 93.57)",
+          "oklch(0.950 0.0024 93.57)"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Background",
+        "tonalRamp": [
+          "oklch(0.150 0.0044 102.02)",
+          "oklch(0.260 0.0093 102.02)",
+          "oklch(0.380 0.0133 102.02)",
+          "oklch(0.500 0.0133 102.02)",
+          "oklch(0.620 0.0133 102.02)",
+          "oklch(0.740 0.0133 102.02)",
+          "oklch(0.860 0.0093 102.02)",
+          "oklch(0.950 0.0033 102.02)"
+        ]
+      },
+      "soft": {
+        "role": "neutral",
+        "displayName": "Soft",
+        "tonalRamp": [
+          "oklch(0.150 0.0049 102.47)",
+          "oklch(0.260 0.0103 102.47)",
+          "oklch(0.380 0.0147 102.47)",
+          "oklch(0.500 0.0147 102.47)",
+          "oklch(0.620 0.0147 102.47)",
+          "oklch(0.740 0.0147 102.47)",
+          "oklch(0.860 0.0103 102.47)",
+          "oklch(0.950 0.0037 102.47)"
+        ]
+      },
+      "sidebar": {
+        "role": "neutral",
+        "displayName": "Sidebar",
+        "tonalRamp": [
+          "oklch(0.150 0.0044 106.65)",
+          "oklch(0.260 0.0093 106.65)",
+          "oklch(0.380 0.0133 106.65)",
+          "oklch(0.500 0.0133 106.65)",
+          "oklch(0.620 0.0133 106.65)",
+          "oklch(0.740 0.0133 106.65)",
+          "oklch(0.860 0.0093 106.65)",
+          "oklch(0.950 0.0033 106.65)"
+        ]
+      },
+      "dark-accent": {
+        "role": "primary",
+        "displayName": "Dark Accent",
+        "tonalRamp": [
+          "oklch(0.150 0.0374 79.43)",
+          "oklch(0.260 0.0786 79.43)",
+          "oklch(0.380 0.1123 79.43)",
+          "oklch(0.500 0.1123 79.43)",
+          "oklch(0.620 0.1123 79.43)",
+          "oklch(0.740 0.1123 79.43)",
+          "oklch(0.860 0.0786 79.43)",
+          "oklch(0.950 0.0281 79.43)"
+        ]
+      },
+      "dark-ink": {
+        "role": "neutral",
+        "displayName": "Dark Ink",
+        "tonalRamp": [
+          "oklch(0.150 0.0045 97.44)",
+          "oklch(0.260 0.0094 97.44)",
+          "oklch(0.380 0.0134 97.44)",
+          "oklch(0.500 0.0134 97.44)",
+          "oklch(0.620 0.0134 97.44)",
+          "oklch(0.740 0.0134 97.44)",
+          "oklch(0.860 0.0094 97.44)",
+          "oklch(0.950 0.0034 97.44)"
+        ]
+      },
+      "dark-muted": {
+        "role": "neutral",
+        "displayName": "Dark Muted",
+        "tonalRamp": [
+          "oklch(0.150 0.0054 222.74)",
+          "oklch(0.260 0.0113 222.74)",
+          "oklch(0.380 0.0162 222.74)",
+          "oklch(0.500 0.0162 222.74)",
+          "oklch(0.620 0.0162 222.74)",
+          "oklch(0.740 0.0162 222.74)",
+          "oklch(0.860 0.0113 222.74)",
+          "oklch(0.950 0.0041 222.74)"
+        ]
+      },
+      "dark-line": {
+        "role": "neutral",
+        "displayName": "Dark Line",
+        "tonalRamp": [
+          "oklch(0.150 0.0073 235.21)",
+          "oklch(0.260 0.0153 235.21)",
+          "oklch(0.380 0.0219 235.21)",
+          "oklch(0.500 0.0219 235.21)",
+          "oklch(0.620 0.0219 235.21)",
+          "oklch(0.740 0.0219 235.21)",
+          "oklch(0.860 0.0153 235.21)",
+          "oklch(0.950 0.0055 235.21)"
+        ]
+      },
+      "dark-surface": {
+        "role": "neutral",
+        "displayName": "Dark Surface",
+        "tonalRamp": [
+          "oklch(0.150 0.0081 233.92)",
+          "oklch(0.260 0.0170 233.92)",
+          "oklch(0.380 0.0242 233.92)",
+          "oklch(0.500 0.0242 233.92)",
+          "oklch(0.620 0.0242 233.92)",
+          "oklch(0.740 0.0242 233.92)",
+          "oklch(0.860 0.0170 233.92)",
+          "oklch(0.950 0.0061 233.92)"
+        ]
+      },
+      "dark-background": {
+        "role": "neutral",
+        "displayName": "Dark Background",
+        "tonalRamp": [
+          "oklch(0.150 0.0075 240.65)",
+          "oklch(0.260 0.0157 240.65)",
+          "oklch(0.380 0.0224 240.65)",
+          "oklch(0.500 0.0224 240.65)",
+          "oklch(0.620 0.0224 240.65)",
+          "oklch(0.740 0.0224 240.65)",
+          "oklch(0.860 0.0157 240.65)",
+          "oklch(0.950 0.0056 240.65)"
+        ]
+      },
+      "ticket": {
+        "role": "neutral",
+        "displayName": "Ticket",
+        "tonalRamp": [
+          "oklch(0.150 0.0075 87.15)",
+          "oklch(0.260 0.0158 87.15)",
+          "oklch(0.380 0.0226 87.15)",
+          "oklch(0.500 0.0226 87.15)",
+          "oklch(0.620 0.0226 87.15)",
+          "oklch(0.740 0.0226 87.15)",
+          "oklch(0.860 0.0158 87.15)",
+          "oklch(0.950 0.0056 87.15)"
+        ]
+      },
+      "hero-action": {
+        "role": "primary",
+        "displayName": "Hero Action",
+        "tonalRamp": [
+          "oklch(0.150 0.0396 82.11)",
+          "oklch(0.260 0.0831 82.11)",
+          "oklch(0.380 0.1187 82.11)",
+          "oklch(0.500 0.1187 82.11)",
+          "oklch(0.620 0.1187 82.11)",
+          "oklch(0.740 0.1187 82.11)",
+          "oklch(0.860 0.0831 82.11)",
+          "oklch(0.950 0.0297 82.11)"
+        ]
+      },
+      "hero-action-hover": {
+        "role": "primary",
+        "displayName": "Hero Action Hover",
+        "tonalRamp": [
+          "oklch(0.150 0.0318 85.30)",
+          "oklch(0.260 0.0668 85.30)",
+          "oklch(0.380 0.0955 85.30)",
+          "oklch(0.500 0.0955 85.30)",
+          "oklch(0.620 0.0955 85.30)",
+          "oklch(0.740 0.0955 85.30)",
+          "oklch(0.860 0.0668 85.30)",
+          "oklch(0.950 0.0239 85.30)"
+        ]
+      },
+      "success": {
+        "role": "semantic",
+        "displayName": "Success",
+        "tonalRamp": [
+          "oklch(0.150 0.0433 160.67)",
+          "oklch(0.260 0.0909 160.67)",
+          "oklch(0.380 0.1299 160.67)",
+          "oklch(0.500 0.1299 160.67)",
+          "oklch(0.620 0.1299 160.67)",
+          "oklch(0.740 0.1299 160.67)",
+          "oklch(0.860 0.0909 160.67)",
+          "oklch(0.950 0.0325 160.67)"
+        ]
+      },
+      "success-soft": {
+        "role": "semantic",
+        "displayName": "Success Soft",
+        "tonalRamp": [
+          "oklch(0.150 0.0058 164.66)",
+          "oklch(0.260 0.0122 164.66)",
+          "oklch(0.380 0.0174 164.66)",
+          "oklch(0.500 0.0174 164.66)",
+          "oklch(0.620 0.0174 164.66)",
+          "oklch(0.740 0.0174 164.66)",
+          "oklch(0.860 0.0122 164.66)",
+          "oklch(0.950 0.0044 164.66)"
+        ]
+      },
+      "success-ink": {
+        "role": "semantic",
+        "displayName": "Success Ink",
+        "tonalRamp": [
+          "oklch(0.150 0.0390 153.05)",
+          "oklch(0.260 0.0820 153.05)",
+          "oklch(0.380 0.1171 153.05)",
+          "oklch(0.500 0.1171 153.05)",
+          "oklch(0.620 0.1171 153.05)",
+          "oklch(0.740 0.1171 153.05)",
+          "oklch(0.860 0.0820 153.05)",
+          "oklch(0.950 0.0293 153.05)"
+        ]
+      },
+      "danger": {
+        "role": "semantic",
+        "displayName": "Danger",
+        "tonalRamp": [
+          "oklch(0.150 0.0500 12.14)",
+          "oklch(0.260 0.1050 12.14)",
+          "oklch(0.380 0.1500 12.14)",
+          "oklch(0.500 0.1500 12.14)",
+          "oklch(0.620 0.1500 12.14)",
+          "oklch(0.740 0.1500 12.14)",
+          "oklch(0.860 0.1050 12.14)",
+          "oklch(0.950 0.0375 12.14)"
+        ]
+      },
+      "danger-soft": {
+        "role": "semantic",
+        "displayName": "Danger Soft",
+        "tonalRamp": [
+          "oklch(0.150 0.0056 3.65)",
+          "oklch(0.260 0.0117 3.65)",
+          "oklch(0.380 0.0167 3.65)",
+          "oklch(0.500 0.0167 3.65)",
+          "oklch(0.620 0.0167 3.65)",
+          "oklch(0.740 0.0167 3.65)",
+          "oklch(0.860 0.0117 3.65)",
+          "oklch(0.950 0.0042 3.65)"
+        ]
+      },
+      "danger-ink": {
+        "role": "semantic",
+        "displayName": "Danger Ink",
+        "tonalRamp": [
+          "oklch(0.150 0.0500 15.86)",
+          "oklch(0.260 0.1050 15.86)",
+          "oklch(0.380 0.1500 15.86)",
+          "oklch(0.500 0.1500 15.86)",
+          "oklch(0.620 0.1500 15.86)",
+          "oklch(0.740 0.1500 15.86)",
+          "oklch(0.860 0.1050 15.86)",
+          "oklch(0.950 0.0375 15.86)"
+        ]
+      },
+      "dark-success": {
+        "role": "semantic",
+        "displayName": "Dark Success",
+        "tonalRamp": [
+          "oklch(0.150 0.0388 161.60)",
+          "oklch(0.260 0.0814 161.60)",
+          "oklch(0.380 0.1163 161.60)",
+          "oklch(0.500 0.1163 161.60)",
+          "oklch(0.620 0.1163 161.60)",
+          "oklch(0.740 0.1163 161.60)",
+          "oklch(0.860 0.0814 161.60)",
+          "oklch(0.950 0.0291 161.60)"
+        ]
+      },
+      "dark-danger": {
+        "role": "semantic",
+        "displayName": "Dark Danger",
+        "tonalRamp": [
+          "oklch(0.150 0.0500 10.76)",
+          "oklch(0.260 0.1050 10.76)",
+          "oklch(0.380 0.1500 10.76)",
+          "oklch(0.500 0.1500 10.76)",
+          "oklch(0.620 0.1500 10.76)",
+          "oklch(0.740 0.1500 10.76)",
+          "oklch(0.860 0.1050 10.76)",
+          "oklch(0.950 0.0375 10.76)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Desktop photographic hero; responsive sizes documented in DESIGN.md."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Storefront page headings."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Editorial product titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Introductory and evidence paragraphs."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Compact operational labels."
+      }
+    },
+    "shadows": [
+      {
+        "name": "experiment-ticket",
+        "value": "0 20px 45px #0004",
+        "purpose": "Cream experiment slip against the hero photograph."
+      },
+      {
+        "name": "desktop-guide",
+        "value": "0 14px 34px #0002",
+        "purpose": "Fixed desktop guide outside the test drawer."
+      },
+      {
+        "name": "glass",
+        "value": "var(--glass-shadow)",
+        "purpose": "Existing theme-aware glass surfaces."
+      }
+    ],
+    "motion": {
+      "scope": "Home field guide",
+      "heroMaxFontSize": "96px",
+      "heroMinHeight": "540px",
+      "heroParallaxMax": "28px",
+      "chapterTranslationMax": "22px",
+      "chapterMinOpacity": 0.8,
+      "sceneVisual": "Calendar, rule flow and evidence checkpoints; no product photo or scene zoom",
+      "progression": [
+        "rule",
+        "bug",
+        "evidence"
+      ],
+      "settingsMutationOnScroll": false,
+      "reducedMotion": "Static sequential chapters; no pinning or translation."
+    },
+    "breakpoints": [
+      {
+        "name": "narrow-phone-max",
+        "value": "430px"
+      },
+      {
+        "name": "phone-max",
+        "value": "560px"
+      },
+      {
+        "name": "mobile-max",
+        "value": "850px"
+      },
+      {
+        "name": "desktop-min",
+        "value": "851px"
+      },
+      {
+        "name": "compact-desktop-max",
+        "value": "1200px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "description": "Shared theme-aware action.",
+      "html": "<button class=\"ds-primary\">Verify with real tests</button>",
+      "css": ".ds-primary{font-family:\"DM Sans\",system-ui,sans-serif;font-size:13px;font-weight:700;cursor:pointer;padding:12px 18px;border:1px solid transparent;border-radius:4px;background:var(--accent,#925017);color:var(--accent-ink,#fffaf0);transition:background .15s,transform .15s}.ds-primary:hover{background:var(--accent-hover,#743b0e);transform:translateY(-1px)}.ds-primary:focus-visible{outline:3px solid var(--focus,#c17127);outline-offset:3px}.ds-primary:disabled{opacity:.6;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-primary{transition:none;transform:none}}",
+      "refersTo": "button-primary"
+    },
+    {
+      "name": "Hero action",
+      "kind": "button",
+      "description": "Warm fixed action against the photograph.",
+      "html": "<a href=\"#\" class=\"ds-hero-action\">Try the bug hunt <span aria-hidden=\"true\">?</span></a>",
+      "css": ".ds-hero-action{font-family:\"DM Sans\",system-ui,sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:space-between;gap:24px;min-height:48px;padding:12px 20px;border-radius:3px;background:#efc169;color:#18232a;text-decoration:none;transition:transform .2s,background .2s}.ds-hero-action:hover{background:#f6d58f;transform:translateY(-2px)}.ds-hero-action:focus-visible{outline:3px solid var(--focus,#c17127);outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-hero-action{transition:none;transform:none}}",
+      "refersTo": "button-hero"
+    },
+    {
+      "name": "Outlined cart action",
+      "kind": "button",
+      "description": "Quiet catalogue purchase action.",
+      "html": "<button class=\"ds-cart\">Add to cart</button>",
+      "css": ".ds-cart{font-family:\"DM Sans\",system-ui,sans-serif;font-size:13px;font-weight:700;cursor:pointer;font-size:11px;min-height:43px;padding:9px 6px;border:1px solid var(--line,#d6d6ca);border-radius:3px;background:transparent;color:var(--ink,#17232b);transition:background .15s,transform .15s}.ds-cart:hover{background:var(--ink,#17232b);color:var(--background,#f1f0e6);transform:translateY(-1px)}.ds-cart:focus-visible{outline:3px solid var(--focus,#c17127);outline-offset:3px}.ds-cart:disabled{opacity:.6;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-cart{transition:none;transform:none}}",
+      "refersTo": "button-cart"
+    },
+    {
+      "name": "Collection search",
+      "kind": "input",
+      "description": "Existing searchable field with visible submit action.",
+      "html": "<form class=\"ds-search\" onsubmit=\"return false\"><label class=\"ds-search-label\" for=\"ds-search-field\">Search products</label><input id=\"ds-search-field\" type=\"search\" placeholder=\"Search the collection\"><button>Search</button></form>",
+      "css": ".ds-search{font-family:\"DM Sans\",system-ui,sans-serif;display:flex;gap:8px;flex-wrap:wrap;max-width:320px;border-radius:3px;color:var(--ink,#17232b)}.ds-search-label{width:100%;font-size:11px}.ds-search input{min-width:0;flex:1;padding:9px 12px;border:1px solid var(--line,#d6d6ca);border-radius:7px;background:var(--surface,#fffdf6);color:var(--ink,#17232b);font:inherit;font-size:11px}.ds-search button{padding:9px 12px;border:1px solid var(--line,#d6d6ca);border-radius:4px;background:var(--surface,#fffdf6);color:var(--ink,#17232b);cursor:pointer}.ds-search button:hover{background:var(--soft,#e8e7dc)}.ds-search input:focus-visible,.ds-search button:focus-visible{outline:3px solid var(--focus,#c17127);outline-offset:3px}"
+    },
+    {
+      "name": "Category chip",
+      "kind": "chip",
+      "description": "Compact selected and unselected categories.",
+      "html": "<div class=\"ds-chips\"><a href=\"#\" class=\"ds-chip ds-selected\" aria-current=\"page\">All finds</a><a href=\"#\" class=\"ds-chip\">Stationery</a></div>",
+      "css": ".ds-chips{display:flex;gap:12px;padding:15px 0;border-block:1px solid var(--line,#d6d6ca);font-family:\"DM Sans\",system-ui,sans-serif}.ds-chip{padding:7px 12px;border:1px solid transparent;border-radius:3px;background:transparent;color:var(--muted,#57636a);font-size:11px;text-decoration:none;transition:background .2s,transform .2s}.ds-chip.ds-selected{background:var(--ink,#17232b);color:var(--background,#f1f0e6)}.ds-chip:hover{transform:translateY(-2px)}.ds-chip:focus-visible{outline:3px solid var(--focus,#c17127);outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-chip{transition:none;transform:none}}",
+      "refersTo": "filter-selected"
+    },
+    {
+      "name": "Desktop navigation",
+      "kind": "nav",
+      "description": "Compact horizontal storefront navigation; mobile remains a menu.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Main navigation\"><a href=\"#\" aria-current=\"page\">Home</a><a href=\"#\">Products</a><a href=\"#\">Offers</a></nav>",
+      "css": ".ds-nav{display:flex;gap:6px;flex-wrap:wrap;background:var(--sidebar,#eeeee4);padding:12px;font-family:\"DM Sans\",system-ui,sans-serif}.ds-nav a{padding:8px 12px;border-radius:3px;color:var(--muted,#57636a);font-size:12px;text-decoration:none}.ds-nav a:hover{background:var(--soft,#e8e7dc);color:var(--ink,#17232b)}.ds-nav a[aria-current]{background:var(--nav-active-bg,#e6dcc5);color:var(--nav-active-fg,#743b0e)}.ds-nav a:focus-visible{outline:3px solid var(--focus,#c17127);outline-offset:3px}"
+    },
+    {
+      "name": "Experiment ticket",
+      "kind": "card",
+      "description": "Material and switch preview; application binds live offer and purchase behavior.",
+      "html": "<article class=\"ds-ticket\"><header>Monday / UTC <span>Weekend offer</span></header><p class=\"ds-question\">The weekend is over.<br>Should this deal still work?</p><label class=\"ds-switch\"><span>Break the weekend rule</span><input type=\"checkbox\" role=\"switch\"></label><p class=\"ds-expectation\">Expected: purchase blocked</p><button>Try the offer on Monday ?</button><small>Real shop. Fictional credit. No real payment.</small></article>",
+      "css": ".ds-ticket{width:360px;max-width:100%;padding:23px;background:#f0e9d9;color:#17232b;border-radius:3px;box-shadow:0 20px 45px #0004;font-family:\"DM Sans\",system-ui,sans-serif}.ds-ticket header{display:flex;justify-content:space-between;border-bottom:1px solid #a8ac9d;padding-bottom:12px;font-family:\"Field Display\",sans-serif;font-size:15px;text-transform:uppercase;letter-spacing:.02em}.ds-question{font-family:\"Field Serif\",serif;font-size:25px;line-height:1.12;margin:16px 0}.ds-switch{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 0;border-block:1px solid #bdc0b2;font-size:12px;font-weight:700;cursor:pointer}.ds-switch input{appearance:none;width:40px;height:24px;border:1px solid #92998e;border-radius:16px;background:#d6d6c7;position:relative;cursor:pointer}.ds-switch input:before{content:\"\";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#515e58;transition:transform .2s}.ds-switch input:checked{background:#a5552d;border-color:#a5552d}.ds-switch input:checked:before{transform:translateX(16px);background:#fff8e8}.ds-expectation{font-size:11px;margin:13px 0;font-weight:700}.ds-ticket button{width:100%;min-height:44px;border:0;border-radius:3px;background:#17232b;color:#fff6e1;padding:10px 12px;font:inherit;font-size:12px;cursor:pointer}.ds-ticket button:hover{background:#304249}.ds-ticket small{display:block;text-align:center;font-size:9px;color:#4d5954;margin-top:12px}.ds-ticket button:focus-visible,.ds-switch input:focus-visible{outline:3px solid var(--focus,#c17127);outline-offset:3px}@media(prefers-reduced-motion:reduce){.ds-switch input:before{transition:none}}",
+      "refersTo": "experiment-ticket"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Field Guide",
+    "overview": "A photographic shop paired with a tangible experiment slip: midnight navy, ivory and parchment, warm amber actions, compressed display type, and an italic serif counterpoint. Large editorial gestures introduce the experience; restrained controls support everyday shopping and evidence inspection.\n\nRelease Verification Lab is the portfolio project; Fieldwork is its fictional shop. The current visual world replaces the rejected bland purple dashboard direction. This document records the implemented system, not approval of a separate generated direction image. Storefront-specific typography and horizontal navigation do not imply an admin layout redesign; admin retains its existing structure and consumes the shared palette.",
+    "keyCharacteristics": [
+      "Product photography anchors the composition.",
+      "Condensed uppercase display type pairs with expressive serif titles and plain body copy.",
+      "Paper-like controls sit against midnight imagery.",
+      "Amber indicates actions; pass/fail retains independent semantic colors."
+    ],
+    "rules": [
+      {
+        "name": "The Evidence Color Rule",
+        "body": "Amber is an action accent. Green and red remain reserved for success and failure; expected behavior alone is not a verified result.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "**Do** use existing product photography and local responsive image variants.",
+      "**Do** keep display gestures short and operational controls readable.",
+      "**Do** preserve theme roles, semantic results, visible focus, and reduced-motion behavior.",
+      "**Do** retain real runner, guide, role, cart, and checkout behavior under visual changes."
+    ],
+    "donts": [
+      "**Don't** return to the rejected bland purple dashboard direction.",
+      "**Don't** convert expected behavior into a fabricated pass result.",
+      "**Don't** apply storefront navigation or hero typography to admin by assumption.",
+      "**Don't** treat a generated direction image as shipped artwork or user-approved publication."
+    ]
+  }
+}

@@ -213,6 +213,7 @@ Typical Linux host setup commands:
 ```sh
 npm ci --include=dev
 npx playwright install --with-deps chromium --no-shell
+npm run build
 export HOST=0.0.0.0
 # Only when there is one trusted HTTPS reverse proxy that preserves the Host header:
 export TRUST_PROXY=1

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 
 const roots = ["src", "scripts", "public", "tests"];
-const paths = ["playwright.config.js"];
+const paths = ["playwright.config.js", "vite.config.js"];
 for (const root of roots) {
   for (const file of readdirSync(root, { recursive: true })) {
     if (file.endsWith(".js")) paths.push(join(root, file));

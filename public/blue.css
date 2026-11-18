@@ -6,10 +6,10 @@ html[data-theme="dark"] .panel,html[data-theme="dark"] .product-card,
 html[data-theme="dark"] .empty-state,html[data-theme="dark"] .stat-card {
   background:var(--surface);backdrop-filter:none;-webkit-backdrop-filter:none;
 }
-.qa-playground { background:var(--surface);border-color:var(--line);box-shadow:0 8px 30px #183e7906;padding:24px;border-radius:20px; }
-.product-card,html[data-theme="dark"] .product-card { border-color:var(--line);border-radius:18px;box-shadow:0 4px 18px #183e7908; }
-.product-card:hover { box-shadow:0 12px 30px #183e7915;border-color:#99b5e4; }
-.product-card .art-panel { aspect-ratio:1 / 1;height:auto;overflow:hidden; }
+.qa-playground { background:var(--surface);border-color:var(--line);box-shadow:0 8px 30px rgba(60,20,90,.05);padding:24px;border-radius:20px; }
+.product-card,html[data-theme="dark"] .product-card { border-color:var(--line);border-radius:18px;box-shadow:0 4px 18px rgba(60,20,90,.05); }
+.product-card:hover { box-shadow:0 14px 34px -12px color-mix(in srgb,var(--accent) 45%,transparent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line)); }
+.product-card .art-panel { aspect-ratio:1 / 1;height:auto;overflow:hidden;transition:transform .18s ease;transform-style:preserve-3d; }
 .product-card .art-panel img.product-art { width:100%;height:100%;object-fit:cover;object-position:center; }
 .product-category,.product-gallery .product-category { background:var(--surface);color:var(--ink);border:1px solid var(--line);font-size:11px;font-weight:600; }
 .product-card .product-details { padding:18px; }
@@ -21,7 +21,7 @@ html[data-theme="dark"] .empty-state,html[data-theme="dark"] .stat-card {
 .quick-add.just-added .button,html[data-theme="dark"] .quick-add.just-added .button { border-color:var(--accent);background:var(--soft);color:var(--ink); }
 .just-added button[type="submit"]>.icon { display:none; }
 .just-added button[type="submit"]>span:before { content:"✓";display:inline-block;margin-right:7px; }
-.product-peek { background:#fffffff0;color:#172d49;backdrop-filter:blur(8px); }
+.product-peek { background:#fdfaffe8;color:#1f1430;backdrop-filter:blur(8px); }
 .context-guide { border-left:3px solid var(--accent);box-shadow:none; }
 .drawer-body,.lab-report { background:var(--surface); }
 .runner-intro { gap:18px; }
@@ -53,7 +53,7 @@ html[data-theme="dark"] .empty-state,html[data-theme="dark"] .stat-card {
 .hero-actions { flex-wrap:wrap; }
 .hero-lab-link { min-height:40px;font:inherit;font-size:12px;border:0;padding:0;background:transparent;cursor:pointer; }
 .reset-dialog { width:min(440px,calc(100% - 32px));max-height:90dvh;overflow:auto;overscroll-behavior:contain;padding:24px;border:1px solid var(--line);border-radius:18px;background:var(--glass-solid);color:var(--ink); }
-.reset-dialog::backdrop { background:#07132799;backdrop-filter:blur(4px); }
+.reset-dialog::backdrop { background:#0e071899;backdrop-filter:blur(4px); }
 .reset-dialog h2 { font-size:23px; }.reset-dialog p { margin-top:14px;font-size:14px;line-height:1.6; }
 .reset-dialog .reset-actions { display:flex;justify-content:flex-end;flex-wrap:wrap;gap:12px;margin-top:22px; }
 .reset-dialog [role="alert"] { color:var(--danger-ink); }
@@ -74,7 +74,7 @@ html[data-theme="dark"] .empty-state,html[data-theme="dark"] .stat-card {
   .topbar>.mobile-menu-toggle { display:inline-flex;margin:0; }
   .mobile-navigation { inset-block:0;inset-inline:0 auto;margin:0;width:min(360px,calc(100% - 24px));height:100dvh;max-height:100dvh;max-width:none;border-radius:0;border-start-end-radius:20px;border-end-end-radius:20px;overflow:auto;overscroll-behavior:contain; }
   .mobile-navigation[open] { animation:mobile-menu-in .22s ease-out; }
-  .mobile-navigation::backdrop { background:#07132799;backdrop-filter:blur(4px); }
+  .mobile-navigation::backdrop { background:#0e071899;backdrop-filter:blur(4px); }
   .mobile-menu-close { position:absolute;inset-block-start:18px;inset-inline-end:16px;z-index:2; }
   html[data-sidebar] .mobile-navigation .sidebar { display:flex;position:static;width:100%;height:auto;min-height:100%;padding:22px 18px;border:0;background:var(--glass-solid);backdrop-filter:none;overflow:visible; }
   html[data-sidebar] .mobile-navigation .sidebar>.brand { padding-inline-end:48px;min-height:40px; }

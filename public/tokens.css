@@ -3,19 +3,19 @@
    Accent is the one brand colour. Pass/fail keep their own semantic colours. */
 :root {
   color-scheme: light;
-  /* Brand accent */
-  --accent:#345f9f;--accent-hover:#294c80;--accent-ink:#fff;--accent-wash:#e0e8f4;
-  --focus:#91b9ff;--green:var(--accent);
+  /* Brand accent — Field guide amber (actions + selected states only) */
+  --accent:#925017;--accent-hover:#743b0e;--accent-ink:#fffaf0;--accent-wash:#eee0c8;
+  --focus:#c17127;--green:var(--success);
   /* Neutrals */
-  --ink:#172d49;--muted:#465b76;--faint:#52617a;--line:#dce5f2;--surface:#fff;--background:#f3f7fd;--soft:#e8effb;--sidebar:#f4f8ff;
+  --ink:#17232b;--muted:#57636a;--faint:#657178;--line:#d6d6ca;--surface:#fffdf6;--background:#f1f0e6;--soft:#e8e7dc;--sidebar:#eeeee4;
   /* Glass + ambient glow */
-  --glass:rgba(249,252,255,.82);--glass-solid:#f5f8ff;--glass-line:rgba(125,154,199,.23);
-  --glass-shadow:0 16px 48px #183e790c;--glow-green:#d7e7ff;--glow-gold:#e9e4fb;
-  --experiment-bg:#e7edf5;--experiment-controls:#d9e3ef;--experiment-day:#c9d6e7;--experiment-title:#213a5a;--experiment-emphasis:#365f94;--experiment-copy:#3c536e;
-  /* Semantic status (independent of accent) */
-  --success:#2f9e54;--success-soft:#edf7ef;--success-ink:#246d3a;
-  --danger:#e9565f;--danger-soft:#fef2f2;--danger-ink:#b91c1c;
-  --nav-active-bg:#dce9ff;--nav-active-fg:#214f9a;
+  --glass:rgba(247,246,236,.96);--glass-solid:#f7f6ec;--glass-line:rgba(36,52,56,.18);
+  --glass-shadow:0 16px 48px rgba(16,24,32,.1);--glow-green:#e4f5ec;--glow-gold:#eee0c8;
+  --experiment-bg:#17232b;--experiment-controls:#26333b;--experiment-day:#eee8d9;--experiment-title:#f5f1e6;--experiment-emphasis:#e8b969;--experiment-copy:#d6ddd9;
+  /* Semantic status (independent of accent — green/red reserved for test results) */
+  --success:#1f9d6b;--success-soft:#e9f7f0;--success-ink:#16733f;
+  --danger:#d63a5e;--danger-soft:#fdeef1;--danger-ink:#a81b3a;
+  --nav-active-bg:#e6dcc5;--nav-active-fg:#743b0e;
   /* Layout */
   --topbar-height:85px;
   /* Type scale */
@@ -24,14 +24,14 @@
 }
 html[data-theme="dark"] {
   color-scheme: dark;
-  --accent:#91a9cc;--accent-hover:#a9bbd6;--accent-ink:#13243c;--accent-wash:#293e5c;
-  --focus:#91b9ff;
-  --ink:#e4edfc;--muted:#a3b5cf;--faint:#9eafc9;--line:#2c405d;--surface:#142239;--background:#0b1425;--soft:#1d304d;--sidebar:#11213a;
-  --glass:rgba(19,34,57,.84);--glass-solid:#14233b;--glass-line:rgba(145,180,231,.19);
-  --glass-shadow:0 16px 48px #0003;--glow-green:#173b69;--glow-gold:#282448;
-  --experiment-bg:#243b5c;--experiment-controls:#1b2d47;--experiment-day:#17273f;--experiment-title:#e4ebf5;--experiment-emphasis:#a8bddb;--experiment-copy:#c0cee1;
-  --success:#6fd69a;--success-soft:#153c26;--success-ink:#a9eac0;
-  --danger:#df6672;--danger-soft:#3b2024;--danger-ink:#ffc4c4;
-  --nav-active-bg:#26456e;--nav-active-fg:#cee1ff;
+  --accent:#e8b969;--accent-hover:#f3cc89;--accent-ink:#17232b;--accent-wash:#323326;
+  --focus:#e8b969;
+  --ink:#f2f0e6;--muted:#a7b4b9;--faint:#a0acb2;--line:#344149;--surface:#1a2830;--background:#101b23;--soft:#24343d;--sidebar:#15222b;
+  --glass:rgba(21,34,43,.96);--glass-solid:#15222b;--glass-line:rgba(204,220,224,.17);
+  --glass-shadow:0 16px 48px #0004;--glow-green:#153b2a;--glow-gold:#3b3525;
+  --experiment-bg:#17232b;--experiment-controls:#26333b;--experiment-day:#eee8d9;--experiment-title:#f5f1e6;--experiment-emphasis:#e8b969;--experiment-copy:#d6ddd9;
+  --success:#74d7a8;--success-soft:#14301f;--success-ink:#a9eac0;
+  --danger:#ff6e8a;--danger-soft:#3a1b24;--danger-ink:#ffc4d0;
+  --nav-active-bg:#343728;--nav-active-fg:#f3cc89;
   color:var(--ink);background:var(--background);
 }

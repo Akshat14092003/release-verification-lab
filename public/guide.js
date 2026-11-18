@@ -146,7 +146,9 @@
     let tour;
     try { tour = JSON.parse(store(key) || "null"); } catch { /* Ignore invalid saved progress. */ }
     if (!tour || !["active", "skipped", "completed"].includes(tour.status)) {
-      tour = { status: store("fieldwork-guide-dismissed") === "1" ? "skipped" : "active", phase: "shop" };
+      const shopIntent = /(?:^|;\s*)lab_intent=shop(?:;|$)/.test(document.cookie);
+      const skip = shopIntent || store("fieldwork-guide-dismissed") === "1";
+      tour = { status: skip ? "skipped" : "active", phase: "shop" };
     }
     let cartCount = Number(document.querySelector("[data-cart-count]")?.textContent || 0);
     let target = null, signature = "", action = () => {}, scheduled = false;
@@ -231,7 +233,8 @@
       document.body.classList.toggle("has-active-tour", active);
       const modal = document.querySelector("dialog[open]");
       const dialog = modal?.matches("#test-drawer,#mobile-navigation") ? modal : null;
-      const suspended = Boolean(modal && !dialog) || Boolean(visible("#catch-popup:not([hidden])"));
+      const onGuidedLanding = location.pathname === "/" && !!document.getElementById("guided-start");
+      const suspended = Boolean(modal && !dialog) || Boolean(visible("#catch-popup:not([hidden])")) || onGuidedLanding;
       coach.hidden = !active || suspended;
       const host = dialog || home.parentNode;
       if (coach.parentNode !== host) {

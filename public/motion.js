@@ -22,6 +22,28 @@
     }).catch(() => {});
   }
   const closed = kind => ({ opacity: 0, transform: kind === "drawer" ? "translateX(-24px)" : kind === "toast" ? "translateY(8px)" : "translateY(-3px) scale(.97)" });
+  // Pointer tilt on product imagery only — no layout movement, fine pointers only.
+  (() => {
+    const fine = matchMedia("(pointer: fine)");
+    if (!fine.matches) return;
+    const MAX = 6;
+    function bind(card) {
+      const panel = card.querySelector(".art-panel");
+      if (!panel || panel.dataset.tilt) return;
+      panel.dataset.tilt = "1";
+      card.addEventListener("pointermove", event => {
+        if (reduced.matches || keyboard) return;
+        const box = panel.getBoundingClientRect();
+        const px = (event.clientX - box.left) / box.width - 0.5;
+        const py = (event.clientY - box.top) / box.height - 0.5;
+        panel.style.transform = "perspective(600px) rotateX(" + (-py * MAX).toFixed(2) + "deg) rotateY(" + (px * MAX).toFixed(2) + "deg)";
+      });
+      card.addEventListener("pointerleave", () => { panel.style.transform = ""; });
+    }
+    const scan = () => document.querySelectorAll(".product-card").forEach(bind);
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", scan);
+    else scan();
+  })();
   window.FieldworkMotion = {
     enter(element, kind = "popover", trigger) {
       if (trigger) {

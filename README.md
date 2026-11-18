@@ -22,7 +22,7 @@ Node 22.17 displays an experimental SQLite warning; no native database package o
 ~~~sh
 npm ci
 npx playwright install chromium --no-shell
-npm start
+npm run dev
 ~~~
 
 Open http://127.0.0.1:3000.
@@ -50,7 +50,28 @@ All PowerShell commands, account details, reset options, and step-by-step manual
 [COMMANDS.md](COMMANDS.md).
 
 On Windows PowerShell, use npm.cmd if execution policy blocks npm.ps1.
-Use npm run dev for automatic server restarts.
+Use `npm run dev` for Vite CSS hot updates, browser-script reloads, and backend
+restarts. Express and Vite share port 3000; no second frontend port is needed.
+
+For a production preview:
+
+~~~sh
+npm run build
+npm start
+~~~
+
+Vite builds minified, hashed JavaScript, CSS and fonts into ignored `dist/`.
+Express retains pages, APIs, SQLite, and the live Playwright runner. Early theme
+selection and responsive product images keep their existing behavior.
+Use `npm run dev:shop` for the original persistent shop during development;
+`npm run start:shop` uses production assets.
+
+Cloud Run's Dockerfile builds assets automatically. The existing VS Code source
+deployment task still works. Local changes are not automatically deployed or pushed.
+Production never starts Vite's development server.
+
+For a temporary source-only diagnostic, `node src/server.js` retains the previous
+unbundled path with the same data and routes.
 
 ### Public synthetic accounts
 

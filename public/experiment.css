@@ -1,0 +1,519 @@
+@font-face{font-family:Field Display;src:url('/fonts/field-display.ttf') format('truetype');font-weight:800;font-display:swap}
+@font-face{font-family:Field Serif;src:url('/fonts/field-serif.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:Field Serif;src:url('/fonts/field-serif-italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap}
+/* Editorial field guide. Product photography and live controls carry the story. */
+body.storefront-body,body.storefront-body.has-active-tour{padding-bottom:0}
+.storefront-body .brand-wordmark{font-family:Field Display,sans-serif;text-transform:uppercase;font-size:29px;letter-spacing:-.02em}
+.storefront-body .brand-mark{border-radius:3px}
+.storefront-body .brand-dot{color:var(--accent)}
+.storefront-body .button{border-radius:4px}
+.storefront-body .main{max-width:1600px;padding:38px 40px 64px}
+.storefront-body .page-heading h1,.storefront-body .catalogue h1{font-family:Field Display,sans-serif;font-size:clamp(54px,7vw,94px);text-transform:uppercase;line-height:.95;letter-spacing:-.025em}
+.storefront-body .page-footer{margin-inline:40px}
+.storefront-body .main:has(.field-story){max-width:none;padding:0 24px 64px}
+.storefront-body .home-main{max-width:none}
+.storefront-body .home-main>.home-entry,.storefront-body .home-main>#how-it-works,.storefront-body .home-main>.home-about{display:none}
+.storefront-body .page-footer:has(.footer-project-links){display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;margin-inline:0;padding:18px clamp(20px,3vw,40px);font-size:12px;font-weight:400}
+.storefront-body .page-footer:has(.footer-project-links)>span:last-child{justify-self:end;text-align:right}
+.footer-project-links{display:flex;flex-wrap:wrap;align-items:center;justify-self:center;gap:4px 24px;font-size:12px;font-weight:500}
+.footer-project-links a{display:inline-flex;align-items:center;gap:8px;min-height:32px;color:var(--ink);text-decoration:underline;text-underline-offset:4px}
+.footer-project-links a:hover{color:var(--accent)}
+.footer-project-links .icon{width:14px;height:14px}
+html[data-theme="light"] .storefront-body .page-footer:has(.footer-project-links){background:var(--surface);color:var(--muted)}
+@media(min-width:851px){
+ html[data-theme] .storefront-body .app-shell{display:block;grid-template-columns:none}
+ html[data-theme] .storefront-body .app-shell>.sidebar{position:sticky;z-index:45;top:0;left:auto;width:100%;height:65px;padding:0 32px;display:flex;flex-direction:row;align-items:center;gap:28px;border:0;border-bottom:1px solid var(--line);background:var(--sidebar)}
+ .storefront-body .sidebar .brand{padding:0;flex-shrink:0}
+ .storefront-body .sidebar .nav-label{display:none}
+ .storefront-body .sidebar nav{display:flex;flex-direction:row;gap:6px;margin:auto}
+ .storefront-body .sidebar .nav-link{padding:8px 12px;gap:8px;border-radius:3px;font-size:12px}
+ .storefront-body .sidebar .nav-link .icon{width:15px;height:15px}
+ html[data-sidebar=collapsed] .storefront-body .sidebar nav{margin:0 auto;align-self:center}
+ html[data-sidebar=collapsed] .storefront-body .sidebar .nav-link{padding:8px 12px}
+ html[data-sidebar=collapsed] .storefront-body .sidebar .nav-count{position:static}
+ html[data-sidebar=collapsed] .storefront-body .sidebar .nav-text{display:inline}
+ html[data-sidebar=collapsed] .storefront-body .sidebar .nav-link .nav-text{display:none}
+ .storefront-body .sidebar .sidebar-footer{margin:0;padding:0;display:block}
+ .storefront-body .sidebar-footer>.demo-note,.storefront-body .sidebar-footer>p{display:none}
+ .storefront-body .sidebar .signout{margin:0;font-size:11px;white-space:nowrap;color:var(--muted)}
+ .storefront-body .sidebar .sidebar-toggle{position:static;transform:none;order:3;margin:0;width:30px;height:30px;flex-shrink:0;border-radius:3px}
+ html[data-theme] .storefront-body .workspace{margin:0;width:100%;padding:0}
+ html[data-theme] .storefront-body .topbar{position:sticky;top:65px;z-index:40;width:100%;height:55px;min-height:55px;padding:0 32px;gap:16px;background:var(--background);border-bottom:1px solid var(--line);box-shadow:none;backdrop-filter:none}
+ .storefront-body .topbar .mobile-brand{display:none}
+ .storefront-body .breadcrumb{margin-right:auto;font-size:11px}
+ .storefront-body .account-bar{gap:14px}
+ .storefront-body .topbar .header-sign-in{min-height:32px;padding:7px 12px;background:transparent;color:var(--ink);border:1px solid var(--line);font-size:11px}
+ .storefront-body .topbar .shop-lab{margin:0}
+ .storefront-body .topbar #open-tests{background:transparent;color:var(--ink);border:1px solid var(--line);font-size:11px;padding:8px 12px}
+ .storefront-body .topbar #toggle-playground{font-size:11px;padding:8px 12px;min-height:32px;background:var(--soft);border-radius:3px}
+ .storefront-body .topbar .theme-toggle{width:32px;height:32px;border-radius:3px}
+ .storefront-body .topbar .avatar{height:30px;width:30px}
+ .storefront-body .topbar .credit{padding-left:12px}
+ .storefront-body .topbar .role-badge{display:none}
+ .storefront-body .context-guide.is-tour{left:auto;right:26px;width:370px;max-width:calc(100vw - 48px);padding:18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;background:#eee8d9;color:#17232b;border:1px solid #cfc9bb;border-radius:4px;box-shadow:0 14px 34px #0002}
+ .storefront-body .context-guide.is-tour .guide-orbit{display:none}
+ .storefront-body .context-guide.is-tour .guide-copy{grid-column:1;grid-row:1}
+ .storefront-body .context-guide.is-tour #guide-step{color:#795020}
+ .storefront-body .context-guide.is-tour #guide-title{font-size:18px;color:#17232b}
+ .storefront-body .context-guide.is-tour #guide-copy{font-size:12px;color:#4c5960;line-height:1.7}
+ .storefront-body .context-guide.is-tour #guide-action{grid-column:1;grid-row:2;justify-self:start;background:#17232b;color:#fff9ec;margin:0}
+ .storefront-body .context-guide.is-tour #guide-dismiss{position:static;grid-column:2;grid-row:1;background:transparent;color:#17232b;width:28px;height:28px;min-height:28px;border:1px solid #cfc9bb;border-radius:3px}
+ .storefront-body .context-guide.is-tour .guide-progress{grid-column:1/-1;grid-row:3}
+ .storefront-body #test-drawer .context-guide.is-tour{width:auto;max-width:none;right:auto;left:auto;background:var(--surface);color:var(--ink);border:0;border-top:1px solid var(--line);border-radius:0;box-shadow:none}
+ .storefront-body #test-drawer .context-guide.is-tour #guide-title{color:var(--ink)}
+ .storefront-body #test-drawer .context-guide.is-tour #guide-copy{color:var(--muted)}
+ .storefront-body #test-drawer .context-guide.is-tour #guide-dismiss{color:var(--ink);border-color:var(--line)}
+}
+.field-story{width:100%;margin:0}
+.field-introduction{min-height:calc(100svh - var(--field-chrome,120px))}
+.field-hero{position:relative;isolation:isolate;min-height:540px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:center;padding:30px clamp(28px,4vw,76px);overflow:hidden;color:#f8f3e5;background:#15232d}
+.field-hero-image{position:absolute;inset:0;z-index:-2}
+.field-hero-image picture,.field-hero-image img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 65%}
+.field-hero:after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(5,16,24,.83),rgba(5,16,24,.34) 58%,rgba(5,16,24,.1));pointer-events:none}
+.field-hero-copy{align-self:center;max-width:900px;padding-bottom:22px}
+.field-hero-copy h1{font-family:Field Display,sans-serif;font-size:clamp(64px,7vw,96px);font-weight:800;text-transform:uppercase;line-height:.88;letter-spacing:-.025em;color:#f9f3e4;margin:0;text-wrap:nowrap}
+.field-hero-copy .field-serif{font-family:Field Serif,serif;font-style:italic;font-size:clamp(25px,2.3vw,32px);line-height:1.2;color:#f4ead7;margin-top:20px}
+.field-intro{font-size:14px;line-height:1.8;color:#e0e4de;margin:18px 0 24px}
+.field-start{display:inline-flex;align-items:center;justify-content:space-between;gap:24px;background:#efc169;color:#18232a;min-height:48px;padding:12px 20px;font-weight:700;border-radius:3px;font-size:13px}
+.field-start:hover{background:#f6d58f;transform:translateY(-2px)}
+.field-shop{font-family:Field Serif,serif;font-size:20px;display:inline-flex;align-items:center;gap:16px;margin:16px 0 0 20px;color:#fbf5e6;border-bottom:1px solid #d4d6c6;padding-bottom:4px}
+html[data-theme] .field-ticket.offer-ticket{width:340px;max-width:100%;padding:18px;background:#f0e9d9;color:#17232b;border:0;border-radius:3px;box-shadow:0 20px 45px #0004;transform:rotate(1deg);animation:none;overflow:visible;align-self:center;margin:0;scroll-margin-top:148px}
+.field-ticket-head{display:flex;gap:12px;justify-content:space-between;font-family:Field Display,sans-serif;font-size:15px;text-transform:uppercase;border-bottom:1px solid #a8ac9d;padding-bottom:12px;letter-spacing:.02em;color:#17232b}
+.field-ticket-product{display:flex;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid #bdc0b2}
+.field-ticket-product>div:first-child{width:60px;height:64px;overflow:hidden;flex-shrink:0;border-radius:2px}
+.field-ticket-product picture,.field-ticket-product img{display:block;width:100%;height:100%;object-fit:cover}
+.field-ticket-product h2{font-size:15px;letter-spacing:-.02em;color:#17232b;margin:0}
+.field-ticket-product p{display:flex;align-items:center;gap:12px;margin:6px 0 2px}
+.field-ticket-product strong{font-family:Field Display,sans-serif;font-size:36px;line-height:1;color:#a24e29}
+.field-ticket-product s{font-size:14px;color:#57615c}
+.field-ticket-product span{font-size:11px;color:#4c5956}
+.field-question{font-family:Field Serif,serif;font-size:22px;line-height:1.12;margin:12px 0;color:#17232b}
+.field-switch{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 0;border-block:1px solid #bdc0b2;cursor:pointer}
+.field-switch strong{display:block;font-size:12px;color:#17232b}
+.field-switch small{display:block;font-size:10px;line-height:1.5;margin-top:4px;color:#4d5954;max-width:23ch}
+.field-switch input{appearance:none;width:40px;height:24px;border:1px solid #92998e;position:relative;flex-shrink:0;border-radius:16px;background:#d6d6c7;padding:0;margin:0;cursor:pointer}
+.field-switch input:before{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#515e58;transition:transform .2s}
+.field-switch input:checked{background:#a5552d;border-color:#a5552d}
+.field-switch input:checked:before{transform:translateX(16px);background:#fff8e8}
+.desk-expectation{margin:10px 0;min-height:54px}
+.desk-expectation strong{font-size:11px;line-height:1.5;display:block;color:#17232b}
+.desk-expectation p{font-size:10px;line-height:1.6;color:#4d5954;margin-top:4px}
+.field-ticket .field-try{width:100%;display:flex;justify-content:space-between;background:#17232b;color:#fff6e1;border-radius:3px;min-height:44px;font-size:12px;padding:10px 12px}
+.field-ticket .field-try:hover{background:#304249}
+.field-ticket-note{display:block;font-size:9px;color:#4d5954;margin-top:12px;text-align:center}
+.field-ticket #experiment-error{font-size:11px;line-height:1.6;color:#a4213e;margin-top:8px}
+html[data-theme="dark"] .field-ticket.offer-ticket{background:var(--surface);color:var(--ink)}
+html[data-theme="dark"] .field-ticket :is(.field-ticket-head,.field-ticket-product h2,.field-question,.field-switch strong,.desk-expectation strong){color:var(--ink)}
+html[data-theme="dark"] .field-ticket :is(.field-ticket-product s,.field-ticket-product span,.field-switch small,.desk-expectation p,.field-ticket-note){color:var(--muted)}
+html[data-theme="dark"] .field-ticket .field-ticket-product strong{color:var(--accent)}
+html[data-theme="dark"] .field-ticket :is(.field-ticket-head,.field-ticket-product,.field-switch){border-color:var(--line)}
+html[data-theme="dark"] .field-ticket .field-switch input{background:var(--background);border-color:var(--muted)}
+html[data-theme="dark"] .field-ticket .field-switch input:before{background:var(--muted)}
+html[data-theme="dark"] .field-ticket .field-switch input:checked{background:var(--accent);border-color:var(--accent)}
+html[data-theme="dark"] .field-ticket .field-switch input:checked:before{background:var(--accent-ink)}
+html[data-theme="dark"] .field-ticket .field-try{background:var(--ink);color:var(--background)}
+html[data-theme="dark"] .field-ticket .field-try:hover{background:#fffaf0}
+html[data-theme="dark"] .field-ticket #experiment-error{color:var(--danger)}
+.field-path{display:flex;list-style:none;justify-content:space-between;gap:24px;padding:22px 5%;margin:0;background:#15232b;color:#c1cec9;border-top:1px solid #465048}
+.field-path li{display:flex;align-items:center;gap:12px;font-family:Field Serif,serif;font-size:22px;font-style:italic}
+.field-path li>span{font-family:Field Display,sans-serif;font-style:normal;font-size:21px;color:#d6ab65}
+.field-path [aria-current]{color:#fff5dc}
+.field-evidence{display:grid;grid-template-columns:1fr 1fr;gap:60px;max-width:1400px;margin:0 auto;padding:64px 40px;border-bottom:1px solid var(--line)}
+.field-evidence h2{font-family:Field Display,sans-serif;text-transform:uppercase;font-size:clamp(38px,5vw,64px);font-weight:800;line-height:.98;letter-spacing:-.02em;color:var(--ink)}
+.field-evidence h2 em{font-family:Field Serif,serif;font-weight:400;text-transform:none}
+.field-evidence p{max-width:55ch;font-size:14px;line-height:1.8;color:var(--muted);margin-top:20px}
+.field-evidence-action{align-self:center;justify-self:end;max-width:450px;width:100%}
+.field-evidence-action>.button{min-height:48px;gap:28px}
+.field-scroll-story{padding-bottom:150px;display:grid;grid-template-columns:minmax(260px,.8fr) minmax(0,1.2fr);gap:clamp(36px,6vw,80px);max-width:1100px;margin:0 auto;padding:64px 36px 32px;align-items:start}
+.field-scroll-visual{opacity:calc(1 - var(--visual-exit,0)*.9);transition:opacity .2s linear;position:sticky;top:calc(var(--field-chrome,120px) + 16px);height:clamp(280px,calc(100dvh - var(--field-chrome,120px) - 48px),400px);width:100%;max-width:360px;background:var(--surface);border-radius:4px;margin-left:18px;overflow:visible}
+.field-scroll-rail{position:absolute;left:-18px;top:0;bottom:0;width:2px;background:var(--line);overflow:hidden}
+.field-scroll-rail i{display:block;height:100%;background:var(--accent);transform:scaleY(var(--trail-progress,0));transform-origin:top;transition:transform .18s linear}
+.field-scroll-rail{overflow:visible}
+.field-scroll-rail:after{content:"";position:absolute;left:50%;top:calc(var(--trail-progress,0)*100%);width:9px;height:9px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent);transition:top .18s linear}
+.field-scene-word{position:absolute;top:18px;left:20px;font-family:Field Display,sans-serif;font-size:28px;line-height:1;letter-spacing:-.02em;color:var(--muted)}
+.field-scene-caption{position:absolute;left:20px;right:20px;bottom:17px;display:flex;justify-content:space-between;gap:12px;font-size:11px;color:var(--muted)}
+.field-scene-caption strong{color:var(--ink);font-weight:600}
+.field-chapter{min-height:min(62vh,520px);display:flex;flex-direction:column;justify-content:center;padding:44px 0;scroll-margin-top:160px}
+.field-chapter-index{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:18px}
+.field-chapter h2{font-family:Field Display,sans-serif;text-transform:uppercase;font-size:clamp(34px,3.5vw,46px);font-weight:800;line-height:1.05;letter-spacing:-.02em;color:var(--ink)}
+.field-chapter h2 em{font-family:Field Serif,serif;font-weight:400;text-transform:none}
+.field-chapter-copy>p{font-size:14px;color:var(--muted);line-height:1.85;margin:22px 0 0;max-width:48ch}
+.field-chapter-copy>.button{align-self:flex-start;margin-top:24px;min-height:46px}
+.field-chapter-copy>.text-link{align-self:flex-start}
+.field-chapters{min-width:0}
+.has-field-motion .field-hero-image{inset:-28px;transform:translate3d(0,var(--hero-drift,0px),0) scale(1.09);opacity:calc(1 - var(--hero-veil,0)*.35);will-change:transform}
+.has-field-motion .field-hero-copy{transform:translate3d(0,var(--hero-copy-drift,0px),0);will-change:transform}
+.has-field-motion .field-chapter{opacity:var(--chapter-presence,1);transform:translate3d(0,var(--chapter-drift,0px),0)}
+.has-field-motion .field-chapter:focus-within{opacity:1;transform:none}
+.field-scroll-story[data-scene="1"] .field-scene-word{color:var(--accent);opacity:.65}
+.field-scroll-story[data-scene="2"] .field-scene-word{color:var(--ink);opacity:.55}
+.desk-details{margin-top:24px;font-size:12px;color:var(--muted)}
+.desk-details summary{color:var(--ink);cursor:pointer;padding:6px 0;width:fit-content}
+.desk-details p{font-size:12px;margin-top:10px;line-height:1.7}
+.storefront-body .catalogue>.section-toolbar{align-items:flex-end;margin-bottom:32px}
+.storefront-body .catalogue>.section-toolbar h1:after{content:' / COLLECTION';font-family:Field Display,sans-serif;font-size:18px;letter-spacing:.02em;color:var(--muted);vertical-align:middle;white-space:nowrap}
+.storefront-body .catalogue>.section-toolbar p{font-family:Field Serif,serif;font-size:24px;margin-top:12px;color:var(--muted)}
+.storefront-body .search-box{border-radius:3px;background:var(--surface)}
+.storefront-body .category-filters{border-block:1px solid var(--line);padding:15px 0;gap:12px;margin-bottom:28px}
+.storefront-body .filter-chip{border-radius:3px;border-color:transparent;background:transparent}
+.storefront-body .filter-chip.selected{background:var(--ink);color:var(--background)}
+html[data-theme] .storefront-body .product-card{border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible}
+html[data-theme] .storefront-body .product-card:hover{border:0;box-shadow:none}
+.storefront-body .product-card .art-panel{border-radius:3px;aspect-ratio:4/5;overflow:hidden;background:var(--soft)}
+.storefront-body .product-card .product-details{padding:18px 0 0}
+.storefront-body .product-card .product-details h3{font-family:Field Serif,serif;font-size:28px;font-weight:400;letter-spacing:-.02em;line-height:1.2}
+.storefront-body .product-card .product-details p{font-size:12px;margin-top:7px;min-height:38px}
+.storefront-body .product-bottom{margin-top:15px}
+.storefront-body .product-bottom>strong{font-family:Field Display,sans-serif;font-size:28px;font-weight:800}
+.storefront-body .product-card .add-button{border-radius:3px;background:transparent;border:1px solid var(--line);color:var(--ink)}
+.storefront-body .quick-add>.button.primary{border-radius:3px;background:transparent;color:var(--ink);border:1px solid var(--line);min-height:43px}
+.storefront-body .quick-add>.button.primary:hover{background:var(--ink);color:var(--background)}
+.storefront-body .store-promises{padding:28px 0;border-top:1px solid var(--line);margin-top:40px}
+.storefront-body .bug-banner{border-width:1px;border-radius:3px;background:var(--surface);padding:12px 18px}
+.storefront-body .bug-banner code{background:var(--soft);color:var(--muted)}
+.storefront-body .main:has(.field-story)>.bug-banner{margin:14px 0;font-size:11px}
+.storefront-body .main:has(.field-story)>.bug-banner>span,.storefront-body .main:has(.field-story)>.bug-banner code{display:none}
+.storefront-body #guide-progress-fill{background:var(--accent)}
+.storefront-body #guide-coach.is-tour{position:fixed}
+.storefront-body #test-drawer #guide-coach.is-tour{position:static}
+.welcome-body{background:var(--background)}
+.welcome-body h1{font-family:Field Display,sans-serif;font-size:clamp(64px,10vw,116px);text-transform:uppercase;line-height:.95;letter-spacing:-.02em}
+.welcome-body .welcome-eyebrow{display:none}
+.welcome-body .welcome-door{border-radius:4px;box-shadow:none}
+.welcome-body .welcome-door h2{font-family:Field Serif,serif;font-size:31px;font-weight:400}
+.welcome-body .welcome-door.door-primary{background:var(--ink);color:var(--background)}
+.welcome-body .welcome-door.door-primary h2,.welcome-body .welcome-door.door-primary .door-go{color:var(--background)}
+.welcome-body .welcome-door.door-primary p{color:var(--background)}
+@media(max-width:1200px) and (min-width:851px){.storefront-body .topbar .credit{display:none}.storefront-body .sidebar .nav-link{padding:8px}.field-hero{grid-template-columns:minmax(0,1fr) 320px;padding:28px}.field-hero-copy h1{font-size:clamp(64px,7vw,90px)}html[data-theme] .field-ticket.offer-ticket{width:320px;padding:18px}.field-shop{display:flex;width:fit-content;margin-left:0}.storefront-body .topbar{gap:10px}.storefront-body .account-bar{gap:9px}}
+@media(max-width:850px){
+ body.storefront-body:has(#guide-coach:not([hidden])):not(:has(dialog[open])) .main{padding-bottom:calc(48px + var(--guide-space,0px))}
+ .storefront-body .main{padding:28px 20px 48px}
+ .storefront-body .main:has(.field-story){padding:0 12px 32px}
+ .storefront-body .mobile-qa-actions{background:var(--background);border-color:var(--line)}
+ .storefront-body .mobile-qa-actions .primary{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+ .field-hero{min-height:0;grid-template-columns:minmax(0,1fr);padding:34px 24px;gap:28px}
+ .field-hero-copy{padding:0;max-width:none;min-width:0}
+ .field-hero-copy h1{font-size:clamp(64px,12vw,88px);line-height:.88}
+ .field-hero-copy .field-serif{font-size:30px;margin-top:20px}
+ .field-intro{font-size:13px;margin-top:14px}
+ .field-shop{display:block;width:fit-content;margin:16px 0 0;font-size:19px}
+ html[data-theme] .field-ticket.offer-ticket{width:100%;max-width:430px;min-width:0;justify-self:end;margin:10px 0 4px;padding:22px;transform:none}
+ .field-hero-image img{object-position:62% 50%}
+ .field-hero:after{background:linear-gradient(180deg,rgba(5,16,24,.74),rgba(5,16,24,.12) 70%)}
+ .field-path{padding:18px 16px;gap:10px}
+ .field-path li{font-size:16px;gap:7px;align-items:flex-start}
+ .field-path li>span{font-size:16px}
+ .field-evidence{grid-template-columns:1fr;gap:28px;padding:38px 16px}
+ .field-evidence-action{justify-self:start;max-width:none}
+ .field-scroll-story{gap:28px;padding:36px 16px 20px}
+ .field-scroll-visual{top:142px;height:300px}
+ .field-chapter{min-height:360px;padding:36px 0}
+ .storefront-body .page-footer:has(.footer-project-links){grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .footer-project-links{grid-column:1/-1;order:1}
+ .footer-project-links a{min-height:44px}
+ .storefront-body .catalogue>.section-toolbar{align-items:flex-start;gap:20px}
+ .storefront-body .catalogue h1:after{display:none}
+ .storefront-body .catalogue>.section-toolbar p{font-size:21px}
+ .storefront-body .product-card .product-details h3{font-size:24px}
+ .storefront-body .page-footer{margin-inline:20px}
+ .storefront-body .product-card .art-panel{aspect-ratio:1/1.15}
+}
+@media(max-width:600px){.field-scroll-story{display:block;padding:32px 12px 16px}.field-scroll-visual{height:220px;top:76px;z-index:4;margin-left:0;box-shadow:0 10px 20px color-mix(in srgb,var(--background) 90%,transparent)}.field-scroll-rail{left:-12px}.field-scene-word{font-size:24px;top:15px;left:16px}.field-scene-caption{bottom:13px;left:16px;right:16px;font-size:10px}.field-chapter{min-height:340px;padding:42px 4px}.field-chapter h2{font-size:34px}.field-chapter-index{margin-bottom:14px}}
+@media(max-width:430px){.field-hero{padding:26px 18px}.field-hero-copy h1{font-size:64px}.field-hero-copy .field-serif{font-size:25px}.field-path li{font-size:14px}.field-path li>span{font-size:15px}.field-ticket-product h2{font-size:14px}.field-start{min-height:46px}.storefront-body .product-card .product-details h3{font-size:22px}.storefront-body .catalogue>.section-toolbar{display:block}.storefront-body .catalogue .search-box{margin-top:22px;width:100%}}
+@media(prefers-reduced-motion:no-preference){.field-hero-copy{animation:field-arrive .65s cubic-bezier(.16,1,.3,1)}.field-start,.field-shop{transition:transform .2s,background .2s}@keyframes field-arrive{from{opacity:.7;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}.desk-expectation.is-changing{animation:field-arrive .2s ease-out}}
+@media(prefers-reduced-motion:reduce){.field-switch input:before,.field-start,.field-shop{transition:none}.field-scroll-visual{position:relative;top:auto}.field-chapter{opacity:1;transform:none;min-height:0;padding-block:32px}}
+
+/* The scroll visual explains the purchase rule instead of repeating merchandise. */
+.rule-diagram-body,.rule-proof{position:absolute;inset:66px 20px 45px}
+.rule-calendar-head{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:10px}
+.rule-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.rule-week>span{font-size:10px;text-align:center;padding:9px 0;border:1px solid var(--line);border-radius:3px;color:var(--muted)}
+.rule-week .rule-monday{color:var(--ink);border-color:var(--ink);font-weight:700}
+.rule-week .rule-allowed{background:var(--accent-wash);border-color:var(--accent);color:var(--ink)}
+.rule-flow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;padding-bottom:14px;border-bottom:1px solid var(--line);font-size:12px;color:var(--ink)}
+.rule-flow small{font-size:10px;color:var(--muted);display:block;margin-top:3px}
+.rule-flow>.icon{width:18px;height:18px;color:var(--muted)}
+.rule-flow>strong{font-size:11px;padding:9px;border:1px solid var(--line);border-radius:3px;font-weight:600}
+.rule-outcome{margin-top:13px;font-size:12px;color:var(--ink)}
+.rule-outcome small{display:block;font-size:10px;color:var(--muted);margin-top:5px}
+.rule-gate-bypassed{display:none}
+.field-scroll-story[data-scene="1"] .rule-gate-intact{display:none}
+.field-scroll-story[data-scene="1"] .rule-gate-bypassed{display:inline}
+.field-scroll-story[data-scene="1"] .rule-flow>strong{color:var(--accent);border-color:var(--accent)}
+.rule-proof{display:none}
+.rule-proof>p{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5}
+.rule-proof ul{list-style:none;padding:0;margin:0}
+.rule-proof li{display:flex;align-items:flex-start;justify-content:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid var(--line);font-size:10.5px;color:var(--ink)}
+.rule-proof li{align-items:flex-start;gap:10px}
+.rule-proof .proof-layer{flex:none;min-width:58px;padding:2px 6px;border:1px solid var(--line);border-radius:3px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center}
+.rule-proof .proof-name{flex:1;min-width:0;text-align:left;color:var(--ink);line-height:1.45}
+.rule-proof>p strong{color:var(--accent)}
+.field-scroll-story[data-scene="2"] .rule-diagram-body{display:none}
+.field-scroll-story[data-scene="2"] .rule-proof{display:block}
+@keyframes field-scene-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.field-scroll-story[data-scene] .rule-diagram-body,.field-scroll-story[data-scene] .rule-proof{animation:field-scene-in .42s cubic-bezier(.23,1,.32,1) both}
+.field-scene-word,.field-scene-caption strong{transition:color .3s ease,opacity .3s ease}
+
+/* Product imagery supports the price and purchase action at every viewport. */
+.storefront-body .main{max-width:1360px}
+.storefront-body .page-heading h1,.storefront-body .catalogue h1{font-size:clamp(42px,5vw,64px)}
+.storefront-body .catalogue>.section-toolbar{margin-bottom:24px}
+.storefront-body .catalogue>.section-toolbar p{font-size:21px}
+.storefront-body .product-card{width:100%;max-width:220px;justify-self:center}
+.storefront-body .related-products .product-card{max-width:180px}
+.storefront-body .product-card .art-panel{aspect-ratio:1;height:auto;width:100%;max-width:220px;margin-inline:auto;background:transparent}
+.storefront-body .product-card .art-panel>.themed-photo{display:block;width:100%;height:100%}
+.storefront-body .product-card .art-panel img.product-art{width:100%;height:100%;object-fit:contain}
+.storefront-body .related-products .product-card .art-panel{max-width:180px}
+.storefront-body .product-detail{max-width:1140px;margin-inline:auto;grid-template-columns:minmax(240px,380px) minmax(0,1fr);gap:48px;align-items:start}
+.storefront-body .product-gallery{height:360px;min-height:0;width:100%;max-width:360px;padding:0;background:transparent;border-radius:6px;align-self:start}
+.storefront-body .product-gallery>.themed-photo{display:block;width:100%;height:100%}
+.storefront-body .product-gallery img.product-art{width:100%;height:100%;max-width:100%;aspect-ratio:auto;object-fit:contain}
+.storefront-body .offer-card{display:grid;max-width:1000px;grid-template-columns:minmax(240px,340px) minmax(0,1fr);align-items:center;gap:40px;border:0;border-radius:0;background:transparent;overflow:visible}
+.storefront-body .offer-art{height:auto;aspect-ratio:1;width:100%;max-width:340px;align-self:center;padding:0;background:transparent;border-radius:4px;overflow:hidden}
+.storefront-body .offer-art>.themed-photo{display:block;width:100%;height:100%}
+.storefront-body .offer-art img.product-art{width:100%;height:100%;max-height:100%;object-fit:contain}
+.storefront-body .offer-copy{padding:0;min-width:0}
+.storefront-body .offer-copy h2{font-family:Field Serif,serif;font-size:36px;font-weight:400;line-height:1.15;letter-spacing:-.02em;margin:16px 0 10px}
+.storefront-body .offer-price{flex-wrap:wrap}
+@media(min-width:1050px){.storefront-body .catalogue>.product-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:1049px){.storefront-body .product-card{max-width:200px}.storefront-body .related-products .product-card{max-width:170px}.storefront-body .product-card .art-panel{max-width:200px}.storefront-body .related-products .product-card .art-panel{max-width:170px}}
+@media(max-width:850px){.storefront-body .product-detail{grid-template-columns:minmax(0,1fr);gap:24px;max-width:680px}.storefront-body .product-gallery{height:280px;max-width:280px;justify-self:center}.storefront-body .offer-card{grid-template-columns:minmax(180px,280px) minmax(0,1fr);gap:28px}.storefront-body .offer-art{max-width:280px}}
+@media(max-width:600px){
+ .field-scroll-visual{height:220px;max-width:none}
+ .rule-diagram-body,.rule-proof{inset:48px 16px 34px}
+ .rule-calendar-head{display:none}
+ .rule-week>span{padding:5px 0;font-size:9px}
+ .rule-flow{margin-top:11px;padding-bottom:9px;font-size:11px}
+ .rule-flow>strong{padding:7px;font-size:10px}
+ .rule-outcome{font-size:11px;margin-top:9px}
+ .rule-outcome small{display:none}
+ .rule-proof>p{font-size:10px;margin-bottom:4px}
+ .rule-proof li{padding:11px 0;font-size:10px}
+ .storefront-body .product-card{max-width:152px}
+ .storefront-body .related-products .product-card{max-width:140px}
+ .storefront-body .product-card .art-panel{max-width:152px}
+ .storefront-body .related-products .product-card .art-panel{max-width:140px}
+ .storefront-body .product-gallery{height:240px;max-width:240px}
+ .storefront-body .offer-card{grid-template-columns:minmax(0,1fr);gap:24px;max-width:360px}
+ .storefront-body .offer-art{width:100%;max-width:100%;justify-self:start}
+ .storefront-body .offer-copy{padding:0}
+}
+
+.storefront-body .product-card:hover .art-panel img.product-art,.storefront-body .product-gallery:hover img.product-art{transform:none}
+
+/* The mascot uses the same paper surface as the experiment ticket in both themes. */
+.mascot-dialog{--ink:#17232b;--muted:#57636a;--line:#cfc9bb;--surface:#f0e9d9;--soft:#e5dece;--accent:#925017;--accent-hover:#743b0e;--accent-ink:#fffaf0;--focus:#c17127;background:var(--surface);color:var(--ink);border-radius:6px}
+.mascot-dialog::backdrop{background:#0008}
+.mascot-dialog .button.secondary,.mascot-dialog .icon-button{background:var(--soft);color:var(--ink);border-color:var(--line)}
+.mascot-dialog .button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.mascot-dialog .button.primary:hover{background:var(--accent-hover)}
+
+/* One scroll, one chapter. Each scene owns a screen and clicks into place just
+   under the sticky header. Proximity rather than mandatory so the reader is never
+   trapped between snap points, scroll-snap-stop so a fast flick cannot skip a
+   scene, and gated on has-field-motion so reduced-motion readers scroll freely.
+   Desktop only: on narrow screens the column stacks and full-height scenes would
+   just be empty space. */
+@media (min-width:901px){
+  html.has-field-motion{scroll-padding-top:calc(var(--field-chrome,120px) + 24px)}
+  /* Each scene owns a screen. The snapping itself is driven from home.js: CSS
+     scroll-snap cancels the programmatic scroll that moves between scenes, and
+     mandatory snapping additionally traps the reader at the final scene. */
+  html.has-field-motion .field-chapter{min-height:calc(100dvh - var(--field-chrome,120px))}
+}
+
+/* Scroll-reactive stage. The backdrop is fixed behind the story and cross-fades
+   with the scene, so the whole screen carries the narrative rather than only the
+   card: neutral while the rule is explained, warm once the bug is introduced,
+   green once it is proven. Tints come from the semantic tokens, so this reads
+   correctly in both themes. */
+.field-scroll-story{position:relative}
+.field-chapters{position:relative;z-index:1}
+.field-scroll-visual{z-index:1}
+/* The root element already paints the page colour. Body paints its own copy of it
+   in the block-background phase, which lands on top of any z-index:-1 layer, so the
+   stage stays hidden until body is made transparent while the stage is active. */
+html.has-field-story body{background:transparent}
+.field-backdrop{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .5s ease}
+html.has-field-story .field-backdrop{opacity:1}
+.field-backdrop>span{position:absolute;inset:0;opacity:0;transition:opacity 1s ease;
+  background-repeat:no-repeat;background-size:cover;background-position:50% 58%;
+  transform:scale(1.02) translate3d(0,calc(var(--trail-progress,0) * -14px),0)}
+.field-backdrop .bd-rule{background-image:url("/images/scene-rule-1920.webp")}
+.field-backdrop .bd-bug{background-image:url("/images/scene-bug-1920.webp")}
+.field-backdrop .bd-proof{background-image:url("/images/scene-proof-1920.webp")}
+@media(max-width:1400px){
+  .field-backdrop .bd-rule{background-image:url("/images/scene-rule-1280.webp")}
+  .field-backdrop .bd-bug{background-image:url("/images/scene-bug-1280.webp")}
+  .field-backdrop .bd-proof{background-image:url("/images/scene-proof-1280.webp")}
+}
+/* Readability scrim, heaviest on the right where the headings sit. The photographs
+   are dark, so light mode washes them pale instead, keeping dark text legible. */
+.field-backdrop:after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,rgba(16,27,35,.42) 0%,rgba(16,27,35,.72) 42%,rgba(16,27,35,.93) 100%)}
+html[data-field-scene="0"] .bd-rule,
+html:not([data-field-scene]) .bd-rule{opacity:1}
+html[data-field-scene="1"] .bd-bug{opacity:1}
+html[data-field-scene="2"] .bd-proof{opacity:1}
+@media(prefers-reduced-motion:reduce){.field-backdrop,.field-backdrop>span{transition:none;transform:none}}
+@media(prefers-reduced-motion:reduce){.field-scroll-story[data-scene] .rule-diagram-body,.field-scroll-story[data-scene] .rule-proof{animation:none}}
+
+/* The hero photograph and the scroll-story photographs are different frames, so
+   butting them together read as two unrelated pages. The hero now dissolves into
+   the page colour at its lower edge and the journey bar carries that same colour
+   down into the story, turning a hard seam into one continuous descent. */
+.field-hero:after{background:
+  linear-gradient(90deg,rgba(5,16,24,.83),rgba(5,16,24,.34) 58%,rgba(5,16,24,.1)),
+  linear-gradient(180deg,transparent 55%,color-mix(in srgb,var(--background) 72%,transparent) 82%,var(--background) 100%)}
+.field-path{background:linear-gradient(180deg,var(--background),color-mix(in srgb,var(--background) 88%,#000));border-top:0}
+html[data-theme="light"] .field-path{background:linear-gradient(180deg,var(--background),color-mix(in srgb,var(--background) 92%,#000))}
+.field-backdrop>span{-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 14%);mask-image:linear-gradient(180deg,transparent 0,#000 14%)}
+
+/* Frame the hero on the desk rather than the wall: the wide frame would otherwise
+   crop through the lamp shade at this height. */
+.field-hero-image img.collection-photo{object-position:50% 76%}
+
+/* The journey bar is not a band of its own: it rides on the last stretch of the
+   hero photograph so the image runs unbroken behind the numbers, and only the
+   hero's own fade carries the eye down into the story. */
+.field-hero{padding-bottom:104px}
+.field-path{position:relative;z-index:3;margin-top:-68px;background:transparent;border-top:0;
+  padding-block:26px;text-shadow:0 1px 10px rgba(5,12,18,.75)}
+html[data-theme="light"] .field-path{background:transparent;text-shadow:0 1px 10px rgba(5,12,18,.55)}
+/* Let the photograph stay visible to the hero's lower edge, fading only at the very
+   bottom so there is no hard line where the section ends. */
+.field-hero:after{background:
+  linear-gradient(90deg,rgba(5,16,24,.83),rgba(5,16,24,.34) 58%,rgba(5,16,24,.1)),
+  linear-gradient(180deg,transparent 78%,rgba(5,16,24,.08) 100%)}
+
+/* Full bleed: the landing's main keeps a 24px gutter, which framed the hero as a
+   floating rectangle with page colour down either side. The photograph should meet
+   the window edges so it reads as the page itself, not a card on it. */
+.storefront-body .main:has(.field-story) .field-hero,
+.storefront-body .main:has(.field-story) .field-path{margin-inline:-24px}
+@media(max-width:850px){
+  .storefront-body .main:has(.field-story) .field-hero,
+  .storefront-body .main:has(.field-story) .field-path{margin-inline:-12px}
+}
+
+/* Dissolve, not a cut. The hero and the story are two different frames of the same
+   desk, so butting them together makes the grain and the objects jump at the join.
+   Masking the hero's lower edge lets the fixed story photograph show through it, so
+   one frame melts into the other and there is no line to align. The journey numbers
+   are a sibling of the hero, so they stay fully opaque through the dissolve. */
+/* One photograph for the whole page. The hero no longer carries a frame of its
+   own: the fixed stage shows through it, so scrolling never crossfades two
+   different cameras and nothing can ghost. Only the three same-framing scene
+   frames ever blend into each other. */
+.has-field-story .field-hero{background:transparent}
+.has-field-story .field-hero-image{display:none}
+.has-field-motion .field-hero:after{background:
+  linear-gradient(90deg,rgba(5,16,24,.72),rgba(5,16,24,.3) 58%,rgba(5,16,24,.08));
+  /* The scrim exists for the headline, so it has to taper away before the hero
+     ends - otherwise its darkening stops dead and draws the very line the single
+     stage was meant to remove. */
+  -webkit-mask-image:linear-gradient(180deg,#000 48%,transparent 97%);
+  mask-image:linear-gradient(180deg,#000 48%,transparent 97%)}
+
+/* Light mode over the stage. The hero's type is cream because it used to sit on a
+   dark photograph; now that the stage is washed pale for light mode, that type
+   disappears - the journey labels worst of all. Dark ink for anything over the
+   stage, a light scrim instead of a dark one, and a gentler wash so the
+   photograph still reads. */
+/* Light mode gets its own daylight frames rather than a brightened night shot:
+   veiling a dark photograph turns it to grey mush, and lifting its exposure only
+   ever approximated the look. Same desk, same framing, shot in daylight. */
+html[data-theme="light"] .field-backdrop .bd-rule{background-image:url("/images/scene-rule-light-1920.webp")}
+html[data-theme="light"] .field-backdrop .bd-bug{background-image:url("/images/scene-bug-light-1920.webp")}
+html[data-theme="light"] .field-backdrop .bd-proof{background-image:url("/images/scene-proof-light-1920.webp")}
+@media(max-width:1400px){
+  html[data-theme="light"] .field-backdrop .bd-rule{background-image:url("/images/scene-rule-light-1280.webp")}
+  html[data-theme="light"] .field-backdrop .bd-bug{background-image:url("/images/scene-bug-light-1280.webp")}
+  html[data-theme="light"] .field-backdrop .bd-proof{background-image:url("/images/scene-proof-light-1280.webp")}
+}
+/* Show daylight photographs directly, without a white tint or local wash. */
+html[data-theme="light"] .field-backdrop:after,
+html[data-theme="light"] .field-hero:after{content:none}
+/* The stacked diagram must not cover the chapter copy as it scrolls past. */
+@media(max-width:600px){
+  .field-scroll-visual{position:relative;top:auto}
+}
+/* Chapter copy crosses the mug and the desk edge, where a muted grey fell to a 1.6
+   contrast ratio. Ink it over the stage so the worst case stays readable. */
+html[data-theme="light"].has-field-motion .field-chapter-copy>p{color:var(--ink)}
+html[data-theme="light"].has-field-motion .field-hero{color:var(--ink)}
+html[data-theme="light"].has-field-motion .field-hero-copy h1{color:var(--ink)}
+html[data-theme="light"].has-field-motion .field-hero-copy .field-serif{color:var(--muted)}
+html[data-theme="light"].has-field-motion .field-hero-copy p{color:var(--muted)}
+html[data-theme="light"].has-field-motion .field-path{color:var(--ink);text-shadow:0 1px 10px rgba(255,255,255,.85)}
+html[data-theme="light"].has-field-motion .field-path>li>span{color:var(--accent)}
+html[data-theme="light"].has-field-motion .field-path [aria-current]{color:var(--ink)}
+/* The secondary hero link is cream for the dark stage; on the pale stage it needs
+   ink. The offer card keeps its own cream button, which sits on dark. */
+html[data-theme="light"].has-field-motion .field-shop{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* Resolution headroom. The stage is scaled slightly for parallax, so a 1920 frame
+   is resampled across more than 1920 device pixels on a wide or high-density
+   screen and goes soft. Serve the larger frames when either applies. */
+@media(min-width:1600px),(min-resolution:1.3dppx){
+  .field-backdrop .bd-rule{background-image:url("/images/scene-rule-2560.webp")}
+  .field-backdrop .bd-bug{background-image:url("/images/scene-bug-2560.webp")}
+  .field-backdrop .bd-proof{background-image:url("/images/scene-proof-2560.webp")}
+}
+
+/* Large daylight frames, matching the dark set's resolution headroom. Declared
+   after the dark 2560 block so light mode wins on wide or high-density screens. */
+@media(min-width:1600px),(min-resolution:1.3dppx){
+  html[data-theme="light"] .field-backdrop .bd-rule{background-image:url("/images/scene-rule-light-2560.webp")}
+  html[data-theme="light"] .field-backdrop .bd-bug{background-image:url("/images/scene-bug-light-2560.webp")}
+  html[data-theme="light"] .field-backdrop .bd-proof{background-image:url("/images/scene-proof-light-2560.webp")}
+}
+
+/* Keep copy directly over the photograph, with no local cloud-shaped layers. */
+.field-chapter-copy{display:flex;flex-direction:column;align-items:flex-start;padding:28px;min-width:0}
+.has-field-motion .field-chapter{opacity:1}
+.has-field-motion .field-hero-copy{padding:28px;max-width:600px}
+html[data-theme="light"].has-field-motion .field-hero-copy p,
+html[data-theme="light"].has-field-motion .field-hero-copy .field-serif,
+html[data-theme="light"].has-field-motion .field-chapter-copy .field-chapter-index,
+html[data-theme="light"].has-field-motion .field-chapter-copy .text-link{color:var(--ink)}
+html.has-field-story .field-chapter-copy>p,
+html.has-field-story .field-hero-copy p,
+html.has-field-story .field-hero-copy .field-serif{color:var(--ink)}
+.has-field-story .field-hero:after{display:none}
+.field-backdrop:after{content:none}
+.field-backdrop>span{-webkit-mask-image:none;mask-image:none}
+.has-field-motion .field-path{background:transparent;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+html[data-theme="light"].has-field-motion .field-path{background:transparent;text-shadow:0 1px 3px rgba(255,253,246,.95)}
+html[data-theme] .field-story .field-path li,
+html[data-theme] .field-story .field-path li[aria-current],
+html[data-theme] .field-story .field-path li>span{color:#fff;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.85)}
+@media(max-width:600px){
+  .field-chapter-copy,.has-field-motion .field-hero-copy{padding:20px}
+}
+
+/* Faint backing is limited to small copy and the requested light-mode links. */
+.field-story .field-hero-copy>p,.field-chapter-copy>p,
+html[data-theme="light"] .field-story .field-hero-copy>.field-shop,
+html[data-theme="light"] .field-chapter-copy>.text-link,
+html[data-theme="light"] .field-chapter-copy .desk-details>summary,
+html[data-theme="light"] .field-chapter-copy .desk-details>div>p{width:fit-content;padding:2px 5px;background:color-mix(in srgb,var(--surface) 55%,transparent);border:1px solid color-mix(in srgb,var(--line) 18%,transparent);border-radius:3px}
+html[data-theme="light"] .field-chapter-copy .desk-details>summary{list-style-position:inside}
+html[data-theme="light"] .field-chapter-copy>.text-link{color:var(--ink)}
+html[data-theme="light"] .field-chapter-copy .desk-details>div>p{color:var(--ink);max-width:100%}
+.field-story .field-hero-copy>p{max-width:100%}
+html[data-theme] .field-story .field-hero-copy h1,
+.field-story .field-hero-copy p,.field-story .field-hero-copy .field-serif{color:var(--ink)}
+.field-story .field-hero-copy .field-shop{color:var(--ink);border-bottom-color:var(--ink)}
+@media(max-width:600px){html[data-theme="dark"] .field-story .field-hero-copy>p,html[data-theme="dark"] .field-chapter-copy>p{background:color-mix(in srgb,var(--surface) 62%,transparent)}}
+
+/* Legibility halo. The big heading and subtitle sit unboxed on the photograph by
+   design; over the darker walnut frames parts of them cross low-contrast wood. A
+   soft same-as-page glow lifts the glyphs without a box, border, veil or card, so
+   the full-photo layout and the unboxed-heading rule are preserved. */
+.field-story .field-hero-copy h1,.field-story .field-hero-copy .field-serif{
+  text-shadow:0 1px 2px rgba(5,16,24,.55),0 0 18px rgba(5,16,24,.38)}
+html[data-theme="light"] .field-story .field-hero-copy .field-serif{
+  text-shadow:0 1px 2px rgba(247,245,238,.92),0 0 16px rgba(247,245,238,.8)}
+html[data-theme="light"] .field-story .field-hero-copy h1{text-shadow:none}

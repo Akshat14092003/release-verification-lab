@@ -3,6 +3,7 @@
 !Dockerfile
 !package.json
 !package-lock.json
+!vite.config.js
 !playwright.config.js
 !src/
 !src/**

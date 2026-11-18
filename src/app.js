@@ -1,3 +1,4 @@
+import { builtAssets } from "./assets.js";
 import express from "express";
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
@@ -9,7 +10,7 @@ import { getOrder, getProduct, listOffers, listOrders, listProducts, placeOrder,
 import { addCartItem, cartRequestItems, getCart, removeCartItem, updateCartItem } from "./cart.js";
 import * as view from "./views.js";
 
-export function createApp({ databasePath, now = () => new Date(), bugs = readBugFlags({}), includeSampleOrder = false, labControls = false, trustProxy = false, sharedShop = false, publicOrigin = null }) {
+export function createApp({ databasePath, now = () => new Date(), bugs = readBugFlags({}), includeSampleOrder = false, labControls = false, trustProxy = false, sharedShop = false, publicOrigin = null, assetMiddleware = null }) {
   const db = openDatabase(databasePath);
   seedDatabase(db, { includeSampleOrder });
   const app = express();
@@ -20,6 +21,8 @@ export function createApp({ databasePath, now = () => new Date(), bugs = readBug
   app.set("trust proxy", trustProxy ? 1 : false);
   app.use(express.urlencoded({ extended: false, limit: "16kb" }));
   app.use(express.json({ limit: "16kb" }));
+  if (assetMiddleware) app.use(assetMiddleware);
+  app.use("/assets", builtAssets());
   app.use(express.static(join(projectRoot, "public"), { index: false }));
 
   app.use((req, res, next) => {

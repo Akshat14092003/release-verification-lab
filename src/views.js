@@ -1,3 +1,4 @@
+import { frontendTags } from "./assets.js";
 export const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g,
   char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 const e = escapeHtml;
@@ -39,9 +40,7 @@ export function document(title, body, bodyClass = "", labControls = false) {
   return '<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>' +
     '<meta name="description" content="Fieldwork is a fictional shop in the Release Verification Lab."/>' +
     '<title>' + e(title) + ' | Fieldwork</title><link rel="icon" href="/favicon.svg" type="image/svg+xml"/>' +
-    '<script src="/theme.js"></script><link rel="stylesheet" href="/tokens.css"/><link rel="stylesheet" href="/styles.css"/><link rel="stylesheet" href="/theme.css"/>' +
-    '<link rel="stylesheet" href="/shop.css"/>' + (labControls ? '<link rel="stylesheet" href="/lab.css"/>' : '') + '<link rel="stylesheet" href="/glass.css"/><link rel="stylesheet" href="/blue.css"/>' +
-    '<link rel="stylesheet" href="/experience.css"/><script src="/motion.js" defer></script><script src="/app.js" defer></script><script src="/bug.js" defer></script><script src="/home.js" defer></script><script src="/experiment.js" defer></script>' + (labControls ? '<script src="/lab.js" defer></script><script src="/guide.js" defer></script>' : '') + '</head>' +
+    frontendTags(labControls) + '</head>' +
     '<body class="' + e(bodyClass) + (labControls ? ' has-lab' : '') + '">' + body + bugHunt() +
     '<div class="cart-toast" id="cart-toast" role="status" aria-live="polite" hidden><span class="toast-check">&#10003;</span><span id="cart-toast-text"></span>' +
     (admin ? '' : '<a href="/cart">View cart &rarr;</a>') + '<button type="button" class="icon-button" id="dismiss-cart-toast" aria-label="Dismiss notification">&times;</button></div></body></html>';
@@ -96,10 +95,10 @@ export function shell({ title, active, user, balance, now, body, bugs = {}, labC
     '<button type="button" class="mobile-menu-toggle icon-button" data-mobile-menu aria-label="Open menu" aria-expanded="false" aria-controls="mobile-navigation">' +
     '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></header>' +
     (labControls ? '<section class="mobile-qa-actions" aria-label="Release verification"><button type="button" class="button secondary" data-open-playground aria-controls="mobile-navigation">QA playground</button><button type="button" class="button primary" data-open-tests>Run checks</button></section>' + labTools({ admin, toolbar: false, sharedShop }) : '') + '<main id="main-content" class="main" data-store-revision="' + revision + '" data-store-id="' + e(storeId) + '" data-account-id="' + e(user?.id) + '" data-shared-shop="' + sharedShop + '">' + bugBanners(bugs) + body + '</main>' +
-    '<footer class="page-footer"><span>Fieldwork &copy; 2026</span><span>' + (admin ? 'Demo management only' : 'Demo purchases only') + ' &middot; ' +
-    e(now.toISOString().slice(0, 10)) + ' UTC</span></footer></div></div>' +
+    '<footer class="page-footer"><span>Fieldwork &copy; 2026</span>' + (!admin && active === "home" ?
+      '<nav class="footer-project-links" aria-label="Project resources"><a href="https://github.com/Akshat14092003/release-verification-lab">View source ' + icon("arrow") + '</a><a href="https://akshat14092003.github.io/release-verification-lab/">Published test reports ' + icon("arrow") + '</a></nav>' : '') + '<span>' + (admin ? 'Demo management only &middot; ' + e(now.toISOString().slice(0, 10)) + ' UTC' : 'A project by Akshat') + '</span></footer></div></div>' +
     '<dialog id="mobile-navigation" class="mobile-navigation" aria-label="Navigation and account"><button type="button" class="icon-button mobile-menu-close" data-mobile-close aria-label="Close menu">&times;</button></dialog>' +
-    (labControls ? labDialogs({ sharedShop }) : ''), admin ? "admin-body" : "", labControls);
+    (labControls ? labDialogs({ sharedShop }) : ''), admin ? "admin-body" : "storefront-body", labControls);
 }
 export function loginPage(error = "", email = "", bugs = {}, labControls = false, next = "/products", options = {}) {
   const registering = options.signup === true;
@@ -154,6 +153,14 @@ export function artwork(name, { size = "card", eager = false } = {}) {
     [320, 640, 1280].map(width => '/images/' + key + '-' + width + '.webp ' + width + 'w').join(', ') +
     '" sizes="' + sizes + '" width="1280" height="1280" alt="' + photos[key] +
     '" loading="' + (eager ? 'eager' : 'lazy') + '" decoding="async"' + (eager ? ' fetchpriority="high"' : '') + '/></picture>';
+}
+// The hero shares the scroll story's desk so the page reads as one continuous
+// world. The hero is dark in both themes, so a single set of frames is enough.
+function fieldHeroPhoto() {
+  return '<picture class="themed-photo"><img class="collection-photo" src="/images/scene-hero-1920.webp" ' +
+    'srcset="/images/scene-hero-1280.webp 1280w, /images/scene-hero-1920.webp 1920w, /images/scene-hero-2560.webp 2560w" ' +
+    'sizes="100vw" width="2586" height="1443" alt="A walnut studio desk lit by a single lamp, with a linen notebook, pencil and mug" ' +
+    'loading="eager" fetchpriority="high" decoding="async"/></picture>';
 }
 function collectionPhoto(sizes) {
   return '<picture class="themed-photo"><source data-dark-photo media="(prefers-color-scheme: dark)" ' +
@@ -216,16 +223,76 @@ function checkTicker() {
     '</ul><span class="ticker-note">Illustrative preview &middot; ' + BASELINE_CHECKS + ' automated checks run in the shop.</span></div>';
 }
 function experimentHome(offer, labControls) {
-  return `<section class="experiment" aria-labelledby="experiment-title"><div class="experiment-intro"><h1 id="experiment-title">Shop it.<br>Break it.<br><span>Prove it.</span></h1><p>Can this shop stop a mistake before you pay?<br>Try buying a weekend deal on Monday. Then see how the checks catch a broken rule.</p><a href="#experiment-controls" class="experiment-link">Try the Monday experiment ${icon("arrow")}</a><p class="experiment-honesty">Fictional purchases. No real money is spent.</p></div><div class="experiment-scene" aria-label="Monday weekend offer"><article class="offer-ticket"><div class="ticket-top"><span>Fieldwork / Weekend offer</span>${icon("products")}</div>${artwork(offer.artwork, { size: "detail", eager: true })}<div class="ticket-info"><h2>${e(offer.product_name)}</h2><p>${e(offer.description)}</p><div class="ticket-price"><strong>${money(offer.price_cents)}</strong><s>${money(offer.regular_price_cents)}</s><span class="ticket-saving">Save ${money(offer.regular_price_cents - offer.price_cents)}</span></div></div><div class="ticket-bottom"><span>Saturday & Sunday only</span><strong id="offer-state">Weekend-only rule</strong></div></article><div class="calendar-slip"><span>Experiment day · UTC</span><strong>Monday</strong><span>The weekend is over.<br>Is the offer?</span></div></div><div id="experiment-controls" class="experiment-controls"><div class="experiment-instruction"><strong>Start with the bug off.</strong><p>Set up Monday, then try the offer in the shop. Repeat with the bug enabled and compare the results.</p><p class="experiment-scope" id="experiment-scope">Applies the selected bug and Monday to this demo shop.</p><p id="experiment-error" role="alert"></p></div><label class="experiment-switch"><span><strong>Weekend-rule bug</strong><small id="switch-explanation">Off · weekday purchases must be rejected</small></span><input id="experiment-bug" type="checkbox" class="switch" role="switch"></label><button class="experiment-buy" id="attempt-purchase">Try the offer on Monday ${icon("arrow")}</button></div></section>
-<section class="causality" aria-labelledby="trace-heading"><div class="trace-heading"><h2 id="trace-heading">Follow the purchase. Find the failure.</h2><p id="trace-caption">One action. Three places to inspect.</p></div><ol class="trace"><li id="trace-browser"><div class="trace-node"><span>1</span><strong>The shop</strong><small>Browser</small></div><h3 id="browser-result">What does the buyer see?</h3><p id="browser-detail">The offer should be unavailable on Monday.</p></li><li id="trace-api"><div class="trace-node"><span>2</span><strong>The rule</strong><small>API</small></div><h3 id="api-result">Does the server enforce it?</h3><p id="api-detail">Hiding a button is not enough. The request must be refused.</p></li><li id="trace-ledger"><div class="trace-node"><span>3</span><strong>The record</strong><small>Database</small></div><h3 id="ledger-result">Did anything get written?</h3><p id="ledger-detail">A rejected purchase must leave orders and the ledger unchanged.</p></li></ol><div class="experiment-verdict" id="experiment-verdict" aria-live="polite"><span class="verdict-mark" aria-hidden="true">?</span><div><strong id="experiment-verdict-title">Try the rule. Then verify it.</strong><p id="experiment-verdict-copy">After trying the offer, run the real checks to inspect browser, API and database evidence.</p></div><button class="button primary" id="experiment-run-checks">Run real checks ${icon("arrow")}</button></div></section>`;
+  return `<section class="experiment-desk field-story" aria-labelledby="experiment-title" id="guided-start">
+    <div class="field-introduction">
+    <div class="field-hero">
+      <div class="field-hero-image">${fieldHeroPhoto()}</div>
+      <header class="field-hero-copy"><h1 id="experiment-title">Good shop.<br>Bad bug.</h1><p class="field-serif">Find what should never ship.</p><p class="field-intro">A real shop. A deliberate mistake.<br>Your job: catch it before it ships.</p><a class="field-start" href="#field-experiment">Try the bug hunt ${icon("arrow")}</a><a class="field-shop" href="/products">Explore the collection ${icon("arrow")}</a></header>
+      <article class="field-ticket offer-ticket" id="field-experiment" aria-label="Weekend offer experiment">
+        <div class="field-ticket-head"><span>Monday / UTC</span><span>Weekend offer</span></div>
+        <div class="field-ticket-product"><div>${artwork(offer.artwork,{size:"thumb",eager:true})}</div><div><h2>${e(offer.product_name)}</h2><p><strong>${money(offer.price_cents)}</strong><s>${money(offer.regular_price_cents)}</s></p><span>Saturday &amp; Sunday only</span></div></div>
+        <p class="field-question">The weekend is over.<br>Should this deal still work?</p>
+        <label class="field-switch" for="experiment-bug"><span><strong>Break the weekend rule</strong><small id="switch-explanation">Off - the weekday rule stays in place</small></span><input id="experiment-bug" type="checkbox" role="switch" aria-label="Weekend-rule bug"></label>
+        <div class="desk-expectation" aria-live="polite"><strong id="desk-behavior-title">Expected: purchase blocked</strong><p id="desk-behavior-copy">On Monday, the offer should be unavailable. No order or charge should be created.</p></div>
+        <button class="field-try button" id="attempt-purchase">Try the offer on Monday ${icon("arrow")}</button><p id="experiment-error" role="alert"></p>
+        <span class="field-ticket-note">Real shop. Fictional credit. No real payment.</span>
+      </article>
+    </div>
+    <ol class="desk-path field-path" aria-label="Experiment journey"><li aria-current="step" data-desk-step="1"><span>01</span> Set the rule</li><li data-desk-step="2"><span>02</span> Try the offer</li><li data-desk-step="3"><span>03</span> Inspect the evidence</li></ol>
+    </div>
+    <section class="field-scroll-story" aria-labelledby="field-story-title">
+      <div class="field-backdrop" aria-hidden="true"><span class="bd-rule"></span><span class="bd-bug"></span><span class="bd-proof"></span></div>
+      <div class="field-scroll-visual" aria-hidden="true"><div class="field-scroll-rail"><i></i></div><span class="field-scene-word">RULE.</span>
+        <div class="rule-diagram-body"><div class="rule-calendar-head"><span>Weekend offer window</span><span>UTC</span></div><div class="rule-week"><span class="rule-monday">Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span class="rule-allowed">Sat</span><span class="rule-allowed">Sun</span></div><div class="rule-flow"><span>Monday<br><small>Purchase request</small></span>${icon("arrow")}<strong><span class="rule-gate-intact">Weekend only</span><span class="rule-gate-bypassed">Rule bypassed</span></strong></div><div class="rule-outcome"><span class="rule-gate-intact"><strong>Expected: blocked</strong><small>The offer has ended.</small></span><span class="rule-gate-bypassed"><strong>Expected: allowed incorrectly</strong><small>This is the bug to reproduce.</small></span></div></div>
+        ${weekendProof()}
+        <div class="field-scene-caption"><span>Scenario: Monday</span><strong>Reading the rule</strong></div>
+      </div>
+      <div class="field-chapters">
+        <article class="field-chapter" data-field-chapter="0"><div class="field-chapter-copy"><span class="field-chapter-index">01 / The rule</span><h2 id="field-story-title">A weekend deal<br><em>has an expiry date.</em></h2><p>This journal is discounted on Saturday and Sunday. On Monday, the shop should refuse the offer and leave orders and credit unchanged.</p><a class="text-link" href="/offers">See the offer in the shop ${icon("arrow")}</a></div></article>
+        <article class="field-chapter" data-field-chapter="1"><div class="field-chapter-copy"><span class="field-chapter-index">02 / The bug</span><h2>One switch.<br><em>A different outcome.</em></h2><p>The weekend-rule bug removes that protection. A deal that should have ended can slip through on Monday. Use the experiment switch above to compare the two behaviors.</p><a class="text-link" href="#field-experiment">Back to the experiment ${icon("arrow")}</a></div></article>
+        <article class="field-chapter" data-field-chapter="2"><div class="field-chapter-copy"><span class="field-chapter-index">03 / The evidence</span><h2>Proof.<br><em>Not a promise.</em></h2><p>Run the actual browser, API and database checks. Read the failure, inspect its trace, then turn the bug off and verify the correct behavior.</p><button class="button primary" id="experiment-run-checks">Verify with real tests ${icon("arrow")}</button><details class="desk-details"><summary>What the checks inspect</summary><div><p><strong>Browser</strong> &mdash; Is the offer unavailable on Monday?</p><p><strong>API</strong> &mdash; Does the server refuse the purchase?</p><p><strong>Database</strong> &mdash; Do orders and credit stay unchanged?</p><p id="experiment-scope">Loading your shop settings...</p><p>Expected behavior is not a test result. Only a completed run verifies it.</p></div></details></div></article>
+      </div>
+    </section>
+  </section>`;
 }
 
+const LAYER = { api: "API", e2e: "Browser", db: "Database", security: "Security" };
+// The proof scene names the real checks this defect breaks, taken from the same
+// DEFECTS table the test runner uses, so the panel cannot drift from the suite.
+function weekendProof() {
+  const defect = DEFECTS.find(entry => entry.id === "weekend");
+  const rows = (defect?.failures || []).map(key => {
+    const [project, title] = key.split("::");
+    const name = title.split(" @")[0].trim();
+        return { layer: LAYER[project] || project, name: name.charAt(0).toUpperCase() + name.slice(1) };
+  });
+  return '<div class="rule-proof"><p>These <strong>' + rows.length + '</strong> of <strong>' + BASELINE_CHECKS +
+    '</strong> checks fail &mdash; exactly these, every run.</p><ul>' +
+    rows.map(row => '<li><span class="proof-layer">' + e(row.layer) + '</span><span class="proof-name">' + e(row.name) + '</span></li>').join("") +
+    '</ul></div>';
+}
+export function welcomeGate() {
+  return document("Welcome", '<main class="welcome-gate"><div class="welcome-inner">' +
+    '<a class="brand welcome-brand" href="/start/hunt" aria-label="Fieldwork">' + logo() + '</a>' +
+    '<p class="eyebrow welcome-eyebrow">Release Verification Lab</p>' +
+    '<h1>What brings you here?</h1>' +
+    '<p class="welcome-sub">Pick one to start. You can switch anytime from the top bar.</p>' +
+    '<div class="welcome-doors">' +
+      '<a class="welcome-door" href="/start/shop"><span class="door-icon">' + icon("products") + '</span>' +
+      '<h2>Browse the shop</h2><p>A real storefront. Add products and check out with fictional credit &mdash; no test controls in the way.</p>' +
+      '<span class="door-go">Enter the shop ' + icon("arrow") + '</span></a>' +
+      '<a class="welcome-door door-primary" href="/start/hunt"><span class="door-icon">' + icon("check") + '</span>' +
+      '<h2>Try the bug hunt</h2><p>Flip on a deliberate bug, then watch real browser, API and database checks catch it.</p>' +
+      '<span class="door-go">Start the hunt ' + icon("arrow") + '</span></a>' +
+    '</div>' +
+    '<p class="welcome-foot">Fictional shop &middot; synthetic data &middot; no real money is spent.</p>' +
+    '</div></main>', "welcome-body");
+}
 export function landingPage(user, offer = null, labControls = false) {
-  const repo = "https://github.com/Akshat14092003/release-verification-lab";
   const admin = user?.role === "admin";
   const destination = admin ? "/admin" : "/products";
-  return '<div class="home-main">' + (offer && labControls ? experimentHome(offer, labControls) : '<section class="home-case"><h1>Release Verification Lab</h1><p>Explore the shop and verify its rules.</p><a class="button primary" href="/products">Enter the shop</a></section>') +
-    '<div class="home-entry"><a class="button secondary" href="/products">Enter the shop ' + icon("arrow") + '</a><div class="report-link-explanation"><a class="text-link" href="https://akshat14092003.github.io/release-verification-lab/" aria-describedby="saved-reports-help">See saved test results ' + icon("arrow") + '</a><p id="saved-reports-help">Opens the published reports: what passed in the working shop, which deliberate mistakes were caught, and the details behind each result.</p></div></div>' +
+  return '<div class="home-main">' + (offer && labControls ? experimentHome(offer, labControls) : '<section class="home-case"><h1>Release Verification Lab</h1><p>A demo shop with deliberate bugs you can switch on, then catch with real automated checks.</p><a class="button primary" href="/products">Enter the shop</a></section>') +
+    '<div class="home-entry"><p class="home-lead">New here? This is a working shop. Browse and buy with fake credit &mdash; or flip on a bug and watch the checks catch it. No sign-up, no real money.</p><a class="button primary" href="/products">Enter the shop ' + icon("arrow") + '</a></div>' +
     '<section id="how-it-works" class="home-section"><div class="section-intro"><span class="eyebrow">YOUR FIRST BUG HUNT</span><h2>Break it. Catch it.<br/>Make it right.</h2><p>Follow the steps in the shop. Every switch changes actual behavior; every result comes from a real test.</p></div>' +
     '<ol class="home-steps">' + [
       ["Shop", "Start with $1,000 in demo credit. Add products to your cart and place an order."],
@@ -237,14 +304,12 @@ export function landingPage(user, offer = null, labControls = false) {
     '<div class="layer-list">' + [
       ["Browser", "Real shopping journeys, screenshots, and traces."], ["API", "Login rules, ownership, pricing, and purchase limits."],
       ["Database", "Order totals checked against independent SQL and ledger sums."], ["Security", "Focused SQL-like input and reflected/stored script probes."]
-    ].map(([title, copy]) => '<div data-reveal><h3>' + title + '</h3><p>' + copy + '</p></div>').join("") + '</div></section>' +
-    '<section class="home-evidence"><div><span class="eyebrow">SEE HOW IT IS BUILT</span><h2>Every result has a paper trail.</h2><p>Explore the source or browse the latest published CI reports.</p></div>' +
-    '<div><a class="button secondary" href="' + repo + '">View source ' + icon("arrow") + '</a><a class="text-link" href="https://akshat14092003.github.io/release-verification-lab/">See saved test results ' + icon("arrow") + '</a></div></section></div>';
+    ].map(([title, copy]) => '<div data-reveal><h3>' + title + '</h3><p>' + copy + '</p></div>').join("") + '</div></section></div>';
 }
 
 export function productsPage(products, query = "", category = "") {
   const categories = ["Stationery", "Audio", "Home", "Lighting"];
-  return '<section id="collection" class="catalogue"><div class="section-toolbar"><div><h1>Products</h1><p class="muted">Browse the collection and add products to your cart.</p></div>' +
+  return '<section id="collection" class="catalogue"><div class="section-toolbar"><div><h1>Products</h1><p class="muted">Good things for the everyday.</p></div>' +
     '<form action="/products" method="get" class="search-box"><label class="sr-only" for="search">Search products</label>' + icon("search") +
     '<input id="search" name="q" type="search" maxlength="100" value="' + e(query) + '" placeholder="Search the collection"/>' +
     '<button type="submit" class="button secondary search-submit">Search</button></form></div><div class="category-filters" aria-label="Product categories">' +
@@ -496,4 +561,4 @@ export function adminSignupRequestsPage(pending, reviewed) {
 
 import { labDialogs, labToolbar, labTools } from "./lab-view.js";
 import { ARTWORK, CATEGORIES, ORDER_STATUSES } from "./admin.js";
-import { BASELINE_CHECKS } from "./defects.js";
+import { BASELINE_CHECKS, DEFECTS } from "./defects.js";

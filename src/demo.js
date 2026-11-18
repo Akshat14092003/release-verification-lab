@@ -1,3 +1,4 @@
+import { builtAssets } from "./assets.js";
 import express from "express";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -16,7 +17,7 @@ const CLOCKS = {
 };
 const COOKIE = "lab_visitor";
 
-export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), allowRuns = true, maxVisitors = 50, sessionMs = 2 * 60 * 60 * 1000, trustProxy = false, testWorkers = 2, sharedShop = false, publicOrigin = null } = {}) {
+export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), allowRuns = true, maxVisitors = 50, sessionMs = 2 * 60 * 60 * 1000, trustProxy = false, testWorkers = 2, sharedShop = false, publicOrigin = null, firstRunGate = true, assetMiddleware = null } = {}) {
   const app = express();
   let sharedStore;
   const createStore = () => {
@@ -30,6 +31,8 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
   const runner = allowRuns ? createTestRunner({ directory: join(directory, "runs"), workers: testWorkers }) : null;
   app.disable("x-powered-by");
   app.set("trust proxy", trustProxy ? 1 : false);
+  if (assetMiddleware) app.use(assetMiddleware);
+  app.use("/assets", builtAssets());
   app.use(express.static(join(projectRoot, "public"), { index: false }));
   app.use(express.json({ limit: "8kb" }));
   app.use((req, res, next) => {
@@ -58,6 +61,18 @@ export function createDemoApp({ directory = join(projectRoot, ".data", "demo"), 
     login(visitor.runtime.db, "customer@example.test", DEMO_PASSWORD, visitor.now(), res, {}, { role: "customer" });
     return res.redirect(303, "/products?connected=1");
   });
+  const INTENT = "lab_intent";
+  const intentOf = req => String(req.get("cookie") || "").split(";").map(part => part.trim()).find(part => part.startsWith(INTENT + "="))?.slice(INTENT.length + 1);
+  if (firstRunGate) {
+    const setIntent = (req, res, value) => res.cookie(INTENT, value, { httpOnly: false, sameSite: "lax", secure: req.secure, path: "/", maxAge: 365 * 24 * 60 * 60 * 1000 });
+    app.get("/start/shop", (req, res) => { setIntent(req, res, "shop"); res.redirect(303, "/products"); });
+    app.get("/start/hunt", (req, res) => { setIntent(req, res, "hunt"); res.redirect(303, "/"); });
+    app.get("/", (req, res, next) => {
+      if (intentOf(req)) return next();
+      res.set("Cache-Control", "no-store");
+      res.send(view.welcomeGate());
+    });
+  }
   app.use((req, res, next) => {
     const time = Date.now();
     for (const [id, visitor] of visitors) {

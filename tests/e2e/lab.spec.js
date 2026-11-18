@@ -8,7 +8,7 @@ const test = base.extend({
   sharedShop: [false, { option: true }],
   demo: async ({ sharedShop }, use, testInfo) => {
     // No nested test launches: the real button-to-report flow is verified separately.
-    const runtime = createDemoApp({ directory: testInfo.outputPath("demo"), allowRuns: false, sharedShop });
+    const runtime = createDemoApp({ directory: testInfo.outputPath("demo"), allowRuns: false, sharedShop, firstRunGate: false });
     const server = runtime.app.listen(0, "127.0.0.1");
     await once(server, "listening");
     try { await use("http://127.0.0.1:" + server.address().port); }
@@ -30,6 +30,11 @@ test.describe.configure({ mode: "default" });
 test.describe("shared local storefront", () => {
   test.use({ sharedShop: true });
   test("admin changes reach another browser without links while carts and roles stay separate", async ({ page, browser, demo }) => {
+    // Three browser contexts, a cross-browser store poll and a checkout. It runs in
+    // about 10s alone but 25-40s while the rest of the suite competes for the
+    // machine, which overran the 30s default and was the real cause of the
+    // intermittent failures here.
+    test.slow();
     const context = await browser.newContext({ baseURL: demo });
     const guest = await apiRequest.newContext({ baseURL: demo });
     await context.route("**/*", route => new URL(route.request().url()).origin === demo ? route.continue() : route.abort());
@@ -47,7 +52,10 @@ test.describe("shared local storefront", () => {
       await editor.getByRole("button", { name: "Save product", exact: true }).click();
       await expect(editor.locator("[data-admin-feedback]")).toContainText("every buyer browser");
       await buyer.bringToFront();
-      await expect(buyer.locator(".product-card").first()).toContainText("$50.00");
+      // The buyer browser learns about the change through a 2s store poll plus a
+      // background refresh, so this one assertion needs more than the 5s default
+      // when the whole suite is competing for the machine.
+      await expect(buyer.locator(".product-card").first()).toContainText("$50.00", { timeout: 20_000 });
       expect(await buyer.locator("[data-shop-reference]").textContent()).toBe(await page.locator("[data-shop-reference]").textContent());
       expect((await buyer.request.get("/api/admin")).status()).toBe(401);
       await buyer.getByRole("button", { name: "Add Everyday journal to cart", exact: true }).click();
@@ -294,6 +302,32 @@ test("light and dark mode persist across the lab and shop", async ({ page }) => 
   await page.goto("/lab");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await expect.poll(() => page.locator('.product-art').first().evaluate(image => image.currentSrc)).toMatch(/journal-\d+\.webp$/);
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/");
+  await expect(page.locator(".field-hero-copy h1")).toHaveCSS("text-shadow", "none");
+  expect(await page.locator(".field-scroll-visual").evaluate(element => element.getBoundingClientRect().top)).toBeGreaterThanOrEqual(page.viewportSize().height);
+  await expect(page.locator(".field-shop")).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(page.locator("html")).toHaveClass(/has-field-story/);
+  await expect(page.locator("html")).not.toHaveClass(/has-field-motion/);
+  await expect(page.locator(".field-backdrop")).toHaveCSS("opacity", "1");
+  await expect(page.locator(".field-hero-image")).toBeHidden();
+  for (const [index, scene] of ["rule", "bug", "proof"].entries()) {
+    await page.locator('[data-field-chapter="' + index + '"]').evaluate(element => {
+      scrollTo({ top: scrollY + element.getBoundingClientRect().top + element.offsetHeight / 2 - innerHeight * .52, behavior: "instant" });
+    });
+    await expect(page.locator("html")).toHaveAttribute("data-field-scene", String(index));
+    const frame = page.locator(".field-backdrop>span").nth(index);
+    await expect(frame).toHaveCSS("opacity", "1");
+    await expect(frame).toHaveCSS("transform", "none");
+    await expect(frame).toHaveCSS("transition-duration", "0s");
+    expect(await frame.evaluate(element => getComputedStyle(element).backgroundImage)).toContain("scene-" + scene + "-light-");
+    await expect(page.locator(".rule-proof")).toHaveCSS("animation-name", "none");
+  }
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await expect(page.locator("html")).toHaveClass(/has-field-motion/);
+  await expect(page.locator(".field-backdrop")).toHaveCSS("opacity", "1");
 });
 
 test("mobile visitor guide and run errors remain usable", async ({ page }) => {
@@ -449,9 +483,33 @@ test("mobile visitor guide and run errors remain usable", async ({ page }) => {
 
 
 test("shopping hints and sidebar follow the storefront without a separate guide page", async ({ page }) => {
+  const original = await (await page.request.get("/api/lab/state")).json();
+  const bugs = { ...original.bugs, BUG_TOTAL_MISMATCH: true, BUG_WEEKEND_OFFER: false };
+  await page.request.post("/api/lab/settings", { data: { bugs, clock: "saturday" } });
+  await page.goto("/");
+  await expect(page.locator("#guide-coach")).toBeHidden();
+  await expect(page.locator("#desk-behavior-title")).toHaveText("Expected: purchase blocked");
+  await page.getByRole("switch", { name: "Weekend-rule bug", exact: true }).check();
+  await expect(page.locator("#desk-behavior-title")).toContainText("offer slips through");
+  await expect(page.locator('[data-desk-step="2"]')).toHaveAttribute("aria-current", "step");
+  await page.getByRole("button", { name: "Verify with real tests" }).click();
+  await expect(page.locator("#test-drawer")).toBeVisible();
+  await expect(page.locator("#run-mode")).toHaveValue("current");
+  await expect(page.locator('#lab-settings input[name="BUG_WEEKEND_OFFER"]')).toBeChecked();
+  await expect(page.locator('#lab-settings input[name="BUG_TOTAL_MISMATCH"]')).toBeChecked();
+  // The fixture rejects live runs; exercise the runner's settings save, without faking results.
+  const response = page.waitForResponse(response => response.url().endsWith("/api/lab/runs") && response.request().method() === "POST");
+  await page.getByRole("button", { name: "Run tests", exact: true }).click();
+  expect((await response).status()).toBe(503);
+  const saved = await (await page.request.get("/api/lab/state")).json();
+  expect(saved.clock).toBe("monday");
+  expect(saved.bugs).toEqual({ ...bugs, BUG_WEEKEND_OFFER: true });
+  await page.locator("#close-tests").click();
+  await expect(page.getByRole("button", { name: "Verify with real tests" })).toBeFocused();
+  await page.request.post("/api/lab/settings", { data: { bugs: original.bugs, clock: original.clock } });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Shop it.");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Bad bug.");
   await expect(page.locator(".app-shell")).toHaveCount(1);
   await expect(page.locator(".home-header")).toHaveCount(0);
   await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Home", exact: true })).toHaveAttribute("aria-current", "page");
@@ -485,10 +543,10 @@ test("shopping hints and sidebar follow the storefront without a separate guide 
   expect(experimentState.bugs).toEqual({ ...before.bugs, BUG_WEEKEND_OFFER: true });
   await page.request.post("/api/lab/settings", { data: { bugs: before.bugs, clock: before.clock } });
   await page.goto("/");
-  await page.getByRole("link", { name: "Enter the shop" }).click();
+  await page.getByRole("link", { name: "Explore the collection", exact: true }).click();
   await expect(page).toHaveURL(/\/products$/);
   await expect(page.locator(".store-hero")).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "Products", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^products/i })).toBeVisible();
   await expect(page.getByRole("button", { name: "Meet the little bug", exact: true })).toBeVisible();
   await expect(page.locator("#guide-step")).toHaveText("Step 2 of 12");
   await page.getByRole("button", { name: "View an item", exact: true }).click();
